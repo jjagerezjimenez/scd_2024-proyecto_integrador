@@ -51,7 +51,7 @@ blocks:
     comment: '0.001----32HZ-----por usar samp_rate
 
       portadora hackRF 915 MHz'
-    value: '0.00001'
+    value: '0.001'
   states:
     bus_sink: false
     bus_source: false
@@ -152,6 +152,42 @@ blocks:
     coordinate: [8, 280.0]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: ''
+    type: byte
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1752, 816.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_sink_1
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: ''
+    type: byte
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [624, 448.0]
+    rotation: 0
+    state: enabled
 - name: blocks_stream_to_tagged_stream_0
   id: blocks_stream_to_tagged_stream
   parameters:
@@ -192,6 +228,22 @@ blocks:
     coordinate: [856, 264.0]
     rotation: 0
     state: enabled
+- name: digital_constellation_decoder_cb_0
+  id: digital_constellation_decoder_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    constellation: qpsk
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1408, 680.0]
+    rotation: 0
+    state: enabled
 - name: digital_constellation_modulator_0
   id: digital_constellation_modulator
   parameters:
@@ -214,6 +266,24 @@ blocks:
     coordinate: [624, 280.0]
     rotation: 0
     state: enabled
+- name: digital_costas_loop_cc_0
+  id: digital_costas_loop_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    order: '4'
+    use_snr: 'False'
+    w: '0.01'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 648.0]
+    rotation: 0
+    state: enabled
 - name: digital_crc32_bb_0
   id: digital_crc32_bb
   parameters:
@@ -230,6 +300,49 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [400, 288.0]
+    rotation: 0
+    state: enabled
+- name: digital_crc32_bb_1
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    check: 'False'
+    comment: ''
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1656, 664.0]
+    rotation: 0
+    state: enabled
+- name: digital_pfb_clock_sync_xxx_0
+  id: digital_pfb_clock_sync_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    filter_size: '32'
+    init_phase: '16'
+    loop_bw: '0.01'
+    max_dev: '1.5'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    osps: '1'
+    sps: sps
+    taps: 'firdes.root_raised_cosine(sps, sps, 1.0, excess_bw, 11*sps)
+
+      '
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [984, 672.0]
     rotation: 0
     state: enabled
 - name: digital_symbol_sync_xx_0
@@ -329,7 +442,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '""'
+    name: '"CANAL"'
     nconnections: '1'
     size: '1024'
     style1: '0'
@@ -368,6 +481,190 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1680, 408.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_const_sink_x_1_0
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    grid: 'False'
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '"Luego_Costas"'
+    nconnections: '1'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '2'
+    xmin: '-2'
+    ymax: '2'
+    ymin: '-2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 864.0]
+    rotation: 0
+    state: enabled
+- name: qtgui_const_sink_x_1_0_0
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: ''
+    grid: 'False'
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '"POLY. SYNC."'
+    nconnections: '1'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '2'
+    xmin: '-2'
+    ymax: '2'
+    ymin: '-2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 872.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_1
@@ -450,7 +747,7 @@ blocks:
     bus_structure: null
     coordinate: [1416, 288.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: qtgui_time_sink_x_1
   id: qtgui_time_sink_x
   parameters:
@@ -547,7 +844,7 @@ blocks:
     bus_structure: null
     coordinate: [1408, 184.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: root_raised_cosine_filter_0
   id: root_raised_cosine_filter
   parameters:
@@ -580,10 +877,16 @@ connections:
 - [channels_channel_model_0, '0', qtgui_freq_sink_x_1, '0']
 - [channels_channel_model_0, '0', qtgui_time_sink_x_1, '0']
 - [channels_channel_model_0, '0', root_raised_cosine_filter_0, '0']
+- [digital_constellation_decoder_cb_0, '0', digital_crc32_bb_1, '0']
 - [digital_constellation_modulator_0, '0', channels_channel_model_0, '0']
+- [digital_costas_loop_cc_0, '0', digital_pfb_clock_sync_xxx_0, '0']
+- [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_1_0, '0']
 - [digital_crc32_bb_0, '0', digital_constellation_modulator_0, '0']
+- [digital_pfb_clock_sync_xxx_0, '0', digital_constellation_decoder_cb_0, '0']
+- [digital_pfb_clock_sync_xxx_0, '0', qtgui_const_sink_x_1_0_0, '0']
 - [digital_symbol_sync_xx_0, '0', qtgui_const_sink_x_1, '0']
 - [fir_filter_xxx_0, '0', digital_symbol_sync_xx_0, '0']
+- [root_raised_cosine_filter_0, '0', digital_costas_loop_cc_0, '0']
 
 metadata:
   file_format: 1
