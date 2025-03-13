@@ -13,9 +13,9 @@ from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio import blocks
 import numpy
-from gnuradio import digital
-from gnuradio import filter
+from gnuradio import channels
 from gnuradio.filter import firdes
+from gnuradio import digital
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
@@ -70,6 +70,8 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.rrc_1 = rrc_1 = firdes.root_raised_cosine(1.0, samp_rate,samp_rate/sps, 0.35, (11*sps))
         self.qpsk = qpsk = digital.constellation_rect([1+1j, -1+1j, -1-1j, 1-1j], [0, 1, 2, 3],
         4, 2, 2, 1, 1).base()
+        self.noise_amp = noise_amp = 0.0
+        self.freq_offset = freq_offset = 0.00001
         self.excess_bw = excess_bw = 0.35
 
         ##################################################
@@ -210,20 +212,6 @@ class transmisor(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_1_win = sip.wrapinstance(self.qtgui_const_sink_x_1.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_1_win)
-        self.fir_filter_xxx_0 = filter.fir_filter_ccc(1, rrc_1)
-        self.fir_filter_xxx_0.declare_sample_delay(0)
-        self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
-            digital.TED_MUELLER_AND_MULLER,
-            sps,
-            0.045,
-            1.0,
-            1.0,
-            1.5,
-            1,
-            qpsk,
-            digital.IR_MMSE_8TAP,
-            128,
-            [])
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
@@ -234,6 +222,13 @@ class transmisor(gr.top_block, Qt.QWidget):
             verbose=False,
             log=False,
             truncate=False)
+        self.channels_channel_model_0 = channels.channel_model(
+            noise_voltage=noise_amp,
+            frequency_offset=freq_offset,
+            epsilon=1.0,
+            taps=[1.0],
+            noise_seed=0,
+            block_tags=False)
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 1024))), True)
 
@@ -243,12 +238,11 @@ class transmisor(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
-        self.connect((self.digital_constellation_modulator_0, 0), (self.fir_filter_xxx_0, 0))
-        self.connect((self.digital_constellation_modulator_0, 0), (self.qtgui_freq_sink_x_1, 0))
-        self.connect((self.digital_constellation_modulator_0, 0), (self.qtgui_time_sink_x_1, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_1, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.qtgui_freq_sink_x_1, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.qtgui_time_sink_x_1, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.digital_symbol_sync_xx_0, 0), (self.qtgui_const_sink_x_1, 0))
-        self.connect((self.fir_filter_xxx_0, 0), (self.digital_symbol_sync_xx_0, 0))
 
 
     def closeEvent(self, event):
@@ -265,7 +259,6 @@ class transmisor(gr.top_block, Qt.QWidget):
     def set_sps(self, sps):
         self.sps = sps
         self.set_rrc_1(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, 0.35, (11*self.sps)))
-        self.digital_symbol_sync_xx_0.set_sps(self.sps)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -281,13 +274,26 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_rrc_1(self, rrc_1):
         self.rrc_1 = rrc_1
-        self.fir_filter_xxx_0.set_taps(self.rrc_1)
 
     def get_qpsk(self):
         return self.qpsk
 
     def set_qpsk(self, qpsk):
         self.qpsk = qpsk
+
+    def get_noise_amp(self):
+        return self.noise_amp
+
+    def set_noise_amp(self, noise_amp):
+        self.noise_amp = noise_amp
+        self.channels_channel_model_0.set_noise_voltage(self.noise_amp)
+
+    def get_freq_offset(self):
+        return self.freq_offset
+
+    def set_freq_offset(self, freq_offset):
+        self.freq_offset = freq_offset
+        self.channels_channel_model_0.set_frequency_offset(self.freq_offset)
 
     def get_excess_bw(self):
         return self.excess_bw
