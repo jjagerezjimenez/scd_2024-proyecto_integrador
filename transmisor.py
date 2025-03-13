@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: transmisor
 # Author: Gerez
-# GNU Radio version: 3.10.10.0
+# GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -25,6 +25,7 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 import sip
+import threading
 
 
 
@@ -51,7 +52,7 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "transmisor")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "transmisor")
 
         try:
             geometry = self.settings.value("geometry")
@@ -59,12 +60,14 @@ class transmisor(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
         ##################################################
         self.sps = sps = 4
         self.samp_rate = samp_rate = 32000
+        self.rrc_1 = rrc_1 = firdes.root_raised_cosine(1.0, samp_rate,samp_rate/sps, 0.35, (11*sps))
         self.qpsk = qpsk = digital.constellation_rect([1+1j, -1+1j, -1-1j, 1-1j], [0, 1, 2, 3],
         4, 2, 2, 1, 1).base()
         self.excess_bw = excess_bw = 0.35
@@ -73,14 +76,6 @@ class transmisor(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
-        self.root_raised_cosine_filter_0 = filter.interp_fir_filter_ccf(
-            1,
-            firdes.root_raised_cosine(
-                1,
-                samp_rate,
-                (samp_rate/sps),
-                excess_bw,
-                (11 * sps)))
         self.qtgui_time_sink_x_1 = qtgui.time_sink_c(
             1024, #size
             samp_rate, #samp_rate
@@ -215,6 +210,20 @@ class transmisor(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_1_win = sip.wrapinstance(self.qtgui_const_sink_x_1.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_1_win)
+        self.fir_filter_xxx_0 = filter.fir_filter_ccc(1, rrc_1)
+        self.fir_filter_xxx_0.declare_sample_delay(0)
+        self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
+            digital.TED_MUELLER_AND_MULLER,
+            sps,
+            0.045,
+            1.0,
+            1.0,
+            1.5,
+            1,
+            qpsk,
+            digital.IR_MMSE_8TAP,
+            128,
+            [])
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
@@ -226,7 +235,6 @@ class transmisor(gr.top_block, Qt.QWidget):
             log=False,
             truncate=False)
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
-        self.blocks_keep_one_in_n_0 = blocks.keep_one_in_n(gr.sizeof_gr_complex*1, sps)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 1024))), True)
 
 
@@ -234,17 +242,17 @@ class transmisor(gr.top_block, Qt.QWidget):
         # Connections
         ##################################################
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
-        self.connect((self.blocks_keep_one_in_n_0, 0), (self.qtgui_const_sink_x_1, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
-        self.connect((self.digital_constellation_modulator_0, 0), (self.root_raised_cosine_filter_0, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.fir_filter_xxx_0, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.qtgui_freq_sink_x_1, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.root_raised_cosine_filter_0, 0), (self.blocks_keep_one_in_n_0, 0))
-        self.connect((self.root_raised_cosine_filter_0, 0), (self.qtgui_freq_sink_x_1, 0))
-        self.connect((self.root_raised_cosine_filter_0, 0), (self.qtgui_time_sink_x_1, 0))
+        self.connect((self.digital_symbol_sync_xx_0, 0), (self.qtgui_const_sink_x_1, 0))
+        self.connect((self.fir_filter_xxx_0, 0), (self.digital_symbol_sync_xx_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "transmisor")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "transmisor")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -256,17 +264,24 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_sps(self, sps):
         self.sps = sps
-        self.blocks_keep_one_in_n_0.set_n(self.sps)
-        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
+        self.set_rrc_1(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, 0.35, (11*self.sps)))
+        self.digital_symbol_sync_xx_0.set_sps(self.sps)
 
     def get_samp_rate(self):
         return self.samp_rate
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_rrc_1(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, 0.35, (11*self.sps)))
         self.qtgui_freq_sink_x_1.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
-        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
+
+    def get_rrc_1(self):
+        return self.rrc_1
+
+    def set_rrc_1(self, rrc_1):
+        self.rrc_1 = rrc_1
+        self.fir_filter_xxx_0.set_taps(self.rrc_1)
 
     def get_qpsk(self):
         return self.qpsk
@@ -279,7 +294,6 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_excess_bw(self, excess_bw):
         self.excess_bw = excess_bw
-        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
 
 
 
@@ -291,6 +305,7 @@ def main(top_block_cls=transmisor, options=None):
     tb = top_block_cls()
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 

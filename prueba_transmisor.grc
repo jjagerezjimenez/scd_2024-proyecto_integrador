@@ -83,7 +83,24 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [616, 16.0]
+    coordinate: [640, 72.0]
+    rotation: 0
+    state: enabled
+- name: rrc_1
+  id: variable_rrc_filter_taps
+  parameters:
+    alpha: '0.35'
+    comment: ''
+    gain: '1.0'
+    ntaps: 11*sps
+    samp_rate: samp_rate
+    sym_rate: samp_rate/sps
+    value: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [904, 120.0]
     rotation: 0
     state: enabled
 - name: samp_rate
@@ -149,24 +166,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [8, 280.0]
-    rotation: 0
-    state: enabled
-- name: blocks_keep_one_in_n_0
-  id: blocks_keep_one_in_n
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    n: sps
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1064, 432.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -267,7 +266,53 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 288.0]
+    coordinate: [400, 288.0]
+    rotation: 0
+    state: enabled
+- name: digital_symbol_sync_xx_0
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    constellation: qpsk
+    damping: '1.0'
+    loop_bw: '0.045'
+    max_dev: '1.5'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nfilters: '128'
+    osps: '1'
+    pfb_mf_taps: '[]'
+    resamp_type: digital.IR_MMSE_8TAP
+    sps: sps
+    ted_gain: '1.0'
+    ted_type: digital.TED_MUELLER_AND_MULLER
+    type: cc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [992, 392.0]
+    rotation: 0
+    state: enabled
+- name: fir_filter_xxx_0
+  id: fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    decim: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_delay: '0'
+    taps: rrc_1
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [792, 448.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0
@@ -451,7 +496,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 416.0]
+    coordinate: [1328, 392.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -810,43 +855,20 @@ blocks:
     coordinate: [1168, 184.0]
     rotation: 0
     state: enabled
-- name: root_raised_cosine_filter_0
-  id: root_raised_cosine_filter
-  parameters:
-    affinity: ''
-    alias: ''
-    alpha: excess_bw
-    comment: ''
-    decim: '1'
-    gain: '1'
-    interp: '1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    ntaps: 11 * sps
-    samp_rate: samp_rate
-    sym_rate: samp_rate/sps
-    type: interp_fir_filter_ccf
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [864, 264.0]
-    rotation: 0
-    state: enabled
 
 connections:
 - [analog_random_source_x_0, '0', blocks_stream_to_tagged_stream_0, '0']
-- [blocks_keep_one_in_n_0, '0', qtgui_const_sink_x_1, '0']
 - [blocks_stream_to_tagged_stream_0, '0', digital_crc32_bb_0, '0']
 - [blocks_throttle2_0, '0', qtgui_const_sink_x_0, '0']
 - [blocks_throttle2_0, '0', qtgui_freq_sink_x_0, '0']
 - [blocks_throttle2_0, '0', qtgui_time_sink_x_0, '0']
-- [digital_constellation_modulator_0, '0', root_raised_cosine_filter_0, '0']
+- [digital_constellation_modulator_0, '0', fir_filter_xxx_0, '0']
+- [digital_constellation_modulator_0, '0', qtgui_freq_sink_x_1, '0']
+- [digital_constellation_modulator_0, '0', qtgui_time_sink_x_1, '0']
 - [digital_crc32_bb_0, '0', digital_constellation_modulator_0, '0']
-- [root_raised_cosine_filter_0, '0', blocks_keep_one_in_n_0, '0']
-- [root_raised_cosine_filter_0, '0', qtgui_freq_sink_x_1, '0']
-- [root_raised_cosine_filter_0, '0', qtgui_time_sink_x_1, '0']
+- [digital_symbol_sync_xx_0, '0', qtgui_const_sink_x_1, '0']
+- [fir_filter_xxx_0, '0', digital_symbol_sync_xx_0, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.10.0
+  grc_version: 3.10.12.0
