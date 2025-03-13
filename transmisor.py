@@ -16,6 +16,7 @@ import numpy
 from gnuradio import channels
 from gnuradio.filter import firdes
 from gnuradio import digital
+from gnuradio import fec
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
@@ -87,6 +88,39 @@ class transmisor(gr.top_block, Qt.QWidget):
                 (samp_rate/sps),
                 excess_bw,
                 (11*sps)))
+        self.qtgui_number_sink_0 = qtgui.number_sink(
+            gr.sizeof_float,
+            0,
+            qtgui.NUM_GRAPH_HORIZ,
+            1,
+            None # parent
+        )
+        self.qtgui_number_sink_0.set_update_time(0.10)
+        self.qtgui_number_sink_0.set_title("BER_visual")
+
+        labels = ['', '', '', '', '',
+            '', '', '', '', '']
+        units = ['', '', '', '', '',
+            '', '', '', '', '']
+        colors = [("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"),
+            ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black")]
+        factor = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+
+        for i in range(1):
+            self.qtgui_number_sink_0.set_min(i, -1)
+            self.qtgui_number_sink_0.set_max(i, 1)
+            self.qtgui_number_sink_0.set_color(i, colors[i][0], colors[i][1])
+            if len(labels[i]) == 0:
+                self.qtgui_number_sink_0.set_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_number_sink_0.set_label(i, labels[i])
+            self.qtgui_number_sink_0.set_unit(i, units[i])
+            self.qtgui_number_sink_0.set_factor(i, factor[i])
+
+        self.qtgui_number_sink_0.enable_autoscale(False)
+        self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_number_sink_0_win)
         self.qtgui_const_sink_x_1_0_0 = qtgui.const_sink_c(
             1024, #size
             "POLY. SYNC.", #name
@@ -210,8 +244,10 @@ class transmisor(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_1_win = sip.wrapinstance(self.qtgui_const_sink_x_1.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_1_win)
+        self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 0.01, firdes.root_raised_cosine(sps, sps, 1.0, excess_bw, 11*sps)
         , 32, 16, 1.5, 1)
+        self.digital_crc32_bb_1 = digital.crc32_bb(True, "packet_len", True)
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(0.01, 4, False)
         self.digital_constellation_modulator_0 = digital.generic_mod(
@@ -223,6 +259,7 @@ class transmisor(gr.top_block, Qt.QWidget):
             verbose=False,
             log=False,
             truncate=False)
+        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise_amp,
             frequency_offset=freq_offset,
@@ -241,11 +278,16 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_1, 0))
         self.connect((self.channels_channel_model_0, 0), (self.root_raised_cosine_filter_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_crc32_bb_1, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_constellation_modulator_0, 0))
+        self.connect((self.digital_crc32_bb_0, 0), (self.fec_ber_bf_0, 1))
+        self.connect((self.digital_crc32_bb_1, 0), (self.fec_ber_bf_0, 0))
+        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_1_0_0, 0))
+        self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_costas_loop_cc_0, 0))
 
 
@@ -286,6 +328,7 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_qpsk(self, qpsk):
         self.qpsk = qpsk
+        self.digital_constellation_decoder_cb_0.set_constellation(self.qpsk)
 
     def get_noise_amp(self):
         return self.noise_amp

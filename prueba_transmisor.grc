@@ -167,9 +167,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1752, 816.0]
+    coordinate: [1912, 664.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_sink_1
   id: blocks_file_sink
   parameters:
@@ -187,7 +187,7 @@ blocks:
     bus_structure: null
     coordinate: [624, 448.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_stream_to_tagged_stream_0
   id: blocks_stream_to_tagged_stream
   parameters:
@@ -307,7 +307,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    check: 'False'
+    check: 'True'
     comment: ''
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
@@ -369,9 +369,27 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1304, 504.0]
+    coordinate: [1304, 456.0]
     rotation: 0
     state: disabled
+- name: fec_ber_bf_0
+  id: fec_ber_bf
+  parameters:
+    affinity: ''
+    alias: ''
+    berlimit: '-7.0'
+    berminerrors: '100'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    test_mode: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1888, 816.0]
+    rotation: 0
+    state: enabled
 - name: fir_filter_xxx_0
   id: fir_filter_xxx
   parameters:
@@ -388,7 +406,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 560.0]
+    coordinate: [1104, 512.0]
     rotation: 0
     state: disabled
 - name: qtgui_const_sink_x_1
@@ -748,6 +766,69 @@ blocks:
     coordinate: [1416, 288.0]
     rotation: 0
     state: disabled
+- name: qtgui_number_sink_0
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: ''
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: ''
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '1'
+    min: '-1'
+    name: '"BER_visual"'
+    nconnections: '1'
+    type: float
+    unit1: ''
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.10'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2056, 792.0]
+    rotation: 0
+    state: enabled
 - name: qtgui_time_sink_x_1
   id: qtgui_time_sink_x
   parameters:
@@ -881,10 +962,15 @@ connections:
 - [digital_constellation_modulator_0, '0', channels_channel_model_0, '0']
 - [digital_costas_loop_cc_0, '0', digital_pfb_clock_sync_xxx_0, '0']
 - [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_1_0, '0']
+- [digital_crc32_bb_0, '0', blocks_file_sink_1, '0']
 - [digital_crc32_bb_0, '0', digital_constellation_modulator_0, '0']
+- [digital_crc32_bb_0, '0', fec_ber_bf_0, '1']
+- [digital_crc32_bb_1, '0', blocks_file_sink_0, '0']
+- [digital_crc32_bb_1, '0', fec_ber_bf_0, '0']
 - [digital_pfb_clock_sync_xxx_0, '0', digital_constellation_decoder_cb_0, '0']
 - [digital_pfb_clock_sync_xxx_0, '0', qtgui_const_sink_x_1_0_0, '0']
 - [digital_symbol_sync_xx_0, '0', qtgui_const_sink_x_1, '0']
+- [fec_ber_bf_0, '0', qtgui_number_sink_0, '0']
 - [fir_filter_xxx_0, '0', digital_symbol_sync_xx_0, '0']
 - [root_raised_cosine_filter_0, '0', digital_costas_loop_cc_0, '0']
 
