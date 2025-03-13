@@ -247,8 +247,6 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 0.01, firdes.root_raised_cosine(sps, sps, 1.0, excess_bw, 11*sps)
         , 32, 16, 1.5, 1)
-        self.digital_crc32_bb_1 = digital.crc32_bb(True, "packet_len", True)
-        self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(0.01, 4, False)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
@@ -269,7 +267,8 @@ class transmisor(gr.top_block, Qt.QWidget):
             block_tags=False)
         self.blocks_stream_to_tagged_stream_1 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
-        self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 64)
+        self.blocks_repack_bits_bb_0 = blocks.repack_bits_bb(2, 8, "", False, gr.GR_LSB_FIRST)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, 0)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 1024))), True)
 
 
@@ -278,17 +277,16 @@ class transmisor(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.fec_ber_bf_0, 1))
-        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
-        self.connect((self.blocks_stream_to_tagged_stream_1, 0), (self.digital_crc32_bb_1, 0))
+        self.connect((self.blocks_repack_bits_bb_0, 0), (self.blocks_stream_to_tagged_stream_1, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_delay_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_constellation_modulator_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_1, 0), (self.fec_ber_bf_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_1, 0))
         self.connect((self.channels_channel_model_0, 0), (self.root_raised_cosine_filter_0, 0))
-        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_stream_to_tagged_stream_1, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_repack_bits_bb_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
-        self.connect((self.digital_crc32_bb_0, 0), (self.blocks_delay_0, 0))
-        self.connect((self.digital_crc32_bb_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.digital_crc32_bb_1, 0), (self.fec_ber_bf_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_1_0_0, 0))
         self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
