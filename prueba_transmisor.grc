@@ -159,7 +159,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: ''
+    file: rx_data.bin
     type: byte
     unbuffered: 'False'
     vlen: '1'
@@ -167,7 +167,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1912, 664.0]
+    coordinate: [1896, 552.0]
     rotation: 0
     state: disabled
 - name: blocks_file_sink_1
@@ -177,7 +177,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: ''
+    file: tx_data.bin
     type: byte
     unbuffered: 'False'
     vlen: '1'
@@ -185,7 +185,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 448.0]
+    coordinate: [656, 176.0]
     rotation: 0
     state: disabled
 - name: blocks_stream_to_tagged_stream_0

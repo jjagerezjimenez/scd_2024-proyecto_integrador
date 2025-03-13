@@ -16,7 +16,6 @@ import numpy
 from gnuradio import channels
 from gnuradio.filter import firdes
 from gnuradio import digital
-from gnuradio import fec
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
@@ -88,39 +87,6 @@ class transmisor(gr.top_block, Qt.QWidget):
                 (samp_rate/sps),
                 excess_bw,
                 (11*sps)))
-        self.qtgui_number_sink_0 = qtgui.number_sink(
-            gr.sizeof_float,
-            0,
-            qtgui.NUM_GRAPH_HORIZ,
-            1,
-            None # parent
-        )
-        self.qtgui_number_sink_0.set_update_time(0.10)
-        self.qtgui_number_sink_0.set_title("BER_visual")
-
-        labels = ['', '', '', '', '',
-            '', '', '', '', '']
-        units = ['', '', '', '', '',
-            '', '', '', '', '']
-        colors = [("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"),
-            ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black")]
-        factor = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-
-        for i in range(1):
-            self.qtgui_number_sink_0.set_min(i, -1)
-            self.qtgui_number_sink_0.set_max(i, 1)
-            self.qtgui_number_sink_0.set_color(i, colors[i][0], colors[i][1])
-            if len(labels[i]) == 0:
-                self.qtgui_number_sink_0.set_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_number_sink_0.set_label(i, labels[i])
-            self.qtgui_number_sink_0.set_unit(i, units[i])
-            self.qtgui_number_sink_0.set_factor(i, factor[i])
-
-        self.qtgui_number_sink_0.enable_autoscale(False)
-        self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.qwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_number_sink_0_win)
         self.qtgui_const_sink_x_1_0_0 = qtgui.const_sink_c(
             1024, #size
             "POLY. SYNC.", #name
@@ -244,7 +210,6 @@ class transmisor(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_1_win = sip.wrapinstance(self.qtgui_const_sink_x_1.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_1_win)
-        self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 0.01, firdes.root_raised_cosine(sps, sps, 1.0, excess_bw, 11*sps)
         , 32, 16, 1.5, 1)
         self.digital_crc32_bb_1 = digital.crc32_bb(True, "packet_len", True)
@@ -268,6 +233,10 @@ class transmisor(gr.top_block, Qt.QWidget):
             noise_seed=0,
             block_tags=False)
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_char*1, 'tx_data.bin', False)
+        self.blocks_file_sink_1.set_unbuffered(False)
+        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'rx_data.bin', False)
+        self.blocks_file_sink_0.set_unbuffered(False)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 1024))), True)
 
 
@@ -282,12 +251,11 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
+        self.connect((self.digital_crc32_bb_0, 0), (self.blocks_file_sink_1, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.digital_crc32_bb_0, 0), (self.fec_ber_bf_0, 1))
-        self.connect((self.digital_crc32_bb_1, 0), (self.fec_ber_bf_0, 0))
+        self.connect((self.digital_crc32_bb_1, 0), (self.blocks_file_sink_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_1_0_0, 0))
-        self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_costas_loop_cc_0, 0))
 
 
