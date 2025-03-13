@@ -65,10 +65,9 @@ class transmisor(gr.top_block, Qt.QWidget):
         ##################################################
         self.sps = sps = 4
         self.samp_rate = samp_rate = 32000
-        self.excess_bw = excess_bw = 0.35
-        self.rrc_taps = rrc_taps = firdes.root_raised_cosine(1.0, samp_rate, samp_rate/sps, excess_bw, 11*sps)
         self.qpsk = qpsk = digital.constellation_rect([1+1j, -1+1j, -1-1j, 1-1j], [0, 1, 2, 3],
         4, 2, 2, 1, 1).base()
+        self.excess_bw = excess_bw = 0.35
 
         ##################################################
         # Blocks
@@ -257,8 +256,6 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_sps(self, sps):
         self.sps = sps
-        self.set_rrc_taps(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, self.excess_bw, 11*self.sps)
-        )
         self.blocks_keep_one_in_n_0.set_n(self.sps)
         self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
 
@@ -267,32 +264,22 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.set_rrc_taps(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, self.excess_bw, 11*self.sps)
-        )
         self.qtgui_freq_sink_x_1.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
         self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
-
-    def get_excess_bw(self):
-        return self.excess_bw
-
-    def set_excess_bw(self, excess_bw):
-        self.excess_bw = excess_bw
-        self.set_rrc_taps(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, self.excess_bw, 11*self.sps)
-        )
-        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
-
-    def get_rrc_taps(self):
-        return self.rrc_taps
-
-    def set_rrc_taps(self, rrc_taps):
-        self.rrc_taps = rrc_taps
 
     def get_qpsk(self):
         return self.qpsk
 
     def set_qpsk(self, qpsk):
         self.qpsk = qpsk
+
+    def get_excess_bw(self):
+        return self.excess_bw
+
+    def set_excess_bw(self, excess_bw):
+        self.excess_bw = excess_bw
+        self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11 * self.sps)))
 
 
 

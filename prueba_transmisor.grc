@@ -86,20 +86,6 @@ blocks:
     coordinate: [616, 16.0]
     rotation: 0
     state: enabled
-- name: rrc_taps
-  id: variable
-  parameters:
-    comment: ''
-    value: 'firdes.root_raised_cosine(1.0, samp_rate, samp_rate/sps, excess_bw, 11*sps)
-
-      '
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [448, 16.0]
-    rotation: 0
-    state: enabled
 - name: samp_rate
   id: variable
   parameters:
@@ -180,7 +166,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1080, 432.0]
+    coordinate: [1064, 432.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0
@@ -844,7 +830,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 264.0]
+    coordinate: [864, 264.0]
     rotation: 0
     state: enabled
 
