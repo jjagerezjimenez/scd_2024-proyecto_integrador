@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: transmisor
 # Author: Gerez
-# GNU Radio version: 3.10.10.0
+# GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -27,6 +27,7 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 import sip
+import threading
 
 
 
@@ -53,7 +54,7 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "transmisor")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "transmisor")
 
         try:
             geometry = self.settings.value("geometry")
@@ -61,12 +62,15 @@ class transmisor(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
         ##################################################
         self.sps = sps = 4
         self.samp_rate = samp_rate = 32000
+        self.polyphase_num_filters = polyphase_num_filters = 32
+        self.rrc_polyphase = rrc_polyphase = firdes.root_raised_cosine(sps, sps,1, 0.35, (11*polyphase_num_filters*sps))
         self.rrc_1 = rrc_1 = firdes.root_raised_cosine(1.0, samp_rate,samp_rate/sps, 0.35, (11*sps))
         self.qpsk = qpsk = digital.constellation_rect([1+1j, -1+1j, -1-1j, 1-1j], [0, 1, 2, 3],
         4, 2, 2, 1, 1).base()
@@ -243,12 +247,9 @@ class transmisor(gr.top_block, Qt.QWidget):
         self._qtgui_const_sink_x_1_win = sip.wrapinstance(self.qtgui_const_sink_x_1.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_1_win)
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
-        self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 0.01, firdes.root_raised_cosine(sps, sps, 1.0, excess_bw, 11*sps)
-        , 32, 16, 1.5, 1)
-        self.digital_packet_headergenerator_bb_0 = digital.packet_headergenerator_bb(digital.packet_header_default(32, "packet_len")
-        , "packet_len")
+        self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, .0001, rrc_polyphase, 32, 16, 1.5, 1)
+        self.digital_fll_band_edge_cc_0 = digital.fll_band_edge_cc(sps, .35, (11*sps), .1)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(0.01, 4, False)
-        self.digital_correlate_access_code_tag_xx_0 = digital.correlate_access_code_tag_bb('01010101010101010101010101010101', 1, "packet_len")
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
             differential=True,
@@ -259,13 +260,6 @@ class transmisor(gr.top_block, Qt.QWidget):
             log=False,
             truncate=False)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
-        self.channels_channel_model_0 = channels.channel_model(
-            noise_voltage=noise_amp,
-            frequency_offset=freq_offset,
-            epsilon=1.0,
-            taps=[1.0],
-            noise_seed=0,
-            block_tags=False)
         self.blocks_stream_to_tagged_stream_1 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 128, "packet_len")
         self.blocks_repack_bits_bb_0 = blocks.repack_bits_bb(2, 8, "", False, gr.GR_LSB_FIRST)
@@ -278,26 +272,24 @@ class transmisor(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.fec_ber_bf_0, 1))
-        self.connect((self.blocks_repack_bits_bb_0, 0), (self.digital_correlate_access_code_tag_xx_0, 0))
+        self.connect((self.blocks_repack_bits_bb_0, 0), (self.blocks_stream_to_tagged_stream_1, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_delay_0, 0))
-        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_packet_headergenerator_bb_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_1, 0), (self.fec_ber_bf_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_1, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.root_raised_cosine_filter_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_repack_bits_bb_0, 0))
-        self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
-        self.connect((self.digital_correlate_access_code_tag_xx_0, 0), (self.blocks_stream_to_tagged_stream_1, 0))
-        self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.digital_fll_band_edge_cc_0, 0))
+        self.connect((self.digital_constellation_modulator_0, 0), (self.qtgui_const_sink_x_1, 0))
+        self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
-        self.connect((self.digital_packet_headergenerator_bb_0, 0), (self.digital_constellation_modulator_0, 0))
-        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
+        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.root_raised_cosine_filter_0, 0))
+        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_1_0_0, 0))
         self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
-        self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_costas_loop_cc_0, 0))
+        self.connect((self.root_raised_cosine_filter_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "transmisor")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "transmisor")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -310,8 +302,7 @@ class transmisor(gr.top_block, Qt.QWidget):
     def set_sps(self, sps):
         self.sps = sps
         self.set_rrc_1(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, 0.35, (11*self.sps)))
-        self.digital_pfb_clock_sync_xxx_0.update_taps(firdes.root_raised_cosine(self.sps, self.sps, 1.0, self.excess_bw, 11*self.sps)
-        )
+        self.set_rrc_polyphase(firdes.root_raised_cosine(self.sps, self.sps, 1, 0.35, (11*self.polyphase_num_filters*self.sps)))
         self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
 
     def get_samp_rate(self):
@@ -321,6 +312,20 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_rrc_1(firdes.root_raised_cosine(1.0, self.samp_rate, self.samp_rate/self.sps, 0.35, (11*self.sps)))
         self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
+
+    def get_polyphase_num_filters(self):
+        return self.polyphase_num_filters
+
+    def set_polyphase_num_filters(self, polyphase_num_filters):
+        self.polyphase_num_filters = polyphase_num_filters
+        self.set_rrc_polyphase(firdes.root_raised_cosine(self.sps, self.sps, 1, 0.35, (11*self.polyphase_num_filters*self.sps)))
+
+    def get_rrc_polyphase(self):
+        return self.rrc_polyphase
+
+    def set_rrc_polyphase(self, rrc_polyphase):
+        self.rrc_polyphase = rrc_polyphase
+        self.digital_pfb_clock_sync_xxx_0.update_taps(self.rrc_polyphase)
 
     def get_rrc_1(self):
         return self.rrc_1
@@ -347,15 +352,13 @@ class transmisor(gr.top_block, Qt.QWidget):
 
     def set_freq_offset(self, freq_offset):
         self.freq_offset = freq_offset
-        self.channels_channel_model_0.set_frequency_offset(self.freq_offset)
+        self.channels_channel_model_0.set_frequency_offset((self.freq_offset*10))
 
     def get_excess_bw(self):
         return self.excess_bw
 
     def set_excess_bw(self, excess_bw):
         self.excess_bw = excess_bw
-        self.digital_pfb_clock_sync_xxx_0.update_taps(firdes.root_raised_cosine(self.sps, self.sps, 1.0, self.excess_bw, 11*self.sps)
-        )
         self.root_raised_cosine_filter_0.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
 
 
@@ -368,6 +371,7 @@ def main(top_block_cls=transmisor, options=None):
     tb = top_block_cls()
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 
