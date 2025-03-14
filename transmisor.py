@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: transmisor
 # Author: Gerez
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -27,7 +27,6 @@ from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 import sip
-import threading
 
 
 
@@ -54,7 +53,7 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "transmisor")
+        self.settings = Qt.QSettings("GNU Radio", "transmisor")
 
         try:
             geometry = self.settings.value("geometry")
@@ -62,7 +61,6 @@ class transmisor(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -108,7 +106,7 @@ class transmisor(gr.top_block, Qt.QWidget):
             1, 1, 1, 1, 1]
 
         for i in range(1):
-            self.qtgui_number_sink_0.set_min(i, -1)
+            self.qtgui_number_sink_0.set_min(i, 0)
             self.qtgui_number_sink_0.set_max(i, 1)
             self.qtgui_number_sink_0.set_color(i, colors[i][0], colors[i][1])
             if len(labels[i]) == 0:
@@ -247,7 +245,10 @@ class transmisor(gr.top_block, Qt.QWidget):
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, 0.01, firdes.root_raised_cosine(sps, sps, 1.0, excess_bw, 11*sps)
         , 32, 16, 1.5, 1)
+        self.digital_packet_headergenerator_bb_0 = digital.packet_headergenerator_bb(digital.packet_header_default(32, "packet_len")
+        , "packet_len")
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(0.01, 4, False)
+        self.digital_correlate_access_code_tag_xx_0 = digital.correlate_access_code_tag_bb('01010101010101010101010101010101', 1, "packet_len")
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
             differential=True,
@@ -277,16 +278,18 @@ class transmisor(gr.top_block, Qt.QWidget):
         ##################################################
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.fec_ber_bf_0, 1))
-        self.connect((self.blocks_repack_bits_bb_0, 0), (self.blocks_stream_to_tagged_stream_1, 0))
+        self.connect((self.blocks_repack_bits_bb_0, 0), (self.digital_correlate_access_code_tag_xx_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_delay_0, 0))
-        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_constellation_modulator_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_packet_headergenerator_bb_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_1, 0), (self.fec_ber_bf_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_1, 0))
         self.connect((self.channels_channel_model_0, 0), (self.root_raised_cosine_filter_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_repack_bits_bb_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
+        self.connect((self.digital_correlate_access_code_tag_xx_0, 0), (self.blocks_stream_to_tagged_stream_1, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
+        self.connect((self.digital_packet_headergenerator_bb_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_1_0_0, 0))
         self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
@@ -294,7 +297,7 @@ class transmisor(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "transmisor")
+        self.settings = Qt.QSettings("GNU Radio", "transmisor")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -365,7 +368,6 @@ def main(top_block_cls=transmisor, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 
