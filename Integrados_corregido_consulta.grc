@@ -481,6 +481,26 @@ blocks:
     coordinate: [2032, 1200.0]
     rotation: 0
     state: disabled
+- name: digital_fll_band_edge_cc_0
+  id: digital_fll_band_edge_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    filter_size: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    rolloff: ''
+    samps_per_sym: ''
+    type: cc
+    w: ''
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1016, 1544.0]
+    rotation: 0
+    state: enabled
 - name: digital_packet_headergenerator_bb_default_0
   id: digital_packet_headergenerator_bb_default
   parameters:
