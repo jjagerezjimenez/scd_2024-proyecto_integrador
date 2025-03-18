@@ -213,7 +213,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 1392.0]
+    coordinate: [904, 1400.0]
     rotation: 0
     state: enabled
 - name: blocks_repack_bits_bb_0
@@ -233,7 +233,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1424, 1208.0]
+    coordinate: [1688, 1216.0]
     rotation: 0
     state: disabled
 - name: blocks_repack_bits_bb_1
@@ -311,7 +311,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1816, 1208.0]
+    coordinate: [2080, 1216.0]
     rotation: 0
     state: disabled
 - name: blocks_tagged_stream_mux_0
@@ -389,7 +389,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1224, 1216.0]
+    coordinate: [1488, 1224.0]
     rotation: 0
     state: disabled
 - name: digital_constellation_encoder_bc_0
@@ -424,7 +424,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1608, 1368.0]
+    coordinate: [1872, 1376.0]
     rotation: 0
     state: disabled
 - name: digital_costas_loop_cc_0
@@ -442,7 +442,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 1216.0]
+    coordinate: [1224, 1224.0]
     rotation: 0
     state: enabled
 - name: digital_crc32_bb_0
@@ -478,7 +478,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2032, 1200.0]
+    coordinate: [2296, 1208.0]
     rotation: 0
     state: disabled
 - name: digital_fll_band_edge_cc_0
@@ -487,18 +487,18 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    filter_size: ''
+    filter_size: nfiltros
     maxoutbuf: '0'
     minoutbuf: '0'
-    rolloff: ''
-    samps_per_sym: ''
+    rolloff: '.35'
+    samps_per_sym: sps
     type: cc
-    w: ''
+    w: '.01'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1016, 1544.0]
+    coordinate: [416, 1232.0]
     rotation: 0
     state: enabled
 - name: digital_packet_headergenerator_bb_default_0
@@ -538,7 +538,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [392, 1240.0]
+    coordinate: [656, 1248.0]
     rotation: 0
     state: enabled
 - name: fir_filter_xxx_0
@@ -576,7 +576,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 1080.0]
+    coordinate: [704, 1088.0]
     rotation: 0
     state: enabled
 - name: interp_fir_filter_xxx_0
@@ -779,7 +779,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [664, 1072.0]
+    coordinate: [928, 1080.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0_0
@@ -871,7 +871,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 1408.0]
+    coordinate: [664, 1416.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0_1
@@ -963,7 +963,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [672, 1168.0]
+    coordinate: [936, 1176.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_1
@@ -1147,7 +1147,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 1088.0]
+    coordinate: [1480, 1096.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -1244,7 +1244,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 1336.0]
+    coordinate: [1072, 1344.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0_0
@@ -1341,7 +1341,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2296, 1304.0]
+    coordinate: [2560, 1312.0]
     rotation: 0
     state: disabled
 - name: virtual_sink_0
@@ -1420,6 +1420,7 @@ connections:
 - [digital_crc32_bb_0, '0', blocks_repack_bits_bb_1, '0']
 - [digital_crc32_bb_0, '0', digital_packet_headergenerator_bb_default_0, '0']
 - [digital_crc32_bb_1, '0', qtgui_time_sink_x_0_0, '0']
+- [digital_fll_band_edge_cc_0, '0', digital_pfb_clock_sync_xxx_0, '0']
 - [digital_packet_headergenerator_bb_default_0, '0', blocks_repack_bits_bb_1_0, '0']
 - [digital_pfb_clock_sync_xxx_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_pfb_clock_sync_xxx_0, '0', qtgui_const_sink_x_0_0_1, '0']
@@ -1429,7 +1430,7 @@ connections:
 - [fir_filter_xxx_0, '0', qtgui_const_sink_x_0, '0']
 - [fir_filter_xxx_0_0, '0', qtgui_const_sink_x_0_0, '0']
 - [interp_fir_filter_xxx_0, '0', virtual_sink_1, '0']
-- [virtual_source_0, '0', digital_pfb_clock_sync_xxx_0, '0']
+- [virtual_source_0, '0', digital_fll_band_edge_cc_0, '0']
 - [virtual_source_0, '0', fir_filter_xxx_0_0, '0']
 - [virtual_source_0, '0', qtgui_const_sink_x_0_0_0, '0']
 - [virtual_source_1, '0', blocks_throttle2_0, '0']
