@@ -577,7 +577,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2080, 896.0]
+    coordinate: [2080, 920.0]
     rotation: 0
     state: enabled
 - name: digital_packet_headergenerator_bb_default_0
