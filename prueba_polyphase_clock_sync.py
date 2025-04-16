@@ -24,6 +24,7 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+import numpy as np
 import sip
 import threading
 
@@ -66,11 +67,13 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         # Variables
         ##################################################
         self.sps = sps = 4
+        self.rrc_int = rrc_int = firdes.root_raised_cosine(sps, sps,1, 0.35, (11*sps))
+        self.preambulo = preambulo = np.array([1,1j,-1,-1j,1,-1j,1,-1j,1,-1j,-1,1j,1]+[0]*3)*(1+1j)/np.sqrt(2)
         self.nfiltros = nfiltros = 64
         self.samp_rate = samp_rate = 32000
         self.rrc_pcs = rrc_pcs = firdes.root_raised_cosine(nfiltros, nfiltros*sps,1, 0.35, (11*nfiltros*sps))
-        self.rrc_int = rrc_int = firdes.root_raised_cosine(sps, sps,1, 0.35, (11*sps))
         self.rrc_dec = rrc_dec = firdes.root_raised_cosine(1, sps,1, 0.35, (11*sps))
+        self.preambulo_rrc = preambulo_rrc = np.convolve(rrc_int, np.kron(preambulo,[1]+[0]*sps))[len(rrc_int)//2:len(rrc_int)//2+len(preambulo)*sps]
         self.noise_amp = noise_amp = 0.071
         self.freq_offset = freq_offset = 0.001
         self.excess_bw = excess_bw = 0.35
@@ -82,6 +85,156 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         # Blocks
         ##################################################
 
+        self.qtgui_time_sink_x_2_0 = qtgui.time_sink_c(
+            len(preambulo), #size
+            samp_rate, #samp_rate
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_2_0.set_update_time(0.10)
+        self.qtgui_time_sink_x_2_0.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_2_0.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_2_0.enable_tags(True)
+        self.qtgui_time_sink_x_2_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_2_0.enable_autoscale(False)
+        self.qtgui_time_sink_x_2_0.enable_grid(False)
+        self.qtgui_time_sink_x_2_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_2_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_2_0.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_2_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_2_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_2_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_2_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_2_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_2_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_2_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_2_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_2_0_win = sip.wrapinstance(self.qtgui_time_sink_x_2_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_2_0_win)
+        self.qtgui_time_sink_x_2 = qtgui.time_sink_c(
+            len(preambulo_rrc), #size
+            samp_rate, #samp_rate
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_2.set_update_time(0.10)
+        self.qtgui_time_sink_x_2.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_2.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_2.enable_tags(True)
+        self.qtgui_time_sink_x_2.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_2.enable_autoscale(False)
+        self.qtgui_time_sink_x_2.enable_grid(False)
+        self.qtgui_time_sink_x_2.enable_axis_labels(True)
+        self.qtgui_time_sink_x_2.enable_control_panel(False)
+        self.qtgui_time_sink_x_2.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_2.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_2.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_2.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_2.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_2.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_2.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_2.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_2.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_2_win = sip.wrapinstance(self.qtgui_time_sink_x_2.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_2_win)
+        self.qtgui_time_sink_x_1_1 = qtgui.time_sink_f(
+            128, #size
+            samp_rate, #samp_rate
+            "Header Tx", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_1_1.set_update_time(0.10)
+        self.qtgui_time_sink_x_1_1.set_y_axis(-0.5, 1.5)
+
+        self.qtgui_time_sink_x_1_1.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_1_1.enable_tags(True)
+        self.qtgui_time_sink_x_1_1.set_trigger_mode(qtgui.TRIG_MODE_TAG, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "packet_len")
+        self.qtgui_time_sink_x_1_1.enable_autoscale(False)
+        self.qtgui_time_sink_x_1_1.enable_grid(False)
+        self.qtgui_time_sink_x_1_1.enable_axis_labels(True)
+        self.qtgui_time_sink_x_1_1.enable_control_panel(False)
+        self.qtgui_time_sink_x_1_1.enable_stem_plot(False)
+
+
+        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
+            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_time_sink_x_1_1.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_time_sink_x_1_1.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_1_1.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_1_1.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_1_1.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_1_1.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_1_1.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_1_1_win = sip.wrapinstance(self.qtgui_time_sink_x_1_1.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_1_1_win)
         self.qtgui_time_sink_x_1_0 = qtgui.time_sink_f(
             2048, #size
             samp_rate, #samp_rate
@@ -559,7 +712,7 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
             1,
             0,
             "packet_len",
-            "inicio",
+            "corr_est",
             False,
             gr.sizeof_char,
             "rx_time",
@@ -571,6 +724,7 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
         self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(0.01, 4, False)
+        self.digital_corr_est_cc_0 = digital.corr_est_cc(preambulo_rrc, 1, 1, 0.4, digital.THRESHOLD_ABSOLUTE)
         self.digital_constellation_encoder_bc_0 = digital.constellation_encoder_bc(const)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(const)
         self.channels_channel_model_0 = channels.channel_model(
@@ -580,10 +734,17 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
             taps=[1.0],
             noise_seed=0,
             block_tags=False)
+        self.blocks_vector_source_x_1_0_0 = blocks.vector_source_c(preambulo, False, 1, [])
+        self.blocks_vector_source_x_1_0 = blocks.vector_source_c(preambulo_rrc, False, 1, [])
+        self.blocks_vector_source_x_1 = blocks.vector_source_c(preambulo, True, 1, [])
         self.blocks_vector_source_x_0 = blocks.vector_source_b([0]*10+[100]*10, True, 1, [])
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_tagged_stream_mux_1 = blocks.tagged_stream_mux(gr.sizeof_gr_complex*1, "packet_len", 0)
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, "packet_len", 0)
-        self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 1024, "packet_len")
+        self.blocks_tag_gate_0 = blocks.tag_gate(gr.sizeof_gr_complex * 1, False)
+        self.blocks_tag_gate_0.set_single_key("")
+        self.blocks_stream_to_tagged_stream_1 = blocks.stream_to_tagged_stream(gr.sizeof_gr_complex, 1, len(preambulo), "packet_len")
+        self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, 512, "packet_len")
         self.blocks_repack_bits_bb_1_0 = blocks.repack_bits_bb(1, 2, "packet_len", False, gr.GR_LSB_FIRST)
         self.blocks_repack_bits_bb_1 = blocks.repack_bits_bb(8, 2, "packet_len", False, gr.GR_LSB_FIRST)
         self.blocks_repack_bits_bb_0_1 = blocks.repack_bits_bb(2, 1, "", False, gr.GR_LSB_FIRST)
@@ -591,6 +752,8 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.blocks_repack_bits_bb_0 = blocks.repack_bits_bb(1, 8, "", False, gr.GR_LSB_FIRST)
         self.blocks_null_sink_1 = blocks.null_sink(gr.sizeof_char*1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff((1/nfiltros))
+        self.blocks_multiply_by_tag_value_cc_0_0 = blocks.multiply_by_tag_value_cc("amp_est", 1)
+        self.blocks_char_to_float_0_1 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
 
@@ -601,6 +764,8 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.msg_connect((self.digital_packet_headerparser_b_default_1, 'header_data'), (self.digital_header_payload_demux_0, 'header_data'))
         self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_1_0, 0))
+        self.connect((self.blocks_char_to_float_0_1, 0), (self.qtgui_time_sink_x_1_1, 0))
+        self.connect((self.blocks_multiply_by_tag_value_cc_0_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_time_sink_x_0, 2))
         self.connect((self.blocks_repack_bits_bb_0, 0), (self.digital_header_payload_demux_0, 0))
         self.connect((self.blocks_repack_bits_bb_0_0, 0), (self.blocks_char_to_float_0, 0))
@@ -610,32 +775,40 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.blocks_tagged_stream_mux_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_null_sink_1, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_1, 0), (self.blocks_tagged_stream_mux_1, 0))
+        self.connect((self.blocks_tag_gate_0, 0), (self.digital_fll_band_edge_cc_0, 0))
+        self.connect((self.blocks_tag_gate_0, 0), (self.fir_filter_xxx_0_0, 0))
+        self.connect((self.blocks_tag_gate_0, 0), (self.qtgui_const_sink_x_0_0_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_diff_encoder_bb_0, 0))
+        self.connect((self.blocks_tagged_stream_mux_1, 0), (self.interp_fir_filter_xxx_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.fir_filter_xxx_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.qtgui_const_sink_x_0_1, 0))
         self.connect((self.blocks_vector_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.digital_fll_band_edge_cc_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.fir_filter_xxx_0_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_0_0_0, 0))
+        self.connect((self.blocks_vector_source_x_1, 0), (self.blocks_stream_to_tagged_stream_1, 0))
+        self.connect((self.blocks_vector_source_x_1_0, 0), (self.qtgui_time_sink_x_2, 0))
+        self.connect((self.blocks_vector_source_x_1_0_0, 0), (self.qtgui_time_sink_x_2_0, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.blocks_tag_gate_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
-        self.connect((self.digital_constellation_encoder_bc_0, 0), (self.interp_fir_filter_xxx_0, 0))
+        self.connect((self.digital_constellation_encoder_bc_0, 0), (self.blocks_tagged_stream_mux_1, 1))
+        self.connect((self.digital_corr_est_cc_0, 0), (self.blocks_multiply_by_tag_value_cc_0_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.blocks_repack_bits_bb_1, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_packet_headergenerator_bb_default_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.blocks_repack_bits_bb_0_1, 0))
         self.connect((self.digital_diff_encoder_bb_0, 0), (self.digital_constellation_encoder_bc_0, 0))
-        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
+        self.connect((self.digital_fll_band_edge_cc_0, 0), (self.digital_corr_est_cc_0, 0))
         self.connect((self.digital_fll_band_edge_cc_0, 0), (self.qtgui_const_sink_x_0_0_0_0, 0))
         self.connect((self.digital_header_payload_demux_0, 1), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.digital_header_payload_demux_0, 0), (self.blocks_repack_bits_bb_0_0, 0))
+        self.connect((self.digital_packet_headergenerator_bb_default_0, 0), (self.blocks_char_to_float_0_1, 0))
         self.connect((self.digital_packet_headergenerator_bb_default_0, 0), (self.blocks_repack_bits_bb_1_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 3), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_0_0_1, 0))
-        self.connect((self.digital_pfb_clock_sync_xxx_0, 1), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 2), (self.qtgui_time_sink_x_0, 1))
+        self.connect((self.digital_pfb_clock_sync_xxx_0, 1), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.fir_filter_xxx_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.fir_filter_xxx_0_0, 0), (self.qtgui_const_sink_x_0_0, 0))
         self.connect((self.interp_fir_filter_xxx_0, 0), (self.blocks_throttle2_0, 0))
@@ -654,9 +827,29 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
 
     def set_sps(self, sps):
         self.sps = sps
+        self.set_preambulo_rrc(np.convolve(self.rrc_int, np.kron(self.preambulo,[1]+[0]*self.sps))[len(self.rrc_int)//2:len(self.rrc_int)//2+len(self.preambulo)*self.sps])
         self.set_rrc_dec(firdes.root_raised_cosine(1, self.sps, 1, 0.35, (11*self.sps)))
         self.set_rrc_int(firdes.root_raised_cosine(self.sps, self.sps, 1, 0.35, (11*self.sps)))
         self.set_rrc_pcs(firdes.root_raised_cosine(self.nfiltros, self.nfiltros*self.sps, 1, 0.35, (11*self.nfiltros*self.sps)))
+
+    def get_rrc_int(self):
+        return self.rrc_int
+
+    def set_rrc_int(self, rrc_int):
+        self.rrc_int = rrc_int
+        self.set_preambulo_rrc(np.convolve(self.rrc_int, np.kron(self.preambulo,[1]+[0]*self.sps))[len(self.rrc_int)//2:len(self.rrc_int)//2+len(self.preambulo)*self.sps])
+        self.interp_fir_filter_xxx_0.set_taps(self.rrc_int)
+
+    def get_preambulo(self):
+        return self.preambulo
+
+    def set_preambulo(self, preambulo):
+        self.preambulo = preambulo
+        self.set_preambulo_rrc(np.convolve(self.rrc_int, np.kron(self.preambulo,[1]+[0]*self.sps))[len(self.rrc_int)//2:len(self.rrc_int)//2+len(self.preambulo)*self.sps])
+        self.blocks_stream_to_tagged_stream_1.set_packet_len(len(self.preambulo))
+        self.blocks_stream_to_tagged_stream_1.set_packet_len_pmt(len(self.preambulo))
+        self.blocks_vector_source_x_1.set_data(self.preambulo, [])
+        self.blocks_vector_source_x_1_0_0.set_data(self.preambulo, [])
 
     def get_nfiltros(self):
         return self.nfiltros
@@ -675,6 +868,9 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_1_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_1_1.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_2_0.set_samp_rate(self.samp_rate)
 
     def get_rrc_pcs(self):
         return self.rrc_pcs
@@ -683,13 +879,6 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.rrc_pcs = rrc_pcs
         self.digital_pfb_clock_sync_xxx_0.update_taps(self.rrc_pcs)
 
-    def get_rrc_int(self):
-        return self.rrc_int
-
-    def set_rrc_int(self, rrc_int):
-        self.rrc_int = rrc_int
-        self.interp_fir_filter_xxx_0.set_taps(self.rrc_int)
-
     def get_rrc_dec(self):
         return self.rrc_dec
 
@@ -697,6 +886,13 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.rrc_dec = rrc_dec
         self.fir_filter_xxx_0.set_taps(self.rrc_dec)
         self.fir_filter_xxx_0_0.set_taps(self.rrc_dec)
+
+    def get_preambulo_rrc(self):
+        return self.preambulo_rrc
+
+    def set_preambulo_rrc(self, preambulo_rrc):
+        self.preambulo_rrc = preambulo_rrc
+        self.blocks_vector_source_x_1_0.set_data(self.preambulo_rrc, [])
 
     def get_noise_amp(self):
         return self.noise_amp
