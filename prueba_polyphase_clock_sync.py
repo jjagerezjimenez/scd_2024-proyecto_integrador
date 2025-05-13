@@ -15,7 +15,6 @@ from gnuradio import blocks
 from gnuradio import channels
 from gnuradio.filter import firdes
 from gnuradio import digital
-from gnuradio import fec
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
@@ -282,39 +281,6 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 3):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self.qtgui_number_sink_0 = qtgui.number_sink(
-            gr.sizeof_float,
-            0,
-            qtgui.NUM_GRAPH_HORIZ,
-            1,
-            None # parent
-        )
-        self.qtgui_number_sink_0.set_update_time(0.10)
-        self.qtgui_number_sink_0.set_title("BER_visual")
-
-        labels = ['', '', '', '', '',
-            '', '', '', '', '']
-        units = ['', '', '', '', '',
-            '', '', '', '', '']
-        colors = [("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"),
-            ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black")]
-        factor = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-
-        for i in range(1):
-            self.qtgui_number_sink_0.set_min(i, 0)
-            self.qtgui_number_sink_0.set_max(i, 1)
-            self.qtgui_number_sink_0.set_color(i, colors[i][0], colors[i][1])
-            if len(labels[i]) == 0:
-                self.qtgui_number_sink_0.set_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_number_sink_0.set_label(i, labels[i])
-            self.qtgui_number_sink_0.set_unit(i, units[i])
-            self.qtgui_number_sink_0.set_factor(i, factor[i])
-
-        self.qtgui_number_sink_0.enable_autoscale(False)
-        self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.qwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_number_sink_0_win)
         self.qtgui_const_sink_x_1_0 = qtgui.const_sink_c(
             1024, #size
             "Luego_Costas", #name
@@ -636,16 +602,15 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.fir_filter_xxx_0_0.declare_sample_delay(0)
         self.fir_filter_xxx_0 = filter.fir_filter_ccc(sps, rrc_dec)
         self.fir_filter_xxx_0.declare_sample_delay(0)
-        self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, .01, rrc_pcs, nfiltros, (nfiltros//2), 1.5, 1)
-        self.digital_packet_headerparser_b_default_1 = digital.packet_headerparser_b(4, "packet_len")
-        self.digital_packet_headergenerator_bb_default_0 = digital.packet_headergenerator_bb(4, "packet_len")
+        self.digital_packet_headerparser_b_default_1 = digital.packet_headerparser_b(32, "packet_len")
+        self.digital_packet_headergenerator_bb_default_0 = digital.packet_headergenerator_bb(32, "packet_len")
         self.digital_header_payload_demux_0 = digital.header_payload_demux(
-            16,
+            (32//8),
             1,
             0,
             "packet_len",
-            "packet_len",
+            "corr_start",
             False,
             gr.sizeof_char,
             "rx_time",
@@ -655,8 +620,8 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.digital_fll_band_edge_cc_0 = digital.fll_band_edge_cc(sps, .35, nfiltros, .01)
         self.digital_diff_encoder_bb_0 = digital.diff_encoder_bb(4, digital.DIFF_DIFFERENTIAL)
         self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
-        self.digital_crc32_bb_1 = digital.crc32_bb(True, "packet_len", False)
-        self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", False)
+        self.digital_crc32_bb_1 = digital.crc32_bb(True, "packet_len", True)
+        self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(0.01, 4, False)
         self.digital_corr_est_cc_0 = digital.corr_est_cc(preambulo_rrc, 1, 1, 0.4, digital.THRESHOLD_ABSOLUTE)
         self.digital_constellation_encoder_bc_0 = digital.constellation_encoder_bc(const)
@@ -681,7 +646,8 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.blocks_repack_bits_bb_1 = blocks.repack_bits_bb(8, 2, "packet_len", False, gr.GR_LSB_FIRST)
         self.blocks_repack_bits_bb_0_1 = blocks.repack_bits_bb(2, 1, "", False, gr.GR_LSB_FIRST)
         self.blocks_repack_bits_bb_0 = blocks.repack_bits_bb(1, 8, "", False, gr.GR_LSB_FIRST)
-        self.blocks_null_sink_1 = blocks.null_sink(gr.sizeof_char*1)
+        self.blocks_null_sink_2 = blocks.null_sink(gr.sizeof_char*1)
+        self.blocks_null_sink_0 = blocks.null_sink(gr.sizeof_char*1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_ff((1/nfiltros))
         self.blocks_multiply_by_tag_value_cc_0_0 = blocks.multiply_by_tag_value_cc("amp_est", 1)
         self.blocks_char_to_float_0_1 = blocks.char_to_float(1, 1)
@@ -702,9 +668,8 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_repack_bits_bb_0_1, 0), (self.blocks_repack_bits_bb_0, 0))
         self.connect((self.blocks_repack_bits_bb_1, 0), (self.blocks_tagged_stream_mux_0, 1))
         self.connect((self.blocks_repack_bits_bb_1_0, 0), (self.blocks_tagged_stream_mux_0, 0))
-        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_null_sink_1, 0))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_null_sink_2, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
-        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.fec_ber_bf_0, 1))
         self.connect((self.blocks_stream_to_tagged_stream_1, 0), (self.blocks_tagged_stream_mux_1, 0))
         self.connect((self.blocks_tag_gate_0, 0), (self.digital_fll_band_edge_cc_0, 0))
         self.connect((self.blocks_tag_gate_0, 0), (self.fir_filter_xxx_0_0, 0))
@@ -724,7 +689,7 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_1_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.blocks_repack_bits_bb_1, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_packet_headergenerator_bb_default_0, 0))
-        self.connect((self.digital_crc32_bb_1, 0), (self.fec_ber_bf_0, 0))
+        self.connect((self.digital_crc32_bb_1, 0), (self.blocks_null_sink_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.blocks_repack_bits_bb_0_1, 0))
         self.connect((self.digital_diff_encoder_bb_0, 0), (self.digital_constellation_encoder_bc_0, 0))
         self.connect((self.digital_fll_band_edge_cc_0, 0), (self.digital_corr_est_cc_0, 0))
@@ -738,9 +703,8 @@ class prueba_polyphase_clock_sync(gr.top_block, Qt.QWidget):
         self.connect((self.digital_pfb_clock_sync_xxx_0, 3), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_const_sink_x_0_0_1, 0))
-        self.connect((self.digital_pfb_clock_sync_xxx_0, 2), (self.qtgui_time_sink_x_0, 1))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 1), (self.qtgui_time_sink_x_0, 0))
-        self.connect((self.fec_ber_bf_0, 0), (self.qtgui_number_sink_0, 0))
+        self.connect((self.digital_pfb_clock_sync_xxx_0, 2), (self.qtgui_time_sink_x_0, 1))
         self.connect((self.fir_filter_xxx_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.fir_filter_xxx_0_0, 0), (self.qtgui_const_sink_x_0_0, 0))
         self.connect((self.interp_fir_filter_xxx_0, 0), (self.blocks_throttle2_0, 0))
