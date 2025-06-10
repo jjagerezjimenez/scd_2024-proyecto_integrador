@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: qpsk_stage6
-# Author: Barry Duggan
+# Author: Juan
 # GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
@@ -14,6 +14,7 @@ from gnuradio import qtgui
 from PyQt5 import QtCore
 from gnuradio import blocks
 import numpy
+from gnuradio import blocks, gr
 from gnuradio import channels
 from gnuradio.filter import firdes
 from gnuradio import digital
@@ -70,12 +71,16 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         self.qpsk = qpsk = digital.constellation_rect([0.707+0.707j, -0.707+0.707j, -0.707-0.707j, 0.707-0.707j], [0, 1, 2, 3],
         4, 2, 2, 1, 1).base()
         self.nfilts = nfilts = 32
+        self.len_tag_key = len_tag_key = 'packet_len'
         self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( qpsk, .0001, 4).base()
         self.time_offset = time_offset = 1.0005
         self.samp_rate = samp_rate = 32000
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), 0.35, 11*sps*nfilts)
+        self.preamble = preamble = '10101010101010101010101010101010'
         self.phase_bw = phase_bw = 0.0628
-        self.noise_volt = noise_volt = 0.2
+        self.payload_len = payload_len = 256
+        self.noise_volt = noise_volt = 0.0
+        self.header_format = header_format = digital.packet_header_default(4, len_tag_key)
         self.freq_offset = freq_offset = 0.025
         self.excess_bw = excess_bw = 0.35
         self.delay = delay = 50
@@ -91,7 +96,7 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._noise_volt_range = qtgui.Range(0, 1, 0.01, 0.2, 200)
+        self._noise_volt_range = qtgui.Range(0, 1, 0.01, 0.0, 200)
         self._noise_volt_win = qtgui.RangeWidget(self._noise_volt_range, self.set_noise_volt, "Channel: Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._noise_volt_win, 0, 0, 1, 1)
         for r in range(0, 1):
@@ -164,6 +169,24 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(2, 4):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.qtgui_sink_x_0 = qtgui.sink_f(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            0, #fc
+            samp_rate, #bw
+            "", #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_0.set_update_time(1.0/10)
+        self._qtgui_sink_x_0_win = sip.wrapinstance(self.qtgui_sink_x_0.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_0.enable_rf_freq(False)
+
+        self.top_layout.addWidget(self._qtgui_sink_x_0_win)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
             '', #name
@@ -210,9 +233,25 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, phase_bw, rrc_taps, nfilts, (nfilts/2), 1.5, 2)
+        self.digital_packet_headerparser_b_0 = digital.packet_headerparser_b(header_format)
+        self.digital_packet_headergenerator_bb_0 = digital.packet_headergenerator_bb(header_format, "packet_len")
         self.digital_map_bb_0 = digital.map_bb([0,1,2,3])
         self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
+        self.digital_header_payload_demux_0 = digital.header_payload_demux(
+            16,
+            1,
+            0,
+            "packet_len",
+            "",
+            False,
+            gr.sizeof_char,
+            "rx_time",
+            samp_rate,
+            (),
+            0)
         self.digital_diff_decoder_bb_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
+        self.digital_crc32_bb_1 = digital.crc32_bb(True, "packet_len", False)
+        self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", False)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, 4, False)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qpsk,
@@ -234,31 +273,44 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         self.blocks_unpack_k_bits_bb_0_0 = blocks.unpack_k_bits_bb(8)
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(2)
         self.blocks_throttle2_0 = blocks.throttle( gr.sizeof_gr_complex*1, samp_rate, True, 0 if "auto" == "auto" else max( int(float(0.1) * samp_rate) if "auto" == "time" else int(0.1), 1) )
+        self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, payload_len, "packet_len")
+        self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_float*1, int(delay))
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
+        self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 10000))), True)
 
 
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.digital_packet_headerparser_b_0, 'header_data'), (self.blocks_message_debug_0, 'print_pdu'))
+        self.msg_connect((self.digital_packet_headerparser_b_0, 'header_data'), (self.digital_header_payload_demux_0, 'header_data'))
+        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_unpack_k_bits_bb_0_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.digital_constellation_modulator_0, 0))
+        self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0_0_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.qtgui_time_sink_x_0, 1))
+        self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
         self.connect((self.blocks_throttle2_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
-        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_header_payload_demux_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
+        self.connect((self.digital_crc32_bb_0, 0), (self.digital_packet_headergenerator_bb_0, 0))
+        self.connect((self.digital_crc32_bb_1, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
+        self.connect((self.digital_header_payload_demux_0, 1), (self.blocks_char_to_float_0, 0))
+        self.connect((self.digital_header_payload_demux_0, 1), (self.digital_crc32_bb_1, 0))
+        self.connect((self.digital_header_payload_demux_0, 0), (self.digital_packet_headerparser_b_0, 0))
         self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
+        self.connect((self.digital_packet_headergenerator_bb_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_linear_equalizer_0, 0))
 
 
@@ -291,6 +343,13 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         self.nfilts = nfilts
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), 0.35, 11*self.sps*self.nfilts))
 
+    def get_len_tag_key(self):
+        return self.len_tag_key
+
+    def set_len_tag_key(self, len_tag_key):
+        self.len_tag_key = len_tag_key
+        self.set_header_format(digital.packet_header_default(4, self.len_tag_key))
+
     def get_variable_adaptive_algorithm_0(self):
         return self.variable_adaptive_algorithm_0
 
@@ -310,6 +369,7 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle2_0.set_sample_rate(self.samp_rate)
+        self.qtgui_sink_x_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
 
     def get_rrc_taps(self):
@@ -319,6 +379,12 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         self.rrc_taps = rrc_taps
         self.digital_pfb_clock_sync_xxx_0.update_taps(self.rrc_taps)
 
+    def get_preamble(self):
+        return self.preamble
+
+    def set_preamble(self, preamble):
+        self.preamble = preamble
+
     def get_phase_bw(self):
         return self.phase_bw
 
@@ -327,12 +393,27 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         self.digital_costas_loop_cc_0.set_loop_bandwidth(self.phase_bw)
         self.digital_pfb_clock_sync_xxx_0.set_loop_bandwidth(self.phase_bw)
 
+    def get_payload_len(self):
+        return self.payload_len
+
+    def set_payload_len(self, payload_len):
+        self.payload_len = payload_len
+        self.blocks_stream_to_tagged_stream_0.set_packet_len(self.payload_len)
+        self.blocks_stream_to_tagged_stream_0.set_packet_len_pmt(self.payload_len)
+
     def get_noise_volt(self):
         return self.noise_volt
 
     def set_noise_volt(self, noise_volt):
         self.noise_volt = noise_volt
         self.channels_channel_model_0.set_noise_voltage(self.noise_volt)
+
+    def get_header_format(self):
+        return self.header_format
+
+    def set_header_format(self, header_format):
+        self.header_format = header_format
+        self.digital_packet_headergenerator_bb_0.set_header_formatter(self.header_format)
 
     def get_freq_offset(self):
         return self.freq_offset
