@@ -208,7 +208,7 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
             1, 1, 1, 1, 1]
         colors = ["blue", "red", "red", "red", "red",
             "red", "red", "red", "red", "red"]
-        styles = [0, 0, 0, 0, 0,
+        styles = [1, 0, 0, 0, 0,
             0, 0, 0, 0, 0]
         markers = [0, 0, 0, 0, 0,
             0, 0, 0, 0, 0]
@@ -243,8 +243,8 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
             0,
             "packet_len",
             "",
-            False,
-            gr.sizeof_char,
+            True,
+            gr.sizeof_gr_complex,
             "rx_time",
             samp_rate,
             (),
@@ -262,6 +262,7 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
             verbose=False,
             log=False,
             truncate=False)
+        self.digital_constellation_decoder_cb_1 = digital.constellation_decoder_cb(digital.constellation_bpsk())
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise_volt,
@@ -298,17 +299,18 @@ class qpsk_stage6(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
-        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_header_payload_demux_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.blocks_char_to_float_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_crc32_bb_1, 0))
+        self.connect((self.digital_constellation_decoder_cb_1, 0), (self.digital_packet_headerparser_b_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.blocks_throttle2_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_packet_headergenerator_bb_0, 0))
         self.connect((self.digital_crc32_bb_1, 0), (self.digital_diff_decoder_bb_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
-        self.connect((self.digital_header_payload_demux_0, 1), (self.blocks_char_to_float_0, 0))
-        self.connect((self.digital_header_payload_demux_0, 1), (self.digital_crc32_bb_1, 0))
-        self.connect((self.digital_header_payload_demux_0, 0), (self.digital_packet_headerparser_b_0, 0))
-        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
+        self.connect((self.digital_header_payload_demux_0, 0), (self.digital_constellation_decoder_cb_1, 0))
+        self.connect((self.digital_header_payload_demux_0, 1), (self.digital_costas_loop_cc_0, 0))
+        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_header_payload_demux_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.digital_packet_headergenerator_bb_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_linear_equalizer_0, 0))
