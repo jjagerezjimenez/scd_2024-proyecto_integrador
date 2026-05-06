@@ -33,6 +33,20 @@ options:
     state: enabled
 
 blocks:
+- name: hdr_format
+  id: variable_header_format_default
+  parameters:
+    access_code: '''1010101011110101'''
+    bps: '8'
+    comment: ''
+    threshold: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [520, 8.0]
+    rotation: 0
+    state: enabled
 - name: noise_var
   id: variable_qtgui_range
   parameters:
@@ -103,6 +117,26 @@ blocks:
     coordinate: [64, 256.0]
     rotation: 0
     state: enabled
+- name: blocks_tagged_stream_mux_0
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ninputs: '2'
+    tag_preserve_head_pos: '0'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 632.0]
+    rotation: 0
+    state: enabled
 - name: channels_channel_model_0
   id: channels_channel_model
   parameters:
@@ -121,7 +155,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [552, 272.0]
+    coordinate: [1048, 264.0]
     rotation: 0
     state: enabled
 - name: digital_constellation_modulator_0
@@ -143,7 +177,42 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 232.0]
+    coordinate: [808, 224.0]
+    rotation: 0
+    state: enabled
+- name: digital_crc32_bb_0
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    check: 'False'
+    comment: ''
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 608.0]
+    rotation: 0
+    state: enabled
+- name: digital_packet_headergenerator_bb_default_0
+  id: digital_packet_headergenerator_bb_default
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    header_len: '32'
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [624, 504.0]
     rotation: 0
     state: enabled
 - name: pdu_pdu_to_tagged_stream_0
@@ -160,7 +229,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 456.0]
+    coordinate: [408, 432.0]
     rotation: 0
     state: enabled
 - name: pdu_random_pdu_0
@@ -179,7 +248,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [144, 432.0]
+    coordinate: [304, 240.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0
@@ -271,16 +340,20 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [768, 144.0]
+    coordinate: [1264, 136.0]
     rotation: 0
     state: enabled
 
 connections:
 - [blocks_message_strobe_0, strobe, pdu_random_pdu_0, generate]
+- [blocks_tagged_stream_mux_0, '0', digital_constellation_modulator_0, '0']
 - [channels_channel_model_0, '0', qtgui_const_sink_x_0, '1']
 - [digital_constellation_modulator_0, '0', channels_channel_model_0, '0']
 - [digital_constellation_modulator_0, '0', qtgui_const_sink_x_0, '0']
-- [pdu_pdu_to_tagged_stream_0, '0', digital_constellation_modulator_0, '0']
+- [digital_crc32_bb_0, '0', blocks_tagged_stream_mux_0, '1']
+- [digital_crc32_bb_0, '0', digital_packet_headergenerator_bb_default_0, '0']
+- [digital_packet_headergenerator_bb_default_0, '0', blocks_tagged_stream_mux_0, '0']
+- [pdu_pdu_to_tagged_stream_0, '0', digital_crc32_bb_0, '0']
 - [pdu_random_pdu_0, pdus, pdu_pdu_to_tagged_stream_0, pdus]
 
 metadata:

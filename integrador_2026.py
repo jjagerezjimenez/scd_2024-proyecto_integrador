@@ -72,6 +72,7 @@ class integrador_2026(gr.top_block, Qt.QWidget):
         self.qam4 = qam4 = digital.constellation_qpsk().base()
         self.qam4.set_npwr(1.0)
         self.noise_var = noise_var = 0.1
+        self.hdr_format = hdr_format = digital.header_format_default('1010101011110101',0, 8)
 
         ##################################################
         # Blocks
@@ -123,6 +124,8 @@ class integrador_2026(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
         self.pdu_random_pdu_0 = pdu.random_pdu(100, 100, 0xFF, 1)
         self.pdu_pdu_to_tagged_stream_0 = pdu.pdu_to_tagged_stream(gr.types.byte_t, "packet_len")
+        self.digital_packet_headergenerator_bb_default_0 = digital.packet_headergenerator_bb(32, "packet_len")
+        self.digital_crc32_bb_0 = digital.crc32_bb(False, "packet_len", True)
         self.digital_constellation_modulator_0 = digital.generic_mod(
             constellation=qam4,
             differential=False,
@@ -139,6 +142,7 @@ class integrador_2026(gr.top_block, Qt.QWidget):
             taps=[1.0],
             noise_seed=0,
             block_tags=False)
+        self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_char*1, "packet_len", 0)
         self.blocks_message_strobe_0 = blocks.message_strobe(pmt.intern("TEST"), 100)
 
 
@@ -147,10 +151,14 @@ class integrador_2026(gr.top_block, Qt.QWidget):
         ##################################################
         self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.pdu_random_pdu_0, 'generate'))
         self.msg_connect((self.pdu_random_pdu_0, 'pdus'), (self.pdu_pdu_to_tagged_stream_0, 'pdus'))
+        self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_constellation_modulator_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_const_sink_x_0, 1))
         self.connect((self.digital_constellation_modulator_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.digital_constellation_modulator_0, 0), (self.qtgui_const_sink_x_0, 0))
-        self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.digital_constellation_modulator_0, 0))
+        self.connect((self.digital_crc32_bb_0, 0), (self.blocks_tagged_stream_mux_0, 1))
+        self.connect((self.digital_crc32_bb_0, 0), (self.digital_packet_headergenerator_bb_default_0, 0))
+        self.connect((self.digital_packet_headergenerator_bb_default_0, 0), (self.blocks_tagged_stream_mux_0, 0))
+        self.connect((self.pdu_pdu_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
 
 
     def closeEvent(self, event):
@@ -179,6 +187,12 @@ class integrador_2026(gr.top_block, Qt.QWidget):
     def set_noise_var(self, noise_var):
         self.noise_var = noise_var
         self.channels_channel_model_0.set_noise_voltage(self.noise_var)
+
+    def get_hdr_format(self):
+        return self.hdr_format
+
+    def set_hdr_format(self, hdr_format):
+        self.hdr_format = hdr_format
 
 
 
