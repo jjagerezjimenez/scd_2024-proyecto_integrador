@@ -86,45 +86,21 @@ blocks:
     coordinate: [160, 8.0]
     rotation: 0
     state: enabled
-- name: analog_random_source_x_0
-  id: analog_random_source_x
+- name: blocks_message_strobe_0
+  id: blocks_message_strobe
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    max: '256'
     maxoutbuf: '0'
-    min: '0'
     minoutbuf: '0'
-    num_samps: '1024'
-    repeat: 'True'
-    type: byte
+    msg: pmt.intern("TEST")
+    period: '100'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 232.0]
-    rotation: 0
-    state: enabled
-- name: blocks_throttle2_0
-  id: blocks_throttle2
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    ignoretag: 'True'
-    limit: auto
-    maximum: '0.1'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    samples_per_second: samp_rate
-    type: byte
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 360.0]
+    coordinate: [64, 256.0]
     rotation: 0
     state: enabled
 - name: channels_channel_model_0
@@ -168,6 +144,42 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [312, 232.0]
+    rotation: 0
+    state: enabled
+- name: pdu_pdu_to_tagged_stream_0
+  id: pdu_pdu_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: '"packet_len"'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [384, 456.0]
+    rotation: 0
+    state: enabled
+- name: pdu_random_pdu_0
+  id: pdu_random_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    length_modulo: '1'
+    mask: '0xFF'
+    maxoutbuf: '0'
+    maxsize: '100'
+    minoutbuf: '0'
+    minsize: '100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [144, 432.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0
@@ -264,11 +276,12 @@ blocks:
     state: enabled
 
 connections:
-- [analog_random_source_x_0, '0', blocks_throttle2_0, '0']
-- [blocks_throttle2_0, '0', digital_constellation_modulator_0, '0']
+- [blocks_message_strobe_0, strobe, pdu_random_pdu_0, generate]
 - [channels_channel_model_0, '0', qtgui_const_sink_x_0, '1']
 - [digital_constellation_modulator_0, '0', channels_channel_model_0, '0']
 - [digital_constellation_modulator_0, '0', qtgui_const_sink_x_0, '0']
+- [pdu_pdu_to_tagged_stream_0, '0', digital_constellation_modulator_0, '0']
+- [pdu_random_pdu_0, pdus, pdu_pdu_to_tagged_stream_0, pdus]
 
 metadata:
   file_format: 1
