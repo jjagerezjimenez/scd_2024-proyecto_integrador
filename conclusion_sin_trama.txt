@@ -1,0 +1,9 @@
+- Zona de Inmunidad (Ruido 0.0 a 0.4):
+  El BER se mantiene estable alrededor de -6.7 a -7.0.
+  Interpretación: El trasn-receptor es lo suficientemente robusto para pequeñas dispersiones de la constelación. (El valor de -7 corresponde al límite inferior configurado en el bloque; el error real tiende a cero).
+
+- Curva de Caída (Ruido 0.5 a 0.9):
+  A partir de este umbral, se observa la degradación progresiva de la señal:
+  * Ruido 0.5: BER salta a -4.7 (aprox. 1 error cada 50.000 bits).
+  * Ruido 0.7: BER sube a -3.0 (aprox. 1 error cada 1.000 bits).
+  * Ruido 0.9: BER llega a -2.3 (aprox. 1 error cada 200 bits).

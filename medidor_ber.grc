@@ -540,9 +540,9 @@ blocks:
     comment: ''
     grid: 'True'
     gui_hint: 2,0,10,10
-    label1: Synced Only
+    label1: Solo sincronizados
     label10: ''
-    label2: Synced & Phase-Locked
+    label2: Sincronizado y con bloqueo de fase
     label3: ''
     label4: ''
     label5: ''
@@ -561,7 +561,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: Synced Constellation
+    name: "Constelaci\xF3n sincronizada"
     nconnections: '2'
     size: '1024'
     style1: '0'
@@ -638,10 +638,10 @@ blocks:
     freqhalf: 'True'
     grid: 'False'
     gui_hint: 12,0,10,20
-    label: Relative Gain
-    label1: Transmitted & Propagated
+    label: Ganancia
+    label1: Transmitido y propagado
     label10: ''''''
-    label2: Received & Filtered
+    label2: Recibido y filtrado
     label3: ''''''
     label4: ''''''
     label5: ''''''
@@ -652,7 +652,7 @@ blocks:
     legend: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: Transmitted & Received Spectrum
+    name: Espectro transmitido y recibido
     nconnections: '2'
     norm_window: 'False'
     showports: 'False'
@@ -778,9 +778,9 @@ blocks:
     entags: 'True'
     grid: 'False'
     gui_hint: 2,10,10,10
-    label1: Recovered Data
+    label1: Datos recuperados
     label10: ''
-    label2: Original Data
+    label2: Datos originales
     label3: ''
     label4: ''
     label5: ''
@@ -799,7 +799,7 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: Demodulated Bitstream
+    name: Flujo de bits demodulado
     nconnections: '2'
     size: '100'
     srate: '1'
@@ -832,7 +832,7 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    ylabel: Amplitude
+    ylabel: Amplitud
     ymax: '1.5'
     ymin: '-0.5'
     yunit: '""'
@@ -848,7 +848,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: filtered_signal
+    stream_id: senal_filtrada
   states:
     bus_sink: false
     bus_source: false
@@ -861,7 +861,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: decoded_signal
+    stream_id: senal_decodi
   states:
     bus_sink: false
     bus_source: false
@@ -879,7 +879,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [240, 368.0]
+    coordinate: [256, 384.0]
     rotation: 0
     state: true
 - name: virtual_sink_3
@@ -887,20 +887,20 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: mod_signal
+    stream_id: senal_modulada
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [480, 184.0]
     rotation: 0
-    state: true
+    state: disabled
 - name: virtual_source_0
   id: virtual_source
   parameters:
     alias: ''
     comment: ''
-    stream_id: filtered_signal
+    stream_id: senal_filtrada
   states:
     bus_sink: false
     bus_source: false
@@ -913,7 +913,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: filtered_signal
+    stream_id: senal_filtrada
   states:
     bus_sink: false
     bus_source: false
@@ -926,7 +926,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: decoded_signal
+    stream_id: senal_decodi
   states:
     bus_sink: false
     bus_source: false

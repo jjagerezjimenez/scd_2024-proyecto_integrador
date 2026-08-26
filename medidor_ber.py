@@ -114,14 +114,14 @@ class medidor_ber(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             100, #size
             1, #samp_rate
-            'Demodulated Bitstream', #name
+            'Flujo de bits demodulado', #name
             2, #number of inputs
             None # parent
         )
         self.qtgui_time_sink_x_0.set_update_time(0.10)
         self.qtgui_time_sink_x_0.set_y_axis(-0.5, 1.5)
 
-        self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
+        self.qtgui_time_sink_x_0.set_y_label('Amplitud', "")
 
         self.qtgui_time_sink_x_0.enable_tags(True)
         self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
@@ -132,7 +132,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
         self.qtgui_time_sink_x_0.enable_stem_plot(False)
 
 
-        labels = ['Recovered Data', 'Original Data', '', '', '',
+        labels = ['Datos recuperados', 'Datos originales', '', '', '',
             '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
@@ -201,13 +201,13 @@ class medidor_ber(gr.top_block, Qt.QWidget):
             window.WIN_BLACKMAN_hARRIS, #wintype
             0, #fc
             samp_rate, #bw
-            'Transmitted & Received Spectrum', #name
+            'Espectro transmitido y recibido', #name
             2,
             None # parent
         )
         self.qtgui_freq_sink_x_0.set_update_time(0.10)
         self.qtgui_freq_sink_x_0.set_y_axis((-140), (-10))
-        self.qtgui_freq_sink_x_0.set_y_label('Relative Gain', 'dB')
+        self.qtgui_freq_sink_x_0.set_y_label('Ganancia', 'dB')
         self.qtgui_freq_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, 0.0, 0, "")
         self.qtgui_freq_sink_x_0.enable_autoscale(False)
         self.qtgui_freq_sink_x_0.enable_grid(False)
@@ -218,7 +218,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
 
 
 
-        labels = ['Transmitted & Propagated', 'Received & Filtered', '', '', '',
+        labels = ['Transmitido y propagado', 'Recibido y filtrado', '', '', '',
             '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
@@ -244,7 +244,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
-            'Synced Constellation', #name
+            'Constelación sincronizada', #name
             2, #number of inputs
             None # parent
         )
@@ -257,7 +257,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
         self.qtgui_const_sink_x_0.enable_axis_labels(True)
 
 
-        labels = ['Synced Only', 'Synced & Phase-Locked', '', '', '',
+        labels = ['Solo sincronizados', 'Sincronizado y con bloqueo de fase', '', '', '',
             '', '', '', '', '']
         widths = [1, 2, 2, 1, 1,
             1, 1, 1, 1, 1]
