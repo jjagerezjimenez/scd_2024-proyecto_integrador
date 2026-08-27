@@ -51,7 +51,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [960, 20.0]
+    coordinate: [856, 16.0]
     rotation: 0
     state: enabled
 - name: epsilon
@@ -59,7 +59,7 @@ blocks:
   parameters:
     comment: ''
     gui_hint: 0,10,1,10
-    label: 'Channel: Timing Offset'
+    label: Timing Offset
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
@@ -72,7 +72,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 20.0]
+    coordinate: [968, 16.0]
     rotation: 0
     state: enabled
 - name: excess_bw
@@ -92,7 +92,7 @@ blocks:
   parameters:
     comment: ''
     gui_hint: 1,0,1,10
-    label: 'Channel: Frequency Offset'
+    label: Frequency Offset
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
@@ -105,7 +105,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [768, 20.0]
+    coordinate: [720, 16.0]
     rotation: 0
     state: enabled
 - name: noise_volt
@@ -113,7 +113,7 @@ blocks:
   parameters:
     comment: ''
     gui_hint: 0,0,1,10
-    label: 'Channel: Noise Voltage'
+    label: Noise Voltage
     min_len: '200'
     orient: QtCore.Qt.Horizontal
     rangeType: float
@@ -126,7 +126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [208, 8.0]
+    coordinate: [600, 16.0]
     rotation: 0
     state: enabled
 - name: phase_bw
@@ -297,7 +297,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 288.0]
+    coordinate: [480, 208.0]
     rotation: 0
     state: enabled
 - name: blocks_unpack_k_bits_bb_0
@@ -366,7 +366,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 696.0]
+    coordinate: [904, 720.0]
     rotation: 0
     state: true
 - name: digital_constellation_modulator_0
@@ -539,7 +539,7 @@ blocks:
     color9: '"red"'
     comment: ''
     grid: 'True'
-    gui_hint: 2,0,10,10
+    gui_hint: ''
     label1: Solo sincronizados
     label10: ''
     label2: Sincronizado y con bloqueo de fase
@@ -599,7 +599,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 576.0]
+    coordinate: [920, 536.0]
     rotation: 0
     state: enabled
 - name: qtgui_freq_sink_x_0
@@ -637,7 +637,7 @@ blocks:
     fftsize: '2048'
     freqhalf: 'True'
     grid: 'False'
-    gui_hint: 12,0,10,20
+    gui_hint: ''
     label: Ganancia
     label1: Transmitido y propagado
     label10: ''''''
@@ -777,7 +777,7 @@ blocks:
     ctrlpanel: 'False'
     entags: 'True'
     grid: 'False'
-    gui_hint: 2,10,10,10
+    gui_hint: ''
     label1: Datos recuperados
     label10: ''
     label2: Datos originales
@@ -866,7 +866,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1208, 712.0]
+    coordinate: [1128, 720.0]
     rotation: 0
     state: true
 - name: virtual_sink_2
@@ -874,7 +874,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: t1
+    stream_id: fuente
   states:
     bus_sink: false
     bus_source: false
@@ -892,7 +892,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 184.0]
+    coordinate: [472, 384.0]
     rotation: 0
     state: disabled
 - name: virtual_source_0
@@ -905,7 +905,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 496.0]
+    coordinate: [16, 664.0]
     rotation: 0
     state: true
 - name: virtual_source_0_0
@@ -918,7 +918,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [512, 472.0]
+    coordinate: [680, 480.0]
     rotation: 0
     state: enabled
 - name: virtual_source_1
@@ -939,7 +939,7 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    stream_id: t1
+    stream_id: fuente
   states:
     bus_sink: false
     bus_source: false

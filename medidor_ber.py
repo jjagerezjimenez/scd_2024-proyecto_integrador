@@ -84,21 +84,21 @@ class medidor_ber(gr.top_block, Qt.QWidget):
         ##################################################
 
         self._noise_volt_range = qtgui.Range(0, 1, 0.01, 0, 200)
-        self._noise_volt_win = qtgui.RangeWidget(self._noise_volt_range, self.set_noise_volt, "Channel: Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._noise_volt_win = qtgui.RangeWidget(self._noise_volt_range, self.set_noise_volt, "Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._noise_volt_win, 0, 0, 1, 10)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 10):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._freq_offset_range = qtgui.Range(-0.1, 0.1, 0.001, 0, 200)
-        self._freq_offset_win = qtgui.RangeWidget(self._freq_offset_range, self.set_freq_offset, "Channel: Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._freq_offset_win = qtgui.RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._freq_offset_win, 1, 0, 1, 10)
         for r in range(1, 2):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 10):
             self.top_grid_layout.setColumnStretch(c, 1)
         self._epsilon_range = qtgui.Range(0.999, 1.001, 0.0001, 1, 200)
-        self._epsilon_win = qtgui.RangeWidget(self._epsilon_range, self.set_epsilon, "Channel: Timing Offset", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._epsilon_win = qtgui.RangeWidget(self._epsilon_range, self.set_epsilon, "Timing Offset", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_grid_layout.addWidget(self._epsilon_win, 0, 10, 1, 10)
         for r in range(0, 1):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -158,11 +158,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win, 2, 10, 10, 10)
-        for r in range(2, 12):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(10, 20):
-            self.top_grid_layout.setColumnStretch(c, 1)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
         self.qtgui_number_sink_0 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -237,11 +233,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
             self.qtgui_freq_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win, 12, 0, 10, 20)
-        for r in range(12, 22):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 20):
-            self.top_grid_layout.setColumnStretch(c, 1)
+        self.top_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
             1024, #size
             'Constelación sincronizada', #name
@@ -282,11 +274,7 @@ class medidor_ber(gr.top_block, Qt.QWidget):
             self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
 
         self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 2, 0, 10, 10)
-        for r in range(2, 12):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 10):
-            self.top_grid_layout.setColumnStretch(c, 1)
+        self.top_layout.addWidget(self._qtgui_const_sink_x_0_win)
         self.filter_fft_rrc_filter_0 = filter.fft_filter_ccc(1, firdes.root_raised_cosine(1, samp_rate, (samp_rate/sps), excess_bw, (11*sps)), 1)
         self.fec_ber_bf_0 = fec.ber_bf(False, 100, -7.0)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
