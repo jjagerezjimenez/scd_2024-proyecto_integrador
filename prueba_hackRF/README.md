@@ -1,8 +1,7 @@
 # Enlace punto a punto half-duplex con 4-QAM en GNU Radio
 
 Proyecto de *Sistemas de Comunicaciones Digitales* (FACET – UNT). Radio definida por software simulada en
-GNU Radio, armada **solo con bloques estándar** (ningún bloque propio): cualquier persona puede abrir los `.grc` y
-ejecutarlos sin instalar nada extra.
+GNU Radio.
 
 | Requisito | Cómo se cumple | Dónde |
 |---|---|---|
@@ -10,33 +9,11 @@ ejecutarlos sin instalar nada extra.
 | Trama simple con **preámbulo y longitud** | Encabezado estándar de GNU Radio: `preámbulo (64 bits) ‖ longitud ‖ longitud ‖ payload ‖ CRC-32` | `Protocol Formatter` |
 | **CRC-32** | `Stream CRC32`: lo agrega el transmisor y lo verifica el receptor, que descarta las tramas erróneas. | todos los `.grc` |
 | **4-QAM** | `Constellation Modulator`: constelación Gray, codificación diferencial, filtro RRC (roll-off 0,35, 4 muestras/símbolo). | todos los `.grc` |
-| **BER teórico** vs SNR | `Pb = Q(√(2·Eb/N0))`; con codificación diferencial `2p(1−p)`; PER y BER con error de fase. | `ber_teorico.py`, `INFORME.md` §2 |
+| **BER teórico** vs SNR | `Pb = Q(√(2·Eb/N0))`; con codificación diferencial `2p(1−p)`; PER y BER con error de fase. | `ber_teorico.py`|
 | **Simulación** en GNU Radio | Tres flowgraphs (ver abajo). | `grc_estandar/` |
-| **BER medido** en distintas condiciones de canal y comparación con la teoría | Barrido automático de Eb/N0 × 4 condiciones de canal, con intervalos de confianza. | `run_ber_sweep.py`, `resultados/`, `INFORME.md` §6 |
+| **BER medido** en distintas condiciones de canal y comparación con la teoría | Barrido automático de Eb/N0 × 4 condiciones de canal, con intervalos de confianza. | `run_ber_sweep.py`|
 | **Prueba de laboratorio** transmitiendo archivos con **HackRF** | El mismo sistema (tramas, 4-QAM, receptor) con `Soapy HackRF Sink/Source`: paquetes numerados, varias pasadas y verificación SHA-256 del archivo recibido. Probado sin hardware con un canal de laboratorio simulado. | `grc_hackrf/`, `LABORATORIO_HACKRF.md` |
 
-## Contenido
-
-```
-INFORME.md / INFORME.pdf      informe técnico: teoría, diseño, resultados y análisis
-grc_estandar/
-  enlace_4qam_tramas.grc      enlace en un solo sentido con un gráfico por etapa (para entender cada bloque)
-  halfduplex_4qam.grc         SISTEMA COMPLETO: dos nodos half-duplex (TDD) con interfaz
-  halfduplex_4qam_ber.grc     el mismo half-duplex sin interfaz, con parámetros, para medir BER
-grc_hackrf/                   PRUEBA DE LABORATORIO con HackRF (ver LABORATORIO_HACKRF.md)
-  hackrf_tx_archivo.grc       transmite un archivo en paquetes numerados por un HackRF
-  hackrf_rx_archivo.grc       recibe con otro HackRF y guarda los paquetes con CRC correcto
-  archivo_a_enviar.txt        archivo de ejemplo
-  capturas_simuladas/         cómo se ven las interfaces cuando funciona (HackRF simulado)
-LABORATORIO_HACKRF.md / .pdf  guía de la prueba: seguridad, procedimiento, mediciones y problemas comunes
-reconstruir_archivo.py        arma el archivo recibido, cuenta paquetes perdidos y verifica la huella SHA-256
-run_ber_sweep.py              barrido de BER vs Eb/N0 (usa halfduplex_4qam_ber.grc) -> resultados/
-ber_teorico.py                BER/SER/PER teóricos + verificación Monte Carlo (no necesita GNU Radio)
-resultados/                   CSV, gráficos, tabla de pérdidas y capturas de las interfaces
-tests/test_flowgraphs.py      pruebas con GNU Radio real
-tests/test_hackrf.py          pruebas de grc_hackrf/ sin HackRF (canal de laboratorio simulado)
-tools/informe_pdf.py          genera INFORME.pdf (o el PDF de otro .md, como la guía del laboratorio)
-```
 
 ## Requisitos
 
@@ -95,7 +72,7 @@ python build/halfduplex_4qam_ber.py --help
 ### Prueba de laboratorio con HackRF
 
 Guía completa (seguridad, procedimiento paso a paso, tabla de mediciones y problemas comunes):
-`LABORATORIO_HACKRF.md` (o `LABORATORIO_HACKRF.pdf` para imprimir). En resumen:
+`LABORATORIO_HACKRF.md` (o `LABORATORIO_HACKRF.pdf`). En resumen:
 
 ```bash
 hackrf_info                                               # se tienen que ver los dos HackRF
@@ -112,14 +89,12 @@ python reconstruir_archivo.py                             # 3) arma grc_hackrf/r
 * Antes del laboratorio: `python tests/test_hackrf.py` prueba los dos `.grc` sin HackRF, con desvíos de hasta
   ±40 kHz entre osciladores, relojes distintos, ruido de fase y portadora residual.
 
-### Teoría, pruebas e informe
+### Teoría y pruebas
 
 ```bash
 python ber_teorico.py --montecarlo      # tabla, gráfico resultados/ber_teorico.png y verificación Monte Carlo
 python tests/test_flowgraphs.py         # 9 pruebas con GNU Radio real (~30 s)
 python tests/test_hackrf.py             # 7 pruebas de grc_hackrf/ con un HackRF simulado (< 1 min)
-python tools/informe_pdf.py             # INFORME.md -> INFORME.pdf (usa Microsoft Edge, sin abrir ventanas)
-python tools/informe_pdf.py LABORATORIO_HACKRF.md         # -> LABORATORIO_HACKRF.pdf
 ```
 
 ## Resultados (resumen)
@@ -131,7 +106,7 @@ python tools/informe_pdf.py LABORATORIO_HACKRF.md         # -> LABORATORIO_HACKR
 | Fase 20° con lazo de Costas | +0,08 dB | 1,04 |
 | Fase 20° + desvío de 200 Hz con lazo de Costas | +0,08 dB | 1,04 |
 
-De 206.473 tramas aceptadas por el CRC, ninguna tenía contenido distinto del transmitido. Detalle en `INFORME.md` §6.
+De 206.473 tramas aceptadas por el CRC, ninguna tenía contenido distinto del transmitido.
 
 ## Solución de problemas
 
