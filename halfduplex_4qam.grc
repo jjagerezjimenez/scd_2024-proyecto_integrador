@@ -1274,7 +1274,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Descarta lo anterior a la primera trama detectada. \nComo todas las\
+      \ tramas son iguales, no importa cu\xE1l \nsea la primera que detecte: siempre\
+      \ queda alineada \ncon la referencia."
     lengthtagname: '"inicio_trama"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1284,7 +1286,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 2040.0]
+    coordinate: [600, 1984.0]
     rotation: 0
     state: enabled
 - name: rxA_archivo
@@ -1310,7 +1312,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Calcula el BER \u201Creciente\u201D."
     length: ventana
     max_iter: '4000'
     maxoutbuf: '0'
@@ -1715,7 +1717,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 2188]
+    coordinate: [1720, 2200.0]
     rotation: 0
     state: enabled
 - name: rxA_g_const
@@ -2124,7 +2126,7 @@ blocks:
     affinity: ''
     alias: ''
     amp: math.log10(ber_teo)
-    comment: ''
+    comment: "Es la l\xEDnea te\xF3rica del gr\xE1fico"
     freq: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2138,7 +2140,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1904, 2084]
+    coordinate: [1936, 2136.0]
     rotation: 0
     state: enabled
 - name: rxA_mapa_gray
@@ -2163,7 +2165,7 @@ blocks:
     access_code: digital.packet_utils.default_access_code
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Solo marca d\xF3nde termina cada pre\xE1mbulo; no recorta nada."
     maxoutbuf: '0'
     minoutbuf: '0'
     tagname: '"inicio_trama"'
@@ -2183,7 +2185,9 @@ blocks:
     alias: ''
     berlimit: '-7.0'
     berminerrors: '100'
-    comment: ''
+    comment: "Cuenta todos los errores desde que arranc\xF3 la simulaci\xF3n. \nComo\
+      \ test_mode est\xE1 desactivado, los par\xE1metros \nberminerrors y berlimit\
+      \ no se usan."
     maxoutbuf: '0'
     minoutbuf: '0'
     test_mode: 'False'
@@ -2303,7 +2307,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: Pasa la trama a bits.
     k: '8'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2412,7 +2416,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Descarta el primer pre\xE1mbulo una sola vez. \nAs\xED la referencia\
+      \ arranca en el encabezado, en \nel mismo punto donde el receptor pone su marca"
     maxoutbuf: '0'
     minoutbuf: '0'
     num_items: '64'
@@ -2565,13 +2570,14 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Guarda el \xFAltimo valor. La variable ber_A_log lo \nlee 4 veces por\
+      \ segundo para mostrarlo en las etiquetas."
     type: float
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1824, 2076]
+    coordinate: [1840, 2008.0]
     rotation: 0
     state: enabled
 - name: rxA_submuestreo
@@ -2579,7 +2585,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Alivia el gr\xE1fico. El BER cambia lento, as\xED \nque no se pierde\
+      \ informaci\xF3n."
     maxoutbuf: '0'
     minoutbuf: '0'
     n: '1000'
@@ -2597,7 +2604,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: Deja pasar 1 de cada 100 mensajes para que el archivo no crezca sin control.
     m: L_B
     maxoutbuf: '0'
     minoutbuf: '0'
