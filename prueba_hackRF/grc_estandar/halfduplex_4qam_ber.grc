@@ -1,0 +1,2189 @@
+options:
+  parameters:
+    author: Juan Gerez
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: El mismo enlace half-duplex de halfduplex_4qam.grc, sin gráficos, para medir BER por línea de comandos
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: no_gui
+    hier_block_src_path: '.:'
+    id: halfduplex_4qam_ber
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: run
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Medición de BER del enlace half-duplex 4-QAM (sin interfaz)
+    window_size: (1800, 1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+blocks:
+- name: imports
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import math, cmath
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1120, 12]
+    rotation: 0
+    state: enabled
+- name: ebn0_db
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Eb/N0 [dB]
+    short_id: ''
+    type: eng_float
+    value: '6.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: enabled
+- name: fase_deg
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Fase del canal [grados]
+    short_id: ''
+    type: eng_float
+    value: '0.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 12]
+    rotation: 0
+    state: enabled
+- name: cfo_hz
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Desvio entre osciladores A-B [Hz]
+    short_id: ''
+    type: eng_float
+    value: '0.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [456, 12]
+    rotation: 0
+    state: enabled
+- name: costas_bw
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: BW del lazo de Costas (0 = sin corregir fase)
+    short_id: ''
+    type: eng_float
+    value: '0.005'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 12]
+    rotation: 0
+    state: enabled
+- name: sync_bw
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: BW del sincronismo de simbolo
+    short_id: ''
+    type: eng_float
+    value: '0.01'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [728, 12]
+    rotation: 0
+    state: enabled
+- name: muestras
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Muestras del canal compartido
+    short_id: ''
+    type: intx
+    value: '4000000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 12]
+    rotation: 0
+    state: enabled
+- name: semilla
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Semilla del ruido
+    short_id: ''
+    type: intx
+    value: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 12]
+    rotation: 0
+    state: enabled
+- name: descartar
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Bits descartados al inicio (enganche de los lazos)
+    short_id: ''
+    type: intx
+    value: '100000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1136, 12]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: Frecuencia de muestreo [muestras/s]
+    value: '500000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 108]
+    rotation: 0
+    state: enabled
+- name: sps
+  id: variable
+  parameters:
+    comment: Muestras por símbolo
+    value: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [296, 108]
+    rotation: 0
+    state: enabled
+- name: excess_bw
+  id: variable
+  parameters:
+    comment: Factor de roll-off del filtro RRC
+    value: '0.35'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 108]
+    rotation: 0
+    state: enabled
+- name: ranura
+  id: variable
+  parameters:
+    comment: Muestras de cada turno de transmisión (múltiplo de sps)
+    value: '2048'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 108]
+    rotation: 0
+    state: enabled
+- name: guarda
+  id: variable
+  parameters:
+    comment: Muestras de silencio entre turnos
+    value: '256'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [576, 108]
+    rotation: 0
+    state: enabled
+- name: mensaje_A
+  id: variable
+  parameters:
+    comment: Texto que transmite el nodo A
+    value: '"Hola, soy el nodo A. Este mensaje viaja por el canal compartido en mi ranura de tiempo (TDD)."'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 188]
+    rotation: 0
+    state: enabled
+- name: mensaje_B
+  id: variable
+  parameters:
+    comment: Texto que transmite el nodo B
+    value: '"Hola, soy el nodo B. Respondo en la otra ranura: nunca transmitimos los dos al mismo tiempo!!"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 268]
+    rotation: 0
+    state: enabled
+- name: payload_A
+  id: variable
+  parameters:
+    comment: ''
+    value: list(mensaje_A.encode())
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 188]
+    rotation: 0
+    state: enabled
+- name: payload_B
+  id: variable
+  parameters:
+    comment: ''
+    value: list(mensaje_B.encode())
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [720, 268]
+    rotation: 0
+    state: enabled
+- name: L_A
+  id: variable
+  parameters:
+    comment: ''
+    value: len(payload_A)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 188]
+    rotation: 0
+    state: enabled
+- name: L_B
+  id: variable
+  parameters:
+    comment: ''
+    value: len(payload_B)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 268]
+    rotation: 0
+    state: enabled
+- name: qpsk
+  id: variable_constellation_rect
+  parameters:
+    comment: ''
+    const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
+    sym_map: '[0, 1, 3, 2]'
+    rot_sym: '4'
+    real_sect: '2'
+    imag_sect: '2'
+    w_real_sect: '1'
+    w_imag_sect: '1'
+    precision: '8'
+    soft_dec_lut: None
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 108]
+    rotation: 0
+    state: enabled
+- name: formato_trama
+  id: variable_header_format_default
+  parameters:
+    comment: ''
+    access_code: '0'
+    threshold: '0'
+    bps: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 188]
+    rotation: 0
+    state: enabled
+- name: umbral
+  id: variable
+  parameters:
+    comment: Bits erróneos tolerados al buscar el preámbulo de 64 bits
+    value: '12'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 268]
+    rotation: 0
+    state: enabled
+- name: ruido
+  id: variable
+  parameters:
+    comment: 'Desvío del ruido complejo: potencia de señal = 1 por muestra, Es/N0 = 2 Eb/N0'
+    value: math.sqrt(sps / (2 * 10**(ebn0_db / 10)))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 108]
+    rotation: 0
+    state: enabled
+- name: nota_tx
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: TRANSMISORES de los nodos A y B (igual que halfduplex_4qam.grc)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 340]
+    rotation: 0
+    state: enabled
+- name: txA_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: payload_A
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 440]
+    rotation: 0
+    state: enabled
+- name: txA_a_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+    packet_len: L_A
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 448]
+    rotation: 0
+    state: enabled
+- name: txA_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    check: 'False'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 440]
+    rotation: 0
+    state: enabled
+- name: txA_encabezado
+  id: digital_protocol_formatter_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    format: formato_trama
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 384]
+    rotation: 0
+    state: enabled
+- name: txA_trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    ninputs: '2'
+    lengthtagname: '"packet_len"'
+    vlen: '1'
+    tag_preserve_head_pos: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816, 436]
+    rotation: 0
+    state: enabled
+- name: txA_modulador
+  id: digital_constellation_modulator
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    constellation: qpsk
+    differential: 'True'
+    samples_per_symbol: sps
+    excess_bw: excess_bw
+    verbose: 'False'
+    log: 'False'
+    truncate: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 428]
+    rotation: 0
+    state: enabled
+- name: txA_vs
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: tx_A
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1280, 440]
+    rotation: 0
+    state: enabled
+- name: txB_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: payload_B
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 600]
+    rotation: 0
+    state: enabled
+- name: txB_a_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+    packet_len: L_B
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 608]
+    rotation: 0
+    state: enabled
+- name: txB_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    check: 'False'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 600]
+    rotation: 0
+    state: enabled
+- name: txB_encabezado
+  id: digital_protocol_formatter_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    format: formato_trama
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 544]
+    rotation: 0
+    state: enabled
+- name: txB_trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    ninputs: '2'
+    lengthtagname: '"packet_len"'
+    vlen: '1'
+    tag_preserve_head_pos: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816, 596]
+    rotation: 0
+    state: enabled
+- name: txB_modulador
+  id: digital_constellation_modulator
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    constellation: qpsk
+    differential: 'True'
+    samples_per_symbol: sps
+    excess_bw: excess_bw
+    verbose: 'False'
+    log: 'False'
+    truncate: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1032, 588]
+    rotation: 0
+    state: enabled
+- name: txB_vs
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: tx_B
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1280, 600]
+    rotation: 0
+    state: enabled
+- name: nota_tdd
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: 'CANAL COMPARTIDO (TDD): Stream Mux = turnos [A | guarda | B | guarda]; Head limita la cantidad de muestras y hace que el flowgraph termine solo; Stream Demux = conmutador de recepción.'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 740]
+    rotation: 0
+    state: enabled
+- name: canal_tx_A
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: tx_A
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 828]
+    rotation: 0
+    state: enabled
+- name: canal_tx_B
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: tx_B
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 908]
+    rotation: 0
+    state: enabled
+- name: silencio_1
+  id: blocks_null_source
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+    num_outputs: '1'
+    bus_structure_source: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 988]
+    rotation: 0
+    state: enabled
+- name: silencio_3
+  id: blocks_null_source
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+    num_outputs: '1'
+    bus_structure_source: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1052]
+    rotation: 0
+    state: enabled
+- name: turnos
+  id: blocks_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    lengths: '[ranura, guarda, ranura, guarda]'
+    num_inputs: '4'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 860]
+    rotation: 0
+    state: enabled
+- name: limite
+  id: blocks_head
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    num_items: muestras
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 876]
+    rotation: 0
+    state: enabled
+- name: fase
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    const: cmath.exp(1j * math.radians(fase_deg))
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [632, 876]
+    rotation: 0
+    state: enabled
+- name: ruido_awgn
+  id: analog_noise_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    noise_type: analog.GR_GAUSSIAN
+    amp: ruido
+    seed: semilla
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [632, 956]
+    rotation: 0
+    state: enabled
+- name: suma_ruido
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    num_inputs: '2'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [864, 896]
+    rotation: 0
+    state: enabled
+- name: conmutador_rx
+  id: blocks_stream_demux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    lengths: '[ranura, guarda, ranura, guarda]'
+    num_outputs: '4'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1040, 880]
+    rotation: 0
+    state: enabled
+- name: guarda_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1264, 908]
+    rotation: 0
+    state: enabled
+- name: guarda_3
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1264, 972]
+    rotation: 0
+    state: enabled
+- name: osc_rxB
+  id: blocks_rotator_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_inc: 2 * math.pi * cfo_hz / samp_rate
+    tag_inc_update: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1440, 844]
+    rotation: 0
+    state: enabled
+- name: osc_rxA
+  id: blocks_rotator_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_inc: -2 * math.pi * cfo_hz / samp_rate
+    tag_inc_update: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1440, 1036]
+    rotation: 0
+    state: enabled
+- name: rxB_vs_entrada
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: entrada_rx_B
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1648, 852]
+    rotation: 0
+    state: enabled
+- name: rxA_vs_entrada
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: entrada_rx_A
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1648, 1044]
+    rotation: 0
+    state: enabled
+- name: rxA_nota
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: 'RECEPTOR DEL NODO A (recibe lo que transmite B): resultados en rxA_medidor_ber (errores y BER) y rxA_mensajes (tramas con CRC correcto)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1160]
+    rotation: 0
+    state: enabled
+- name: rxA_entrada
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: entrada_rx_A
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1244]
+    rotation: 0
+    state: enabled
+- name: rxA_filtro_adaptado
+  id: filter_fft_rrc_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: ccc
+    decim: '1'
+    gain: '1'
+    samp_rate: samp_rate
+    sym_rate: samp_rate/sps
+    alpha: excess_bw
+    ntaps: 11*sps
+    nthreads: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 1220]
+    rotation: 0
+    state: enabled
+- name: rxA_sinc_simbolo
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: cc
+    ted_type: digital.TED_SIGNAL_TIMES_SLOPE_ML
+    constellation: digital.constellation_bpsk().base()
+    sps: sps
+    ted_gain: '1.0'
+    loop_bw: sync_bw
+    damping: '1.0'
+    max_dev: '1.5'
+    osps: '1'
+    resamp_type: digital.IR_MMSE_8TAP
+    nfilters: '128'
+    pfb_mf_taps: '[]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 1180]
+    rotation: 0
+    state: enabled
+- name: rxA_costas
+  id: digital_costas_loop_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    w: costas_bw
+    order: '4'
+    use_snr: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 1236]
+    rotation: 0
+    state: enabled
+- name: rxA_decisor
+  id: digital_constellation_decoder_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    constellation: qpsk
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 1244]
+    rotation: 0
+    state: enabled
+- name: rxA_dec_diferencial
+  id: digital_diff_decoder_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    coding: digital.DIFF_DIFFERENTIAL
+    modulus: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1216, 1236]
+    rotation: 0
+    state: enabled
+- name: rxA_mapa_gray
+  id: digital_map_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    map: '[0, 1, 3, 2]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 1244]
+    rotation: 0
+    state: enabled
+- name: rxA_a_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1576, 1244]
+    rotation: 0
+    state: enabled
+- name: rxA_detector_trama
+  id: digital_correlate_access_code_xx_ts
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '600000'
+    type: byte
+    access_code: digital.packet_utils.default_access_code
+    threshold: umbral
+    tagname: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 1380]
+    rotation: 0
+    state: enabled
+- name: rxA_a_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+    k: '1'
+    l: '8'
+    len_tag_key: '"packet_len"'
+    align_output: 'True'
+    endianness: gr.GR_MSB_FIRST
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 1380]
+    rotation: 0
+    state: enabled
+- name: rxA_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+    check: 'True'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [712, 1380]
+    rotation: 0
+    state: enabled
+- name: rxA_a_pdu
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    tag: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [936, 1396]
+    rotation: 0
+    state: enabled
+- name: rxA_mensajes
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    en_uvec: 'True'
+    log_level: info
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1176, 1380]
+    rotation: 0
+    state: enabled
+- name: rxA_marca_preambulo
+  id: digital_correlate_access_code_tag_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    access_code: digital.packet_utils.default_access_code
+    threshold: umbral
+    tagname: '"inicio_trama"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 1500]
+    rotation: 0
+    state: enabled
+- name: rxA_alinear
+  id: blocks_tagged_stream_align
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    lengthtagname: '"inicio_trama"'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 1508]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: payload_B
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1660]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_a_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+    packet_len: L_B
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 1668]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    check: 'False'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 1660]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_encabezado
+  id: digital_protocol_formatter_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    format: formato_trama
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 1604]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    ninputs: '2'
+    lengthtagname: '"packet_len"'
+    vlen: '1'
+    tag_preserve_head_pos: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816, 1656]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 1668]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_saltar_preambulo
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: '64'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 1668]
+    rotation: 0
+    state: enabled
+- name: rxA_rx_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '1'
+    l: '8'
+    len_tag_key: '""'
+    align_output: 'False'
+    endianness: gr.GR_MSB_FIRST
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 1508]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '1'
+    l: '8'
+    len_tag_key: '""'
+    align_output: 'False'
+    endianness: gr.GR_MSB_FIRST
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 1668]
+    rotation: 0
+    state: enabled
+- name: rxA_medidor_ber
+  id: fec_ber_bf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    test_mode: 'False'
+    berminerrors: '100'
+    berlimit: '-7.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1600, 1580]
+    rotation: 0
+    state: enabled
+- name: rxA_sonda_ber
+  id: blocks_probe_signal_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1824, 1588]
+    rotation: 0
+    state: enabled
+- name: rxA_rx_descartar
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: descartar
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 1500]
+    rotation: 0
+    state: enabled
+- name: rxA_ref_descartar
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: descartar
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 1740]
+    rotation: 0
+    state: enabled
+- name: rxA_sinc_null_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 1332]
+    rotation: 0
+    state: enabled
+- name: rxA_sinc_null_2
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 1364]
+    rotation: 0
+    state: enabled
+- name: rxA_sinc_null_3
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 1396]
+    rotation: 0
+    state: enabled
+- name: rxB_nota
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: 'RECEPTOR DEL NODO B (recibe lo que transmite A): resultados en rxB_medidor_ber (errores y BER) y rxB_mensajes (tramas con CRC correcto)'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1880]
+    rotation: 0
+    state: enabled
+- name: rxB_entrada
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: ''
+    stream_id: entrada_rx_B
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1964]
+    rotation: 0
+    state: enabled
+- name: rxB_filtro_adaptado
+  id: filter_fft_rrc_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: ccc
+    decim: '1'
+    gain: '1'
+    samp_rate: samp_rate
+    sym_rate: samp_rate/sps
+    alpha: excess_bw
+    ntaps: 11*sps
+    nthreads: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 1940]
+    rotation: 0
+    state: enabled
+- name: rxB_sinc_simbolo
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: cc
+    ted_type: digital.TED_SIGNAL_TIMES_SLOPE_ML
+    constellation: digital.constellation_bpsk().base()
+    sps: sps
+    ted_gain: '1.0'
+    loop_bw: sync_bw
+    damping: '1.0'
+    max_dev: '1.5'
+    osps: '1'
+    resamp_type: digital.IR_MMSE_8TAP
+    nfilters: '128'
+    pfb_mf_taps: '[]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 1900]
+    rotation: 0
+    state: enabled
+- name: rxB_costas
+  id: digital_costas_loop_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    w: costas_bw
+    order: '4'
+    use_snr: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 1956]
+    rotation: 0
+    state: enabled
+- name: rxB_decisor
+  id: digital_constellation_decoder_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    constellation: qpsk
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 1964]
+    rotation: 0
+    state: enabled
+- name: rxB_dec_diferencial
+  id: digital_diff_decoder_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    coding: digital.DIFF_DIFFERENTIAL
+    modulus: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1216, 1956]
+    rotation: 0
+    state: enabled
+- name: rxB_mapa_gray
+  id: digital_map_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    map: '[0, 1, 3, 2]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 1964]
+    rotation: 0
+    state: enabled
+- name: rxB_a_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1576, 1964]
+    rotation: 0
+    state: enabled
+- name: rxB_detector_trama
+  id: digital_correlate_access_code_xx_ts
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '600000'
+    type: byte
+    access_code: digital.packet_utils.default_access_code
+    threshold: umbral
+    tagname: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 2100]
+    rotation: 0
+    state: enabled
+- name: rxB_a_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+    k: '1'
+    l: '8'
+    len_tag_key: '"packet_len"'
+    align_output: 'True'
+    endianness: gr.GR_MSB_FIRST
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 2100]
+    rotation: 0
+    state: enabled
+- name: rxB_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+    check: 'True'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [712, 2100]
+    rotation: 0
+    state: enabled
+- name: rxB_a_pdu
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    tag: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [936, 2116]
+    rotation: 0
+    state: enabled
+- name: rxB_mensajes
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    en_uvec: 'True'
+    log_level: info
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1176, 2100]
+    rotation: 0
+    state: enabled
+- name: rxB_marca_preambulo
+  id: digital_correlate_access_code_tag_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    access_code: digital.packet_utils.default_access_code
+    threshold: umbral
+    tagname: '"inicio_trama"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 2220]
+    rotation: 0
+    state: enabled
+- name: rxB_alinear
+  id: blocks_tagged_stream_align
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    lengthtagname: '"inicio_trama"'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 2228]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: payload_A
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 2380]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_a_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+    packet_len: L_A
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [176, 2388]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    check: 'False'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [400, 2380]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_encabezado
+  id: digital_protocol_formatter_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    format: formato_trama
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [592, 2324]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    ninputs: '2'
+    lengthtagname: '"packet_len"'
+    vlen: '1'
+    tag_preserve_head_pos: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816, 2376]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 2388]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_saltar_preambulo
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: '64'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 2388]
+    rotation: 0
+    state: enabled
+- name: rxB_rx_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '1'
+    l: '8'
+    len_tag_key: '""'
+    align_output: 'False'
+    endianness: gr.GR_MSB_FIRST
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 2228]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    k: '1'
+    l: '8'
+    len_tag_key: '""'
+    align_output: 'False'
+    endianness: gr.GR_MSB_FIRST
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 2388]
+    rotation: 0
+    state: enabled
+- name: rxB_medidor_ber
+  id: fec_ber_bf
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    test_mode: 'False'
+    berminerrors: '100'
+    berlimit: '-7.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1600, 2300]
+    rotation: 0
+    state: enabled
+- name: rxB_sonda_ber
+  id: blocks_probe_signal_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1824, 2308]
+    rotation: 0
+    state: enabled
+- name: rxB_rx_descartar
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: descartar
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 2220]
+    rotation: 0
+    state: enabled
+- name: rxB_ref_descartar
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: descartar
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 2460]
+    rotation: 0
+    state: enabled
+- name: rxB_sinc_null_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 2052]
+    rotation: 0
+    state: enabled
+- name: rxB_sinc_null_2
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 2084]
+    rotation: 0
+    state: enabled
+- name: rxB_sinc_null_3
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+    num_inputs: '1'
+    bus_structure_sink: '[[0,],]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [752, 2116]
+    rotation: 0
+    state: enabled
+connections:
+- [txA_fuente, '0', txA_a_paquetes, '0']
+- [txA_a_paquetes, '0', txA_crc, '0']
+- [txA_crc, '0', txA_encabezado, '0']
+- [txA_crc, '0', txA_trama, '1']
+- [txA_encabezado, '0', txA_trama, '0']
+- [txA_trama, '0', txA_modulador, '0']
+- [txA_modulador, '0', txA_vs, '0']
+- [txB_fuente, '0', txB_a_paquetes, '0']
+- [txB_a_paquetes, '0', txB_crc, '0']
+- [txB_crc, '0', txB_encabezado, '0']
+- [txB_crc, '0', txB_trama, '1']
+- [txB_encabezado, '0', txB_trama, '0']
+- [txB_trama, '0', txB_modulador, '0']
+- [txB_modulador, '0', txB_vs, '0']
+- [canal_tx_A, '0', turnos, '0']
+- [silencio_1, '0', turnos, '1']
+- [canal_tx_B, '0', turnos, '2']
+- [silencio_3, '0', turnos, '3']
+- [turnos, '0', limite, '0']
+- [limite, '0', fase, '0']
+- [fase, '0', suma_ruido, '0']
+- [ruido_awgn, '0', suma_ruido, '1']
+- [suma_ruido, '0', conmutador_rx, '0']
+- [conmutador_rx, '1', guarda_1, '0']
+- [conmutador_rx, '3', guarda_3, '0']
+- [conmutador_rx, '0', osc_rxB, '0']
+- [conmutador_rx, '2', osc_rxA, '0']
+- [osc_rxB, '0', rxB_vs_entrada, '0']
+- [osc_rxA, '0', rxA_vs_entrada, '0']
+- [rxA_entrada, '0', rxA_filtro_adaptado, '0']
+- [rxA_filtro_adaptado, '0', rxA_sinc_simbolo, '0']
+- [rxA_sinc_simbolo, '0', rxA_costas, '0']
+- [rxA_costas, '0', rxA_decisor, '0']
+- [rxA_decisor, '0', rxA_dec_diferencial, '0']
+- [rxA_dec_diferencial, '0', rxA_mapa_gray, '0']
+- [rxA_mapa_gray, '0', rxA_a_bits, '0']
+- [rxA_a_bits, '0', rxA_detector_trama, '0']
+- [rxA_detector_trama, '0', rxA_a_bytes, '0']
+- [rxA_a_bytes, '0', rxA_crc, '0']
+- [rxA_crc, '0', rxA_a_pdu, '0']
+- [rxA_a_pdu, pdus, rxA_mensajes, store]
+- [rxA_a_bits, '0', rxA_marca_preambulo, '0']
+- [rxA_marca_preambulo, '0', rxA_alinear, '0']
+- [rxA_ref_fuente, '0', rxA_ref_a_paquetes, '0']
+- [rxA_ref_a_paquetes, '0', rxA_ref_crc, '0']
+- [rxA_ref_crc, '0', rxA_ref_encabezado, '0']
+- [rxA_ref_crc, '0', rxA_ref_trama, '1']
+- [rxA_ref_encabezado, '0', rxA_ref_trama, '0']
+- [rxA_ref_trama, '0', rxA_ref_bits, '0']
+- [rxA_ref_bits, '0', rxA_ref_saltar_preambulo, '0']
+- [rxA_alinear, '0', rxA_rx_descartar, '0']
+- [rxA_rx_descartar, '0', rxA_rx_bytes, '0']
+- [rxA_ref_saltar_preambulo, '0', rxA_ref_descartar, '0']
+- [rxA_ref_descartar, '0', rxA_ref_bytes, '0']
+- [rxA_rx_bytes, '0', rxA_medidor_ber, '0']
+- [rxA_ref_bytes, '0', rxA_medidor_ber, '1']
+- [rxA_medidor_ber, '0', rxA_sonda_ber, '0']
+- [rxA_sinc_simbolo, '1', rxA_sinc_null_1, '0']
+- [rxA_sinc_simbolo, '2', rxA_sinc_null_2, '0']
+- [rxA_sinc_simbolo, '3', rxA_sinc_null_3, '0']
+- [rxB_entrada, '0', rxB_filtro_adaptado, '0']
+- [rxB_filtro_adaptado, '0', rxB_sinc_simbolo, '0']
+- [rxB_sinc_simbolo, '0', rxB_costas, '0']
+- [rxB_costas, '0', rxB_decisor, '0']
+- [rxB_decisor, '0', rxB_dec_diferencial, '0']
+- [rxB_dec_diferencial, '0', rxB_mapa_gray, '0']
+- [rxB_mapa_gray, '0', rxB_a_bits, '0']
+- [rxB_a_bits, '0', rxB_detector_trama, '0']
+- [rxB_detector_trama, '0', rxB_a_bytes, '0']
+- [rxB_a_bytes, '0', rxB_crc, '0']
+- [rxB_crc, '0', rxB_a_pdu, '0']
+- [rxB_a_pdu, pdus, rxB_mensajes, store]
+- [rxB_a_bits, '0', rxB_marca_preambulo, '0']
+- [rxB_marca_preambulo, '0', rxB_alinear, '0']
+- [rxB_ref_fuente, '0', rxB_ref_a_paquetes, '0']
+- [rxB_ref_a_paquetes, '0', rxB_ref_crc, '0']
+- [rxB_ref_crc, '0', rxB_ref_encabezado, '0']
+- [rxB_ref_crc, '0', rxB_ref_trama, '1']
+- [rxB_ref_encabezado, '0', rxB_ref_trama, '0']
+- [rxB_ref_trama, '0', rxB_ref_bits, '0']
+- [rxB_ref_bits, '0', rxB_ref_saltar_preambulo, '0']
+- [rxB_alinear, '0', rxB_rx_descartar, '0']
+- [rxB_rx_descartar, '0', rxB_rx_bytes, '0']
+- [rxB_ref_saltar_preambulo, '0', rxB_ref_descartar, '0']
+- [rxB_ref_descartar, '0', rxB_ref_bytes, '0']
+- [rxB_rx_bytes, '0', rxB_medidor_ber, '0']
+- [rxB_ref_bytes, '0', rxB_medidor_ber, '1']
+- [rxB_medidor_ber, '0', rxB_sonda_ber, '0']
+- [rxB_sinc_simbolo, '1', rxB_sinc_null_1, '0']
+- [rxB_sinc_simbolo, '2', rxB_sinc_null_2, '0']
+- [rxB_sinc_simbolo, '3', rxB_sinc_null_3, '0']
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0
