@@ -1,0 +1,428 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Guía paso a paso: de la HackRF simulada a las HackRF reales</title><base href="file:///D:/Facultad/Sist_Com_Dig/Proyecto_integrador/claude/integrado/files/proyecto_sdr_4qam_halfduplex/proyecto_sdr_4qam_halfduplex/"><style>
+@page { size: A4; margin: 17mm 15mm 17mm 15mm;
+        @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #666; } }
+body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 10pt; line-height: 1.42; color: #111; }
+h1 { font-size: 19pt; text-align: center; margin: 0 0 10pt 0; color: #0b3a6b; }
+h2 { font-size: 14pt; color: #0b3a6b; border-bottom: 1.5px solid #0b3a6b; padding-bottom: 2pt; margin-top: 18pt;
+     break-after: avoid; }
+h3 { font-size: 11.5pt; color: #133f6e; margin-top: 12pt; break-after: avoid; }
+p { margin: 5pt 0; text-align: justify; }
+ul, ol { margin: 4pt 0 4pt 0; padding-left: 18pt; }
+li { margin: 2pt 0; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 8.8pt; background: #f2f4f7; padding: 0 2px;
+       border-radius: 2px; }
+pre { font-family: Consolas, "Courier New", monospace; font-size: 7.3pt; line-height: 1.25; background: #f5f7fa;
+      border: 1px solid #dde3ea; border-radius: 3px; padding: 6pt 8pt; white-space: pre; overflow: hidden;
+      break-inside: avoid; }
+pre code { background: none; padding: 0; font-size: inherit; }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: auto; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th { background: #e8eef5; color: #0b3a6b; font-weight: 600; }
+th, td { border: 1px solid #c9d3de; padding: 2.5pt 4pt; vertical-align: top; }
+img { display: block; max-width: 100%; margin: 8pt auto 2pt auto; break-inside: avoid; }
+p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; }
+hr { border: none; border-top: 1px solid #ccc; margin: 10pt 0; }
+.titulo p { text-align: center; margin: 2pt 0; }
+</style></head><body><div class="titulo"><h1>Guía paso a paso: de la HackRF simulada a las HackRF reales</h1>
+<p>Sistemas de Comunicaciones Digitales – FACET – UNT</p>
+<p>Cómo ensayar la prueba de laboratorio en casa y cómo hacerla después con las placas</p>
+</div><hr />
+<p>Esta guía tiene dos partes:</p>
+<ul>
+<li><strong>Parte A, en tu PC y sin placas:</strong> se ensaya todo con la <strong>HackRF simulada</strong>. Un programa hace de las dos
+  placas y del aire.</li>
+<li><strong>Parte B, en el laboratorio:</strong> lo mismo, pero con las <strong>dos HackRF One reales</strong>.</li>
+</ul>
+<p>Las dos partes son casi iguales: cambian los archivos que se abren y, en la simulada, hay un programa más corriendo
+(el emulador). Si la Parte A sale bien, la Parte B es repetir los mismos pasos.</p>
+<h2>La idea en 30 segundos</h2>
+<p>Se manda un archivo de un HackRF (el <strong>transmisor</strong>, TX) a otro (el <strong>receptor</strong>, RX). El archivo viaja en
+<strong>paquetes numerados</strong>, y se manda varias veces (<strong>pasadas</strong>): si un paquete se pierde en una pasada, llega en otra.
+Al final, un programa arma el archivo recibido y comprueba que sea <strong>idéntico</strong> al original.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Parte A: HackRF simulada</th>
+<th>Parte B: HackRF reales</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Programa extra</td>
+<td><code>emulador_hackrf.py</code>, corriendo en un <em>radioconda Prompt</em></td>
+<td>Ninguno</td>
+</tr>
+<tr>
+<td>Receptor (abrir primero)</td>
+<td><code>hackrf_simulada/hackrf_rx_archivo_sim.grc</code></td>
+<td><code>grc_hackrf/hackrf_rx_archivo.grc</code></td>
+</tr>
+<tr>
+<td>Transmisor</td>
+<td><code>hackrf_simulada/hackrf_tx_archivo_sim.grc</code></td>
+<td><code>grc_hackrf/hackrf_tx_archivo.grc</code></td>
+</tr>
+<tr>
+<td>Armar el archivo recibido</td>
+<td><code>python reconstruir_archivo.py hackrf_simulada\paquetes_recibidos.bin</code></td>
+<td><code>python reconstruir_archivo.py</code></td>
+</tr>
+<tr>
+<td>Dónde queda el archivo recibido</td>
+<td><code>hackrf_simulada\recibido_&lt;nombre&gt;</code></td>
+<td><code>grc_hackrf\recibido_&lt;nombre&gt;</code></td>
+</tr>
+<tr>
+<td>Desvío de frecuencia que se ve</td>
+<td>+12,8 kHz (lo pone el emulador)</td>
+<td>Unos pocos kHz, como mucho ~40 kHz</td>
+</tr>
+</tbody>
+</table>
+<h2>Antes de empezar: tres cosas básicas</h2>
+<p><strong>1. El radioconda Prompt.</strong> Es una consola que ya tiene GNU Radio listo. Se abre desde el menú Inicio de Windows,
+buscando "radioconda Prompt". Todos los comandos de esta guía se escriben ahí, <strong>desde la carpeta del proyecto</strong>.
+Para ir a esa carpeta (cambiar la ruta si el proyecto está en otro lugar):</p>
+<pre><code>cd /d &quot;D:\Facultad\Sist_Com_Dig\Proyecto_integrador\claude\integrado\files\proyecto_sdr_4qam_halfduplex\proyecto_sdr_4qam_halfduplex&quot;
+</code></pre>
+<p><strong>2. GNU Radio Companion (GRC).</strong> Es el programa donde se abren los <code>.grc</code>. Se abre escribiendo
+<code>gnuradio-companion</code> en el prompt, o desde el menú Inicio. En GRC:</p>
+<ul>
+<li><strong>Abrir</strong> un <code>.grc</code>: menú <em>File → Open</em>.</li>
+<li><strong>Ejecutar</strong>: tecla <strong>F6</strong> (o el botón ▶). Se abre una ventana con gráficos.</li>
+<li><strong>Detener</strong>: cerrar esa ventana con la <strong>X</strong>. Si se colgó, usar el botón <em>Kill</em> (tecla F7).</li>
+</ul>
+<p><strong>3. El orden siempre es el mismo:</strong> primero el <strong>receptor</strong> y después el <strong>transmisor</strong>. Así el receptor ya está
+escuchando cuando empieza la transmisión.</p>
+<h1>PARTE A: ensayo con la HackRF simulada (en tu PC)</h1>
+<h2>A1. Prueba automática (menos de un minuto)</h2>
+<p>Sirve para comprobar que todo funciona en tu PC antes de hacer nada a mano. En el prompt:</p>
+<pre><code>python hackrf_simulada\prueba_completa.py
+</code></pre>
+<p>La computadora hace sola 9 ensayos: transmite archivos, cambia ganancias y frecuencias y revisa los resultados.</p>
+<p><strong>Tiene que aparecer:</strong> una línea <code>OK</code> por cada caso y, al final, <code>9 casos, 0 fallas</code>.</p>
+<p>Si aparece <code>FALLA</code>, debajo dice qué pasó. Si dice <code>El emulador no arrancó</code> y <code>No se pudieron abrir los puertos</code>,
+es porque ya hay un emulador abierto de antes: cerrarlo con Ctrl+C y repetir.</p>
+<h2>A2. Ensayo a mano (como se hará en el laboratorio)</h2>
+<h3>Paso 1: arrancar el emulador</h3>
+<p>En el prompt:</p>
+<pre><code>python hackrf_simulada\emulador_hackrf.py
+</code></pre>
+<p><strong>Tiene que aparecer:</strong> <code>Emulador de dos HackRF One listo (Ctrl+C para cortar)</code>.</p>
+<p>Dejar esa ventana abierta todo el ensayo. <strong>No hacer clic adentro:</strong> si se selecciona texto, Windows pausa el
+programa. Si pasa, apretar <strong>Esc</strong>.</p>
+<h3>Paso 2: encender el receptor</h3>
+<p>En GRC, abrir <code>hackrf_simulada/hackrf_rx_archivo_sim.grc</code> y apretar <strong>F6</strong>.</p>
+<p><strong>Tiene que pasar:</strong></p>
+<ul>
+<li>Se abre la ventana <strong>"[SIMULADA] HackRF RX: recepción de un archivo…"</strong>.</li>
+<li>En el emulador aparece cada 2 s una línea <code>RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, ...)</code>. Que diga 914,6 y no 915
+  es normal: la placa se sintoniza 400 kHz más abajo.</li>
+</ul>
+<h3>Paso 3: encender el transmisor</h3>
+<p>En GRC, abrir <code>hackrf_simulada/hackrf_tx_archivo_sim.grc</code> y apretar <strong>F6</strong>. Por defecto manda el archivo de
+ejemplo <code>grc_hackrf/archivo_a_enviar.txt</code> 3 veces.</p>
+<p><strong>Tiene que pasar:</strong></p>
+<ul>
+<li>Se abre la ventana del transmisor. Arriba muestra el nombre del archivo, los paquetes por pasada y
+  "Pasadas enviadas", que sube hasta 3.</li>
+<li>En el emulador aparecen <code>&gt;&gt; se conectó el TX</code> y <code>TX: transmite en 914.600 MHz, -37.0 dBm</code>.</li>
+</ul>
+<h3>Paso 4: revisar que se recibe bien</h3>
+<p>En la ventana del <strong>receptor</strong>, marcar cada punto:</p>
+<ul>
+<li>☐ <strong>Pestaña 1 (Señal del HackRF):</strong> a la derecha de una rayita fina en el centro aparece una "montaña": es la
+  señal, en +400 kHz. La rayita del centro es normal (es el oscilador de la placa).</li>
+<li>☐ <strong>Pestaña 2 (Sincronismo):</strong> la línea de "Desvío de frecuencia que estima el FLL" está quieta, cerca de
+  12 800 Hz. En la constelación, los puntos rojos ("Después") forman <strong>4 nubes</strong>.</li>
+<li>☐ <strong>Indicadores de arriba:</strong> "Con CRC correcto" sube y "Descartadas por CRC" queda en 0 o casi 0.</li>
+<li>☐ <strong>Pestaña 3 (Paquetes recibidos):</strong> filas de puntos del 0 al 11, sin huecos. Un hueco es un paquete perdido.</li>
+<li>☐ <strong>Comparar con el emulador:</strong> el emulador dice <code>desvío +12.8 kHz</code> y el receptor muestra "Desvío de frecuencia"
+  ≈ 12 800 Hz. El emulador dice <code>Es/N0 ~ 20.4 dB</code> y el receptor, "Eb/N0 estimado" ≈ 17,4 dB (Eb/N0 es 3 dB menos
+  que Es/N0).</li>
+</ul>
+<p><img alt="Receptor simulado, pestaña 1" src="hackrf_simulada/capturas/captura_sim_rx_1.png" /></p>
+<p class="caption"><em>Figura 1 – Pestaña 1 del receptor simulado: la rayita del centro y la señal ("montaña") en +400 kHz.</em></p>
+<p><img alt="Receptor simulado, pestaña 2" src="hackrf_simulada/capturas/captura_sim_rx_2.png" /></p>
+<p class="caption"><em>Figura 2 – Pestaña 2: desvío estimado quieto en ~12,8 kHz y constelación con 4 nubes rojas después de Costas.</em></p>
+<h3>Paso 5: terminar</h3>
+<p>Cuando "Pasadas enviadas" llegue a 3, esperar un segundo y cerrar con la <strong>X</strong> la ventana del transmisor y
+después la del receptor.</p>
+<p>En el emulador, apretar <strong>Ctrl+C</strong> para cortarlo.</p>
+<h3>Paso 6: armar el archivo recibido</h3>
+<p>En el mismo prompt:</p>
+<pre><code>python reconstruir_archivo.py hackrf_simulada\paquetes_recibidos.bin
+</code></pre>
+<p><strong>Tiene que aparecer:</strong> <code>Huella SHA-256 IGUAL a la del transmisor: el archivo llegó idéntico.</code></p>
+<p>El archivo recibido queda en <code>hackrf_simulada\recibido_archivo_a_enviar.txt</code>: abrirlo y comprobar que es el texto
+original.</p>
+<p><strong>Si llegaste hasta acá, el ensayo salió bien.</strong></p>
+<h2>A3. Practicar (opcional, 10 minutos)</h2>
+<p>Con todo corriendo (pasos 1 a 3), probar estos cambios en las ventanas y mirar qué dice el emulador. Para que el
+transmisor no termine enseguida, poner <code>repeticiones</code> en <strong>0</strong> (sin fin); ver la sección A4 para cambiar un parámetro.</p>
+<table>
+<thead>
+<tr>
+<th>Qué cambiar</th>
+<th>Qué tiene que pasar</th>
+<th>Qué se aprende</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Receptor: "Ganancia VGA" de 20 a 36</td>
+<td>El emulador pasa de <code>-36 dBFS</code> a <code>-20 dBFS</code> y el Es/N0 sube de ~20 a ~24 dB</td>
+<td>Con poca ganancia la señal queda muy chica para el conversor de 8 bits</td>
+</tr>
+<tr>
+<td>Receptor: LNA 40, VGA 50 y "Amplificador RX"</td>
+<td>El emulador dice <code>SATURA</code>; en la pestaña 1, "Señal cruda" toca ±1</td>
+<td>Demasiada ganancia satura: hay que bajarla</td>
+</tr>
+<tr>
+<td>Receptor: frecuencia 917 y Enter</td>
+<td>El emulador dice <code>la señal NO llega</code>; no llegan paquetes</td>
+<td>TX y RX tienen que estar en la misma frecuencia</td>
+</tr>
+<tr>
+<td>Transmisor: "Amplitud digital" en 0,7</td>
+<td>El emulador dice <code>el DAC del TX recorta</code></td>
+<td>En el laboratorio, dejarla en 0,6 o menos</td>
+</tr>
+</tbody>
+</table>
+<p>Después de cada prueba, volver los controles a su valor original. Los 9 ejercicios completos están en
+<code>hackrf_simulada/LEEME.md</code>.</p>
+<h2>A4. Mandar tu propio archivo (práctica para el laboratorio)</h2>
+<ol>
+<li>Copiar el archivo a la carpeta <code>grc_hackrf/</code> del proyecto. Conviene uno de menos de 200 kB: un texto o una
+   foto chica.</li>
+<li>En GRC, en el transmisor simulado, hacer doble clic en el bloque <strong>archivo</strong> (arriba a la izquierda, es un
+   <em>Parameter</em>).</li>
+<li>En <em>Value</em> escribir <code>../grc_hackrf/</code> y el nombre, por ejemplo <code>../grc_hackrf/foto.jpg</code>. Usar barras
+   <code>/</code>, no <code>\</code>. En el mismo lugar, el bloque <strong>repeticiones</strong> dice cuántas pasadas se mandan.</li>
+<li>Repetir los pasos 1 a 6. El archivo recibido queda en <code>hackrf_simulada\recibido_foto.jpg</code>.</li>
+</ol>
+<h1>PARTE B: prueba con las HackRF One reales (en el laboratorio)</h1>
+<h2>B1. Qué llevar</h2>
+<ul>
+<li>☐ Las 2 HackRF One con sus cables USB.</li>
+<li>☐ 2 antenas para 915 MHz, o un cable SMA con un <strong>atenuador de 30 dB o más</strong>.</li>
+<li>☐ La PC (o las 2 PC) con RadioConda y <strong>una copia de la carpeta del proyecto</strong> (por ejemplo, en un pendrive).</li>
+<li>☐ El archivo que se va a mandar, ya copiado en <code>grc_hackrf/</code>.</li>
+<li>☐ Esta guía impresa y la tabla de la sección B6 para anotar.</li>
+</ul>
+<h2>B2. Seguridad (leer antes de enchufar)</h2>
+<ul>
+<li><strong>Frecuencia:</strong> usar la que autorice la cátedra. Los <code>.grc</code> usan 915 MHz por defecto.</li>
+<li><strong>Nunca unir el TX y el RX con un cable sin atenuador.</strong> El receptor aguanta como máximo −5 dBm y el transmisor
+  puede dar más de +10 dBm: se rompe.</li>
+<li><strong>Empezar con los amplificadores apagados</strong> (casillas "Amplificador TX" y "Amplificador RX") y con las ganancias que
+  vienen por defecto.</li>
+<li>Conectar la antena (o el cable) <strong>antes</strong> de transmitir, en el conector <strong>ANTENNA</strong>: el que está en la punta
+  opuesta al USB. Los dos conectores que están junto al USB (CLKIN y CLKOUT) <strong>no</strong> son para la antena.</li>
+</ul>
+<h2>B3. Conectar y reconocer las placas</h2>
+<h3>Paso 1: ver que la PC encuentra las placas</h3>
+<p>Ponerles una etiqueta con cinta: <strong>A</strong> y <strong>B</strong>. Enchufarlas por USB y, en el prompt (desde la carpeta del
+proyecto):</p>
+<pre><code>hackrf_info
+</code></pre>
+<p><strong>Tiene que aparecer:</strong> cada placa con <code>HackRF One</code>, su número de serie (<em>Serial number</em>) y la versión de firmware.</p>
+<p>Si dice <code>No HackRF boards found</code>, probar otro cable u otro puerto USB.</p>
+<h3>Paso 2: decirle a cada <code>.grc</code> qué placa usar (solo si las dos están en la misma PC)</h3>
+<p>Si cada placa está en una PC distinta, saltear este paso.</p>
+<p>Con las dos en la misma PC:</p>
+<ol>
+<li>En el prompt, correr <code>SoapySDRUtil --find="driver=hackrf"</code> y anotar el <code>serial = ...</code> de cada placa. Para saber
+   cuál es cuál, desenchufar una y volver a correrlo.</li>
+<li>En GRC, abrir <code>grc_hackrf/hackrf_tx_archivo.grc</code>, hacer doble clic en la variable <strong>dispositivo</strong> y escribir el
+   serial de la placa A entre comillas, así: <code>"serial=0000000000000000a06063c8234e5f5f"</code> (con el número real).
+   Guardar con Ctrl+S.</li>
+<li>Hacer lo mismo en <code>grc_hackrf/hackrf_rx_archivo.grc</code> con el serial de la placa B.</li>
+</ol>
+<h3>Paso 3: probar cada placa sola, escuchando radio FM</h3>
+<ol>
+<li>Abrir <code>grc_hackrf/hackrf_rx_archivo.grc</code> y apretar F6. Se prende la luz <strong>RX</strong> de la placa.</li>
+<li>En "Frecuencia [MHz]" escribir <strong>98</strong> y apretar Enter.</li>
+<li><strong>Tiene que pasar:</strong> en el espectro y en la cascada de la pestaña 1 se ven varias montañas: son las radios FM
+   de la zona. La placa recibe bien.</li>
+<li>Volver a escribir <strong>915</strong> y apretar Enter. Cerrar la ventana.</li>
+</ol>
+<p>Si las dos placas están en la misma PC, repetirlo con la otra placa: cambiar momentáneamente el serial de
+<code>dispositivo</code> del receptor.</p>
+<h2>B4. Prueba 1: mandar el archivo de A a B</h2>
+<p>Son los mismos pasos de la Parte A, con estas diferencias: <strong>no hay emulador</strong> y se abren los <code>.grc</code> de la carpeta
+<code>grc_hackrf/</code>.</p>
+<h3>Paso 1: encender el receptor (placa B)</h3>
+<p>Abrir <code>grc_hackrf/hackrf_rx_archivo.grc</code> y apretar <strong>F6</strong>. En la pestaña 1 se ve el ruido y la rayita del centro.
+Es normal.</p>
+<h3>Paso 2: encender el transmisor (placa A)</h3>
+<ol>
+<li>Abrir <code>grc_hackrf/hackrf_tx_archivo.grc</code>.</li>
+<li>Doble clic en el bloque <strong>archivo</strong>: escribir el nombre del archivo, por ejemplo <code>foto.jpg</code> (está en la misma
+   carpeta <code>grc_hackrf/</code>). En <strong>repeticiones</strong>, dejar 3.</li>
+<li>Apretar <strong>F6</strong>. Se prende la luz <strong>TX</strong> de la placa A.</li>
+</ol>
+<h3>Paso 3: ajustar las ganancias</h3>
+<p>Mirar la pestaña 1 del <strong>receptor</strong>:</p>
+<ul>
+<li>La "montaña" de la señal tiene que estar <strong>20 a 40 dB por encima del ruido</strong>.</li>
+<li>En "Señal cruda del HackRF", la señal tiene que quedar <strong>lejos de ±1</strong> (como mucho, alrededor de 0,5).</li>
+</ul>
+<p><strong>Si la señal es débil</strong>, subir en este orden, de a poco: "Ganancia VGA" del RX → "Ganancia LNA" del RX →
+"Ganancia TX (VGA)" del transmisor. Los amplificadores, solo si no alcanza, y <strong>nunca</strong> con cable sin atenuador.</p>
+<p><strong>Si la señal cruda toca ±1</strong> (saturación), bajar las mismas ganancias en el orden inverso.</p>
+<p>En el transmisor, la "Amplitud digital" tiene que quedar en <strong>0,6 o menos</strong>.</p>
+<h3>Paso 4: revisar que se recibe bien</h3>
+<p>Es la misma lista del paso 4 de la Parte A. Dos diferencias:</p>
+<ul>
+<li>El desvío de frecuencia ya no es 12,8 kHz: es el error real entre los cristales de las dos placas. Puede ser
+  cualquier valor, positivo o negativo, de hasta unos 40 kHz.</li>
+<li>El emulador ya no está: los números se leen solo en la ventana del receptor.</li>
+</ul>
+<p><strong>Anotar en la tabla (B6):</strong> "Desvío de frecuencia" [Hz], "Desvío [ppm]", "Eb/N0 estimado" y las ganancias que se
+usaron.</p>
+<h3>Paso 5: terminar y armar el archivo</h3>
+<p>Cuando "Pasadas enviadas" llegue a 3, esperar un segundo y cerrar las dos ventanas con la <strong>X</strong>. Después, en el
+prompt:</p>
+<pre><code>python reconstruir_archivo.py
+</code></pre>
+<p><strong>Tiene que aparecer:</strong> <code>Huella SHA-256 IGUAL a la del transmisor: el archivo llegó idéntico.</code> También muestra
+cuántos paquetes llegaron, cuántos se perdieron y el PER medido: anotarlos.</p>
+<p>Abrir <code>grc_hackrf\recibido_&lt;nombre&gt;</code> y comprobar el archivo a simple vista (por ejemplo, que la foto se vea bien).</p>
+<h3>Paso 6: guardar los resultados</h3>
+<p>La próxima vez que se encienda el receptor, los archivos se pisan. Guardarlos en una carpeta por prueba:</p>
+<pre><code>mkdir laboratorio\prueba_1
+copy grc_hackrf\*_recibidos.bin laboratorio\prueba_1\
+copy grc_hackrf\recibido_* laboratorio\prueba_1\
+</code></pre>
+<p>Sacar también una captura de pantalla de cada pestaña del receptor (tecla Impr Pant).</p>
+<h2>B5. Pruebas 2 y 3</h2>
+<h3>Prueba 2: señal débil (A → B)</h3>
+<p>Repetir la prueba 1, pero <strong>bajando la "Ganancia TX (VGA)"</strong> del transmisor de a poco, hasta que se pierdan
+algunos paquetes: aparecen huecos en la pestaña 3 y el "Eb/N0 estimado" queda entre 8 y 10 dB. Poner
+<strong>repeticiones en 5</strong>.</p>
+<p><strong>Qué se busca mostrar:</strong></p>
+<ul>
+<li>El PER medido (de <code>reconstruir_archivo.py</code>) es parecido al "PER teórico" que muestra el receptor.</li>
+<li>Aunque se pierdan paquetes, con varias pasadas el archivo igual llega idéntico.</li>
+</ul>
+<p>Guardar en <code>laboratorio\prueba_2</code>.</p>
+<h3>Prueba 3: al revés (B → A)</h3>
+<p>Cambiar los papeles: la placa B transmite y la A recibe.</p>
+<ul>
+<li><strong>Con dos PC:</strong> abrir el transmisor en la PC de B y el receptor en la de A.</li>
+<li><strong>Con una PC:</strong> intercambiar los seriales de la variable <code>dispositivo</code> en los dos <code>.grc</code>.</li>
+</ul>
+<p>Repetir la prueba 1 y guardar en <code>laboratorio\prueba_3</code>. Así queda probado el enlace en los dos sentidos, uno por
+vez (<em>half-duplex</em>).</p>
+<p>Hay una prueba 4 opcional, con las dos placas usando el mismo reloj, en la sección 7 de <code>LABORATORIO_HACKRF.md</code>.</p>
+<h2>B6. Tabla para anotar</h2>
+<table>
+<thead>
+<tr>
+<th>Prueba</th>
+<th>Sentido</th>
+<th>Distancia o cable</th>
+<th>Ganancias TX (VGA / amp)</th>
+<th>Ganancias RX (LNA / VGA / amp)</th>
+<th>Eb/N0 estimado</th>
+<th>Desvío [Hz] / [ppm]</th>
+<th>Paquetes recibidos / perdidos</th>
+<th>PER medido</th>
+<th>PER teórico</th>
+<th>¿Idéntico?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Señal buena</td>
+<td>A → B</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2. Señal débil</td>
+<td>A → B</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>3. Señal buena</td>
+<td>B → A</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2>B7. Si algo falla</h2>
+<table>
+<thead>
+<tr>
+<th>Qué pasa</th>
+<th>Qué hacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hackrf_info</code> dice <code>No HackRF boards found</code></td>
+<td>Probar otro cable u otro puerto USB</td>
+</tr>
+<tr>
+<td>Al apretar F6: <code>RuntimeError: SoapySDR::Device::make() no match</code></td>
+<td>GNU Radio no encuentra la placa. Revisar <code>hackrf_info</code>; que no la esté usando otra ventana; con dos placas en la PC, que el serial de <code>dispositivo</code> sea el correcto</td>
+</tr>
+<tr>
+<td>No se ve la señal en el receptor</td>
+<td>Misma frecuencia en TX y RX; antena en el conector ANTENNA; subir ganancias (paso 3)</td>
+</tr>
+<tr>
+<td>La señal cruda toca ±1, o la constelación es una mancha</td>
+<td>Saturación: bajar la VGA o el LNA del RX, o la VGA del TX</td>
+</tr>
+<tr>
+<td>Hay "Tramas detectadas" pero muchas "Descartadas por CRC"</td>
+<td>Señal débil o saturada: volver al paso 3</td>
+</tr>
+<tr>
+<td>El desvío pasa de ~40 kHz y no llegan paquetes</td>
+<td>Corregir la frecuencia del receptor en esa diferencia. Por ejemplo, con +50 kHz de desvío, escribir 915.050</td>
+</tr>
+<tr>
+<td>En la consola de GRC aparecen muchas letras <code>U</code> u <code>O</code></td>
+<td>La PC no da abasto: cerrar otros programas, o usar una PC por placa</td>
+</tr>
+<tr>
+<td><code>reconstruir_archivo.py</code> dice que faltan paquetes</td>
+<td>Mandar más pasadas (repeticiones) o mejorar la señal</td>
+</tr>
+</tbody>
+</table>
+<p>La lista completa está en la sección 10 de <code>LABORATORIO_HACKRF.md</code>.</p>
+<h2>B8. Después del laboratorio</h2>
+<p>Con la tabla B6 completa, lo que mostró <code>reconstruir_archivo.py</code> en cada prueba y las capturas, se agregan los
+resultados al informe (<code>INFORME.md</code> y su PDF).</p></body></html>

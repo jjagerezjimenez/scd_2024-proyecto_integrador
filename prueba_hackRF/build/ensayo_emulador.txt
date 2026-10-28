@@ -1,0 +1,19 @@
+Emulador de dos HackRF One listo (Ctrl+C para cortar)
+  aire: 45 dB de atenuación | cristales: TX +9.0 ppm, RX -5.0 ppm (desvío +12.8 kHz a 915 MHz)
+  ahora abrir en GNU Radio Companion, con F6: 1) hackrf_simulada/hackrf_rx_archivo_sim.grc
+                                              2) hackrf_simulada/hackrf_tx_archivo_sim.grc
+[    4 s] TX: apagado
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
+[    6 s] TX: apagado
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
+[    8 s] TX: apagado
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
+  >> se conectó el TX
+  >> el TX se desconectó (terminó de transmitir o se cerró su ventana)
+[   10 s] TX: transmite en 914.600 MHz, -37.0 dBm (VGA 20 dB, amplificador no)
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -39.3 dBFS
+              señal en el RX: -82.0 dBm (-36.0 dBFS), S/R 11.4 dB en 2 MHz, Es/N0 ~ 20.4 dB, desvío +12.9 kHz
+[   12 s] TX: apagado
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
+[   14 s] TX: apagado
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS

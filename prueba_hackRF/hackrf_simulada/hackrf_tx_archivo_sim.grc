@@ -1,0 +1,1178 @@
+options:
+  parameters:
+    author: Juan Gerez
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: 'VERSIÓN SIMULADA de grc_hackrf/hackrf_tx_archivo.grc (la genera hackrf_simulada/generar_grc_simulados.py): en lugar de una HackRF usa emulador_hackrf.py. Transmite un archivo en paquetes numerados (CRC-32, preámbulo y longitud) con 4-QAM diferencial por un HackRF; solo bloques estándar de GNU Radio'
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: hackrf_tx_archivo_sim
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: '[SIMULADA] HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)'
+    window_size: (1850, 1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+blocks:
+- name: imports
+  id: import
+  parameters:
+    alias: ''
+    comment: ''
+    imports: import os, math, hashlib, random
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1288, 12]
+    rotation: 0
+    state: enabled
+- name: archivo
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Archivo a transmitir
+    short_id: ''
+    type: str
+    value: ../grc_hackrf/archivo_a_enviar.txt
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: enabled
+- name: repeticiones
+  id: parameter
+  parameters:
+    alias: ''
+    comment: ''
+    hide: none
+    label: Veces que se envía el archivo (0 = sin fin)
+    short_id: ''
+    type: intx
+    value: '3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [352, 12]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: Muestras por segundo del HackRF (2 M es el mínimo recomendado)
+    value: 2e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 108]
+    rotation: 0
+    state: enabled
+- name: sps
+  id: variable
+  parameters:
+    comment: 'Muestras por símbolo en el TX: 2 M / 8 = 250 000 símbolos/s = 500 kbit/s'
+    value: '8'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [296, 108]
+    rotation: 0
+    state: enabled
+- name: excess_bw
+  id: variable
+  parameters:
+    comment: Factor de roll-off del filtro RRC (igual que en la simulación)
+    value: '0.35'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [376, 108]
+    rotation: 0
+    state: enabled
+- name: f_offset
+  id: variable
+  parameters:
+    comment: 'Desplazamiento digital [Hz]: el HackRF se sintoniza 400 kHz más abajo y la señal se corre +400 kHz, así la portadora residual del oscilador (pico en el centro del espectro) queda fuera de la señal'
+    value: 400e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 108]
+    rotation: 0
+    state: enabled
+- name: N
+  id: variable
+  parameters:
+    comment: Bytes del archivo por paquete (tiene que ser el mismo número en el receptor)
+    value: '200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 108]
+    rotation: 0
+    state: enabled
+- name: W
+  id: variable
+  parameters:
+    comment: 'Bytes de relleno al comienzo de cada pasada: dan tiempo a que el receptor se enganche'
+    value: '2500'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 108]
+    rotation: 0
+    state: enabled
+- name: dispositivo
+  id: variable
+  parameters:
+    comment: 'Para elegir un HackRF: "serial=..." (ver hackrf_info). Vacío = el primero'
+    value: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [784, 108]
+    rotation: 0
+    state: enabled
+- name: encontrado
+  id: variable
+  parameters:
+    comment: ''
+    value: os.path.isfile(archivo)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 188]
+    rotation: 0
+    state: enabled
+- name: contenido
+  id: variable
+  parameters:
+    comment: Bytes del archivo (si no se encuentra, se envía un aviso de texto)
+    value: list(open(archivo, "rb").read()) if encontrado else list(("No se encontro el archivo " + archivo).encode())
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 188]
+    rotation: 0
+    state: enabled
+- name: nombre
+  id: variable
+  parameters:
+    comment: ''
+    value: os.path.basename(archivo) if encontrado else "ERROR_archivo_no_encontrado.txt"
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [664, 188]
+    rotation: 0
+    state: enabled
+- name: huella
+  id: variable
+  parameters:
+    comment: 'Huella SHA-256 del archivo: el receptor la usa para comprobar que llegó idéntico'
+    value: hashlib.sha256(bytes(contenido)).hexdigest()
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [880, 188]
+    rotation: 0
+    state: enabled
+- name: n_datos
+  id: variable
+  parameters:
+    comment: Paquetes con datos del archivo
+    value: (len(contenido) + N - 1) // N
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 268]
+    rotation: 0
+    state: enabled
+- name: n_paq
+  id: variable
+  parameters:
+    comment: 'Paquetes por pasada: los de datos + uno final con nombre, tamaño y huella'
+    value: n_datos + 1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 268]
+    rotation: 0
+    state: enabled
+- name: descripcion
+  id: variable
+  parameters:
+    comment: 'Último paquete de cada pasada: ARCHIVO|nombre (hasta 40 bytes)|tamaño|N|paquetes|huella|'
+    value: list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(contenido), N, n_paq, huella)).encode())
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 268]
+    rotation: 0
+    state: enabled
+- name: datos
+  id: variable
+  parameters:
+    comment: 'Datos de una pasada: archivo completado con ceros hasta N bytes por paquete + paquete final'
+    value: contenido + [0] * (n_datos * N - len(contenido)) + (descripcion + [0] * N)[:N]
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 348]
+    rotation: 0
+    state: enabled
+- name: secuencia
+  id: variable
+  parameters:
+    comment: 'Número de cada paquete (2 bytes): 0, 1, 2, ... n_paq-1'
+    value: '[b for i in range(n_paq) for b in ((i // 256) % 256, i % 256)]'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [600, 348]
+    rotation: 0
+    state: enabled
+- name: relleno
+  id: variable
+  parameters:
+    comment: 'Bytes al azar (sin preámbulo): no son tramas'
+    value: list(random.Random(1).randbytes(W))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [880, 348]
+    rotation: 0
+    state: enabled
+- name: bytes_trama
+  id: variable
+  parameters:
+    comment: preámbulo 8 + longitud 4 + número 2 + datos N + CRC 4
+    value: N + 18
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 428]
+    rotation: 0
+    state: enabled
+- name: bytes_pasada
+  id: variable
+  parameters:
+    comment: ''
+    value: W + n_paq * bytes_trama
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 428]
+    rotation: 0
+    state: enabled
+- name: total_bytes
+  id: variable
+  parameters:
+    comment: Bytes que se envían en total (+ un relleno final para que salga la última trama)
+    value: repeticiones * bytes_pasada + W if repeticiones > 0 else 2**62
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [480, 428]
+    rotation: 0
+    state: enabled
+- name: duracion_pasada
+  id: variable
+  parameters:
+    comment: Segundos que dura una pasada (2 bits por símbolo)
+    value: bytes_pasada * 8 / 2 / (samp_rate / sps)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 428]
+    rotation: 0
+    state: enabled
+- name: qpsk
+  id: variable_constellation_rect
+  parameters:
+    comment: ''
+    const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
+    sym_map: '[0, 1, 3, 2]'
+    rot_sym: '4'
+    real_sect: '2'
+    imag_sect: '2'
+    w_real_sect: '1'
+    w_imag_sect: '1'
+    precision: '8'
+    soft_dec_lut: None
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 108]
+    rotation: 0
+    state: enabled
+- name: formato_trama
+  id: variable_header_format_default
+  parameters:
+    comment: ''
+    access_code: '0'
+    threshold: '0'
+    bps: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1000, 268]
+    rotation: 0
+    state: enabled
+- name: freq_mhz
+  id: variable_qtgui_entry
+  parameters:
+    comment: ''
+    label: Frecuencia [MHz]
+    type: real
+    value: '915'
+    entry_signal: editingFinished
+    gui_hint: 0,0,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1288, 100]
+    rotation: 0
+    state: enabled
+- name: vga_tx
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    label: Ganancia TX (VGA) [dB]
+    rangeType: float
+    value: '20'
+    start: '0'
+    stop: '47'
+    step: '1'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '150'
+    gui_hint: 0,1,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1440, 100]
+    rotation: 0
+    state: enabled
+- name: amp_tx
+  id: variable_qtgui_check_box
+  parameters:
+    comment: ''
+    label: Amplificador TX (+14 dB)
+    type: bool
+    value: 'False'
+    'true': 'True'
+    'false': 'False'
+    gui_hint: 0,2,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1592, 100]
+    rotation: 0
+    state: enabled
+- name: amplitud
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    label: Amplitud digital (pico < 1)
+    rangeType: float
+    value: '0.5'
+    start: '0.05'
+    stop: '0.7'
+    step: '0.05'
+    widget: counter_slider
+    orient: QtCore.Qt.Horizontal
+    min_len: '150'
+    gui_hint: 0,3,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1744, 100]
+    rotation: 0
+    state: enabled
+- name: enviados
+  id: variable_function_probe
+  parameters:
+    comment: ''
+    block_id: limite
+    function_name: nitems_written
+    function_args: '0'
+    poll_rate: '2'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1288, 228]
+    rotation: 0
+    state: enabled
+- name: lbl_archivo
+  id: variable_qtgui_label
+  parameters:
+    comment: ''
+    label: 'Archivo: '
+    type: string
+    value: '"%s (%d bytes)" % (nombre, len(contenido))'
+    formatter: None
+    gui_hint: 1,0,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1440, 228]
+    rotation: 0
+    state: enabled
+- name: lbl_paquetes
+  id: variable_qtgui_label
+  parameters:
+    comment: ''
+    label: 'Paquetes por pasada: '
+    type: string
+    value: '"%d (%.2f s cada pasada)" % (n_paq, duracion_pasada)'
+    formatter: None
+    gui_hint: 1,1,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1592, 228]
+    rotation: 0
+    state: enabled
+- name: lbl_huella
+  id: variable_qtgui_label
+  parameters:
+    comment: ''
+    label: 'SHA-256: '
+    type: string
+    value: huella[:16] + "..."
+    formatter: None
+    gui_hint: 1,2,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1744, 228]
+    rotation: 0
+    state: enabled
+- name: lbl_pasadas
+  id: variable_qtgui_label
+  parameters:
+    comment: ''
+    label: 'Pasadas enviadas: '
+    type: real
+    value: min(enviados, total_bytes - W) / bytes_pasada
+    formatter: 'lambda x: ''%.2f'' % x'
+    gui_hint: 1,3,1,1
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1896, 228]
+    rotation: 0
+    state: enabled
+- name: nota_paquetes
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: 'PAQUETES: [número (2 bytes) | N bytes del archivo] -> CRC-32 -> preámbulo 64 b + longitud x2. El último paquete de cada pasada lleva nombre, tamaño y huella SHA-256 del archivo.'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 516]
+    rotation: 0
+    state: enabled
+- name: sec_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: secuencia
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 596]
+    rotation: 0
+    state: enabled
+- name: sec_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+    packet_len: '2'
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 604]
+    rotation: 0
+    state: enabled
+- name: datos_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: datos
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 692]
+    rotation: 0
+    state: enabled
+- name: datos_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+    packet_len: N
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [192, 700]
+    rotation: 0
+    state: enabled
+- name: paquete
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    ninputs: '2'
+    lengthtagname: '"packet_len"'
+    vlen: '1'
+    tag_preserve_head_pos: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [432, 640]
+    rotation: 0
+    state: enabled
+- name: crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    check: 'False'
+    lengthtagname: '"packet_len"'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [640, 648]
+    rotation: 0
+    state: enabled
+- name: encabezado
+  id: digital_protocol_formatter_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    format: formato_trama
+    len_tag_key: '"packet_len"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [848, 592]
+    rotation: 0
+    state: enabled
+- name: trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    ninputs: '2'
+    lengthtagname: '"packet_len"'
+    vlen: '1'
+    tag_preserve_head_pos: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1072, 644]
+    rotation: 0
+    state: enabled
+- name: nota_pasada
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: PASADA = [relleno W bytes | n_paq tramas]. Head corta después de 'repeticiones' pasadas (y un relleno final).
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 804]
+    rotation: 0
+    state: enabled
+- name: relleno_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vector: relleno
+    tags: '[]'
+    repeat: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 868]
+    rotation: 0
+    state: enabled
+- name: pasada
+  id: blocks_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    lengths: '[W, n_paq * bytes_trama]'
+    num_inputs: '2'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1280, 768]
+    rotation: 0
+    state: enabled
+- name: limite
+  id: blocks_head
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    num_items: total_bytes
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1472, 784]
+    rotation: 0
+    state: enabled
+- name: nota_rf
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: 4-QAM diferencial + RRC (8 muestras/símbolo) -> se corre +400 kHz -> amplitud -> HackRF (sintonizado en la frecuencia elegida menos 400 kHz)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1220]
+    rotation: 0
+    state: enabled
+- name: modulador
+  id: digital_constellation_modulator
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    constellation: qpsk
+    differential: 'True'
+    samples_per_symbol: sps
+    excess_bw: excess_bw
+    verbose: 'False'
+    log: 'False'
+    truncate: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1284]
+    rotation: 0
+    state: enabled
+- name: desplazar
+  id: blocks_rotator_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_inc: 2 * math.pi * f_offset / samp_rate
+    tag_inc_update: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [264, 1300]
+    rotation: 0
+    state: enabled
+- name: ajuste_amplitud
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    const: amplitud
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [488, 1300]
+    rotation: 0
+    state: enabled
+- name: g_espectro
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    name: '"Espectro que se transmite (centro = frecuencia - 400 kHz)"'
+    gui_hint: 2,0,1,1
+    nconnections: '1'
+    fftsize: '1024'
+    fc: '0'
+    bw: samp_rate
+    wintype: window.WIN_BLACKMAN_hARRIS
+    average: '0.2'
+    autoscale: 'False'
+    axislabels: 'True'
+    grid: 'True'
+    legend: 'False'
+    ctrlpanel: 'False'
+    freqhalf: 'True'
+    norm_window: 'False'
+    showports: 'False'
+    label: '"Potencia relativa"'
+    units: dB
+    ymin: '-120'
+    ymax: '0'
+    update_time: '0.10'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_level: '0.0'
+    tr_chan: '0'
+    tr_tag: '""'
+    label1: TX
+    color1: '"blue"'
+    width1: '1'
+    alpha1: '1.0'
+    label2: ''
+    color2: '"red"'
+    width2: '1'
+    alpha2: '1.0'
+    label3: ''
+    color3: '"green"'
+    width3: '1'
+    alpha3: '1.0'
+    label4: ''
+    color4: '"black"'
+    width4: '1'
+    alpha4: '1.0'
+    label5: ''
+    color5: '"cyan"'
+    width5: '1'
+    alpha5: '1.0'
+    label6: ''
+    color6: '"magenta"'
+    width6: '1'
+    alpha6: '1.0'
+    label7: ''
+    color7: '"yellow"'
+    width7: '1'
+    alpha7: '1.0'
+    label8: ''
+    color8: '"dark red"'
+    width8: '1'
+    alpha8: '1.0'
+    label9: ''
+    color9: '"dark green"'
+    width9: '1'
+    alpha9: '1.0'
+    label10: ''
+    color10: '"dark blue"'
+    width10: '1'
+    alpha10: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 1404]
+    rotation: 0
+    state: enabled
+- name: g_cascada
+  id: qtgui_waterfall_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    name: '"Cascada (espectro en el tiempo)"'
+    fftsize: '1024'
+    freqhalf: 'True'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    fc: '0'
+    bw: samp_rate
+    int_min: '-120'
+    int_max: '0'
+    grid: 'False'
+    nconnections: '1'
+    update_time: '0.10'
+    showports: 'False'
+    gui_hint: 2,1,1,1
+    legend: 'False'
+    axislabels: 'True'
+    label1: ''
+    color1: '0'
+    alpha1: '1.0'
+    label2: ''
+    color2: '0'
+    alpha2: '1.0'
+    label3: ''
+    color3: '0'
+    alpha3: '1.0'
+    label4: ''
+    color4: '0'
+    alpha4: '1.0'
+    label5: ''
+    color5: '0'
+    alpha5: '1.0'
+    label6: ''
+    color6: '0'
+    alpha6: '1.0'
+    label7: ''
+    color7: '0'
+    alpha7: '1.0'
+    label8: ''
+    color8: '0'
+    alpha8: '1.0'
+    label9: ''
+    color9: '0'
+    alpha9: '1.0'
+    label10: ''
+    color10: '0'
+    alpha10: '1.0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [968, 1404]
+    rotation: 0
+    state: enabled
+- name: g_senal
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    name: '"Señal que entra al HackRF (I y Q, debe quedar dentro de ±1)"'
+    gui_hint: 2,2,1,2
+    nconnections: '1'
+    size: '400'
+    srate: samp_rate
+    ymin: '-1.1'
+    ymax: '1.1'
+    ylabel: Amplitud
+    yunit: '""'
+    grid: 'True'
+    autoscale: 'False'
+    axislabels: 'True'
+    legend: 'True'
+    ctrlpanel: 'False'
+    entags: 'False'
+    stemplot: 'False'
+    update_time: '0.10'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_level: '0.0'
+    tr_delay: '0'
+    tr_chan: '0'
+    tr_tag: '""'
+    label1: I
+    color1: blue
+    width1: '1'
+    alpha1: '1.0'
+    style1: '1'
+    marker1: '-1'
+    label2: Q
+    color2: red
+    width2: '1'
+    alpha2: '1.0'
+    style2: '1'
+    marker2: '-1'
+    label3: ''
+    color3: green
+    width3: '1'
+    alpha3: '1.0'
+    style3: '1'
+    marker3: '-1'
+    label4: ''
+    color4: black
+    width4: '1'
+    alpha4: '1.0'
+    style4: '1'
+    marker4: '-1'
+    label5: ''
+    color5: cyan
+    width5: '1'
+    alpha5: '1.0'
+    style5: '1'
+    marker5: '-1'
+    label6: ''
+    color6: magenta
+    width6: '1'
+    alpha6: '1.0'
+    style6: '1'
+    marker6: '-1'
+    label7: ''
+    color7: yellow
+    width7: '1'
+    alpha7: '1.0'
+    style7: '1'
+    marker7: '-1'
+    label8: ''
+    color8: dark red
+    width8: '1'
+    alpha8: '1.0'
+    style8: '1'
+    marker8: '-1'
+    label9: ''
+    color9: dark green
+    width9: '1'
+    alpha9: '1.0'
+    style9: '1'
+    marker9: '-1'
+    label10: ''
+    color10: dark blue
+    width10: '1'
+    alpha10: '1.0'
+    style10: '1'
+    marker10: '-1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1232, 1404]
+    rotation: 0
+    state: enabled
+- name: nota_simulada
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: |-
+      VERSIÓN SIMULADA, generada por generar_grc_simulados.py a partir de ../grc_hackrf/hackrf_tx_archivo.grc.
+      Es igual al original, salvo los bloques de esta franja: en lugar de la HackRF usa el emulador
+      (python hackrf_simulada/emulador_hackrf.py, corriendo antes de apretar F6).
+      No editar este archivo: cambiar el original y volver a generar.
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 980]
+    rotation: 0
+    state: enabled
+- name: hackrf_tx
+  id: network_tcp_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'HackRF SIMULADA: manda las muestras al emulador, que las toma a samp_rate muestras/s como la placa'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    mode: '1'
+    addr: 127.0.0.1
+    port: '5550'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 1268]
+    rotation: 0
+    state: enabled
+- name: ajustes_hackrf
+  id: variable
+  parameters:
+    comment: Lo que el bloque Soapy le pediría a la placa (frecuencia, muestreo, ganancias), como texto
+    value: ("equipo=tx frecuencia=%r muestreo=%r vga=%r amp=%d" % (float(freq_mhz * 1e6 - f_offset), float(samp_rate), float(vga_tx), bool(amp_tx))).encode()
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 1000]
+    rotation: 0
+    state: enabled
+- name: ajustes_periodicos
+  id: blocks_message_strobe
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Repite los ajustes cada 200 ms (si cambian en la interfaz, cambia el mensaje)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    msg: pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(ajustes_hackrf), list(ajustes_hackrf)))
+    period: '200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [904, 1000]
+    rotation: 0
+    state: enabled
+- name: ajustes_red
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Manda los ajustes al emulador (UDP)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: UDP_CLIENT
+    host: 127.0.0.1
+    port: '5552'
+    mtu: '10000'
+    tcp_no_delay: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 1000]
+    rotation: 0
+    state: enabled
+connections:
+- [sec_fuente, '0', sec_paquetes, '0']
+- [datos_fuente, '0', datos_paquetes, '0']
+- [sec_paquetes, '0', paquete, '0']
+- [datos_paquetes, '0', paquete, '1']
+- [paquete, '0', crc, '0']
+- [crc, '0', encabezado, '0']
+- [encabezado, '0', trama, '0']
+- [crc, '0', trama, '1']
+- [relleno_fuente, '0', pasada, '0']
+- [trama, '0', pasada, '1']
+- [pasada, '0', limite, '0']
+- [limite, '0', modulador, '0']
+- [modulador, '0', desplazar, '0']
+- [desplazar, '0', ajuste_amplitud, '0']
+- [ajuste_amplitud, '0', hackrf_tx, '0']
+- [ajuste_amplitud, '0', g_espectro, '0']
+- [ajuste_amplitud, '0', g_cascada, '0']
+- [ajuste_amplitud, '0', g_senal, '0']
+- [ajustes_periodicos, strobe, ajustes_red, pdus]
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0

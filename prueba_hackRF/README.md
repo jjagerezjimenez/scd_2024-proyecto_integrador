@@ -1,7 +1,8 @@
 # Enlace punto a punto half-duplex con 4-QAM en GNU Radio
 
 Proyecto de *Sistemas de Comunicaciones Digitales* (FACET – UNT). Radio definida por software simulada en
-GNU Radio.
+GNU Radio, armada **solo con bloques estándar** (ningún bloque propio): cualquier persona puede abrir los `.grc` y
+ejecutarlos sin instalar nada extra.
 
 | Requisito | Cómo se cumple | Dónde |
 |---|---|---|
@@ -9,11 +10,39 @@ GNU Radio.
 | Trama simple con **preámbulo y longitud** | Encabezado estándar de GNU Radio: `preámbulo (64 bits) ‖ longitud ‖ longitud ‖ payload ‖ CRC-32` | `Protocol Formatter` |
 | **CRC-32** | `Stream CRC32`: lo agrega el transmisor y lo verifica el receptor, que descarta las tramas erróneas. | todos los `.grc` |
 | **4-QAM** | `Constellation Modulator`: constelación Gray, codificación diferencial, filtro RRC (roll-off 0,35, 4 muestras/símbolo). | todos los `.grc` |
-| **BER teórico** vs SNR | `Pb = Q(√(2·Eb/N0))`; con codificación diferencial `2p(1−p)`; PER y BER con error de fase. | `ber_teorico.py`|
+| **BER teórico** vs SNR | `Pb = Q(√(2·Eb/N0))`; con codificación diferencial `2p(1−p)`; PER y BER con error de fase. | `ber_teorico.py`, `INFORME.md` §2 |
 | **Simulación** en GNU Radio | Tres flowgraphs (ver abajo). | `grc_estandar/` |
-| **BER medido** en distintas condiciones de canal y comparación con la teoría | Barrido automático de Eb/N0 × 4 condiciones de canal, con intervalos de confianza. | `run_ber_sweep.py`|
+| **BER medido** en distintas condiciones de canal y comparación con la teoría | Barrido automático de Eb/N0 × 4 condiciones de canal, con intervalos de confianza. | `run_ber_sweep.py`, `resultados/`, `INFORME.md` §6 |
 | **Prueba de laboratorio** transmitiendo archivos con **HackRF** | El mismo sistema (tramas, 4-QAM, receptor) con `Soapy HackRF Sink/Source`: paquetes numerados, varias pasadas y verificación SHA-256 del archivo recibido. Probado sin hardware con un canal de laboratorio simulado. | `grc_hackrf/`, `LABORATORIO_HACKRF.md` |
 
+## Contenido
+
+```
+INFORME.md / INFORME.pdf      informe técnico: teoría, diseño, resultados y análisis
+grc_estandar/
+  enlace_4qam_tramas.grc      enlace en un solo sentido con un gráfico por etapa (para entender cada bloque)
+  halfduplex_4qam.grc         SISTEMA COMPLETO: dos nodos half-duplex (TDD) con interfaz
+  halfduplex_4qam_ber.grc     el mismo half-duplex sin interfaz, con parámetros, para medir BER
+grc_hackrf/                   PRUEBA DE LABORATORIO con HackRF (ver LABORATORIO_HACKRF.md)
+  hackrf_tx_archivo.grc       transmite un archivo en paquetes numerados por un HackRF
+  hackrf_rx_archivo.grc       recibe con otro HackRF y guarda los paquetes con CRC correcto
+  archivo_a_enviar.txt        archivo de ejemplo
+  capturas_simuladas/         cómo se ven las interfaces cuando funciona (HackRF simulado)
+hackrf_simulada/              ENSAYO DEL LABORATORIO EN UNA SOLA PC, sin placas (ver hackrf_simulada/LEEME.md)
+  emulador_hackrf.py          hace de las dos HackRF One y del aire; se deja corriendo en un radioconda Prompt
+  hackrf_*_archivo_sim.grc    los .grc del laboratorio con bloques de red en lugar del bloque Soapy HackRF
+  generar_grc_simulados.py    vuelve a armar los _sim.grc si cambian los de grc_hackrf/
+  prueba_completa.py          prueba de punta a punta con el emulador (9 casos, ~40 s)
+LABORATORIO_HACKRF.md / .pdf  guía de la prueba: seguridad, procedimiento, mediciones y problemas comunes
+GUIA_PASO_A_PASO.md / .pdf    guía muy simple: ensayo con la HackRF simulada y después la prueba con las placas
+reconstruir_archivo.py        arma el archivo recibido, cuenta paquetes perdidos y verifica la huella SHA-256
+run_ber_sweep.py              barrido de BER vs Eb/N0 (usa halfduplex_4qam_ber.grc) -> resultados/
+ber_teorico.py                BER/SER/PER teóricos + verificación Monte Carlo (no necesita GNU Radio)
+resultados/                   CSV, gráficos, tabla de pérdidas y capturas de las interfaces
+tests/test_flowgraphs.py      pruebas con GNU Radio real
+tests/test_hackrf.py          pruebas de grc_hackrf/ sin HackRF (canal de laboratorio simulado)
+tools/informe_pdf.py          genera INFORME.pdf (o el PDF de otro .md, como la guía del laboratorio)
+```
 
 ## Requisitos
 
@@ -71,8 +100,9 @@ python build/halfduplex_4qam_ber.py --help
 
 ### Prueba de laboratorio con HackRF
 
-Guía completa (seguridad, procedimiento paso a paso, tabla de mediciones y problemas comunes):
-`LABORATORIO_HACKRF.md` (o `LABORATORIO_HACKRF.pdf`). En resumen:
+Para empezar, la guía más simple: `GUIA_PASO_A_PASO.md` (o `.pdf`). Primero se ensaya en la PC con la HackRF
+simulada y después se repiten los mismos pasos con las placas. Guía completa (seguridad, procedimiento, tabla de
+mediciones y problemas comunes): `LABORATORIO_HACKRF.md` (o `LABORATORIO_HACKRF.pdf` para imprimir). En resumen:
 
 ```bash
 hackrf_info                                               # se tienen que ver los dos HackRF
@@ -88,13 +118,19 @@ python reconstruir_archivo.py                             # 3) arma grc_hackrf/r
   Un paquete perdido en una pasada se recupera en otra.
 * Antes del laboratorio: `python tests/test_hackrf.py` prueba los dos `.grc` sin HackRF, con desvíos de hasta
   ±40 kHz entre osciladores, relojes distintos, ruido de fase y portadora residual.
+* Ensayo completo en una sola PC: `hackrf_simulada/LEEME.md`. Se deja corriendo
+  `python hackrf_simulada/emulador_hackrf.py`, se abren en GRC `hackrf_simulada/hackrf_rx_archivo_sim.grc` y
+  `hackrf_tx_archivo_sim.grc` (F6) y al final se corre `python reconstruir_archivo.py hackrf_simulada/paquetes_recibidos.bin`.
 
-### Teoría y pruebas
+### Teoría, pruebas e informe
 
 ```bash
 python ber_teorico.py --montecarlo      # tabla, gráfico resultados/ber_teorico.png y verificación Monte Carlo
 python tests/test_flowgraphs.py         # 9 pruebas con GNU Radio real (~30 s)
 python tests/test_hackrf.py             # 7 pruebas de grc_hackrf/ con un HackRF simulado (< 1 min)
+python hackrf_simulada/prueba_completa.py  # 9 casos de punta a punta con el emulador de HackRF (~40 s)
+python tools/informe_pdf.py             # INFORME.md -> INFORME.pdf (usa Microsoft Edge, sin abrir ventanas)
+python tools/informe_pdf.py LABORATORIO_HACKRF.md         # -> LABORATORIO_HACKRF.pdf
 ```
 
 ## Resultados (resumen)
@@ -106,7 +142,7 @@ python tests/test_hackrf.py             # 7 pruebas de grc_hackrf/ con un HackRF
 | Fase 20° con lazo de Costas | +0,08 dB | 1,04 |
 | Fase 20° + desvío de 200 Hz con lazo de Costas | +0,08 dB | 1,04 |
 
-De 206.473 tramas aceptadas por el CRC, ninguna tenía contenido distinto del transmitido.
+De 206.473 tramas aceptadas por el CRC, ninguna tenía contenido distinto del transmitido. Detalle en `INFORME.md` §6.
 
 ## Solución de problemas
 
@@ -114,8 +150,8 @@ De 206.473 tramas aceptadas por el CRC, ninguna tenía contenido distinto del tr
   `Throttle` corre a máxima velocidad para medir).
 * Al cerrar una interfaz, a veces aparece `RuntimeError: wrapped C/C++ object ... has been deleted`: es inofensivo; viene
   del bloque estándar `Function Probe`, cuyo hilo lee la sonda un instante después de cerrada la ventana.
-* Al ejecutar desde GRC se generan `.py` en `grc_estandar/` y `grc_hackrf/`, y archivos `mensajes_recibidos*.txt`,
-  `paquetes_recibidos.bin`, `datos_recibidos.bin` y `recibido_*`; están en `.gitignore`.
+* Al ejecutar desde GRC se generan `.py` en `grc_estandar/`, `grc_hackrf/` y `hackrf_simulada/`, y archivos
+  `mensajes_recibidos*.txt`, `paquetes_recibidos.bin`, `datos_recibidos.bin` y `recibido_*`; están en `.gitignore`.
 * Problemas con el HackRF (no lo encuentra, dos placas en la misma PC, saturación, desvío grande): ver la tabla de la
   sección 10 de `LABORATORIO_HACKRF.md`.
 * Si se modifica la trama o el canal en los `.grc`, revisar que `run_ber_sweep.py` siga usando los mismos valores de
