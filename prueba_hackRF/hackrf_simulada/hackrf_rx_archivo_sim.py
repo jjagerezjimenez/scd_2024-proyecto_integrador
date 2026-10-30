@@ -984,12 +984,12 @@ class hackrf_rx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
+        self.set_ajustes_hackrf(("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.lna), float(self.vga_rx), bool(self.amp_rx))).encode())
         self.set_samp_rate_rx(self.samp_rate / self.decim)
         self.set_taps_canal(firdes.low_pass(1, self.samp_rate, 300e3, 100e3))
         self.g_cascada.set_frequency_range(0, self.samp_rate)
         self.g_crudo.set_samp_rate(self.samp_rate)
         self.g_espectro_crudo.set_frequency_range(0, self.samp_rate)
-        self.set_ajustes_hackrf(("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.lna), float(self.vga_rx), bool(self.amp_rx))).encode())
 
     def get_eb_n0_db(self):
         return self.eb_n0_db
@@ -1122,17 +1122,17 @@ class hackrf_rx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_freq_mhz(self, freq_mhz):
         self.freq_mhz = freq_mhz
+        self.set_ajustes_hackrf(("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.lna), float(self.vga_rx), bool(self.amp_rx))).encode())
         Qt.QMetaObject.invokeMethod(self._freq_mhz_line_edit, "setText", Qt.Q_ARG("QString", eng_notation.num_to_str(self.freq_mhz)))
         self.set_lbl_ppm((self.cfo_hz / self.freq_mhz))
-        self.set_ajustes_hackrf(("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.lna), float(self.vga_rx), bool(self.amp_rx))).encode())
 
     def get_f_offset(self):
         return self.f_offset
 
     def set_f_offset(self, f_offset):
         self.f_offset = f_offset
-        self.trasladar.set_center_freq(self.f_offset)
         self.set_ajustes_hackrf(("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.lna), float(self.vga_rx), bool(self.amp_rx))).encode())
+        self.trasladar.set_center_freq(self.f_offset)
 
     def get_cfo_hz(self):
         return self.cfo_hz
@@ -1154,8 +1154,8 @@ class hackrf_rx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_amp_rx(self, amp_rx):
         self.amp_rx = amp_rx
-        self._amp_rx_callback(self.amp_rx)
         self.set_ajustes_hackrf(("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.lna), float(self.vga_rx), bool(self.amp_rx))).encode())
+        self._amp_rx_callback(self.amp_rx)
 
     def get_umbral(self):
         return self.umbral

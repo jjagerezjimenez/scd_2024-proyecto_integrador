@@ -35,7 +35,7 @@ import time
 
 class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
-    def __init__(self, archivo='../grc_hackrf/archivo_a_enviar.txt', repeticiones=0):
+    def __init__(self, archivo='../grc_hackrf/Outer.mp3', repeticiones=0):
         gr.top_block.__init__(self, "[SIMULADA] HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)", catch_exceptions=True)
         Qt.QWidget.__init__(self)
         self.setWindowTitle("[SIMULADA] HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)")
@@ -706,7 +706,7 @@ def argument_parser():
     description = 'VERSIÓN SIMULADA de grc_hackrf/hackrf_tx_archivo.grc (la genera hackrf_simulada/generar_grc_simulados.py): en lugar de una HackRF usa emulador_hackrf.py. Transmite un archivo en paquetes numerados (CRC-32, preámbulo y longitud) con 4-QAM diferencial por un HackRF; solo bloques estándar de GNU Radio'
     parser = ArgumentParser(description=description)
     parser.add_argument(
-        "--archivo", dest="archivo", type=str, default='../grc_hackrf/archivo_a_enviar.txt',
+        "--archivo", dest="archivo", type=str, default='../grc_hackrf/Outer.mp3',
         help="Set Archivo a transmitir [default=%(default)r]")
     parser.add_argument(
         "--repeticiones", dest="repeticiones", type=intx, default=0,

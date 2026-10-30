@@ -571,7 +571,7 @@ blocks:
     label: Archivo a transmitir
     short_id: ''
     type: str
-    value: ../grc_hackrf/archivo_a_enviar.txt
+    value: ../grc_hackrf/Outer.mp3
   states:
     bus_sink: false
     bus_source: false

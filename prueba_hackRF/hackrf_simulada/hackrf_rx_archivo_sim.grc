@@ -6,7 +6,11 @@ options:
     cmake_opt: ''
     comment: ''
     copyright: ''
-    description: 'VERSIÓN SIMULADA de grc_hackrf/hackrf_rx_archivo.grc (la genera hackrf_simulada/generar_grc_simulados.py): en lugar de una HackRF usa emulador_hackrf.py. Recibe con un HackRF los paquetes de hackrf_tx_archivo.grc (FLL, sincronismo, Costas, CRC-32) y guarda los correctos en paquetes_recibidos.bin y datos_recibidos.bin; solo bloques estándar de GNU Radio'
+    description: "VERSI\xD3N SIMULADA de grc_hackrf/hackrf_rx_archivo.grc (la genera\
+      \ hackrf_simulada/generar_grc_simulados.py): en lugar de una HackRF usa emulador_hackrf.py.\
+      \ Recibe con un HackRF los paquetes de hackrf_tx_archivo.grc (FLL, sincronismo,\
+      \ Costas, CRC-32) y guarda los correctos en paquetes_recibidos.bin y datos_recibidos.bin;\
+      \ solo bloques est\xE1ndar de GNU Radio"
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: qt_gui
@@ -22,7 +26,8 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: '[SIMULADA] HackRF RX: recepción de un archivo (4-QAM, bloques estándar)'
+    title: "[SIMULADA] HackRF RX: recepci\xF3n de un archivo (4-QAM, bloques est\xE1\
+      ndar)"
     window_size: (1850, 1000)
   states:
     bus_sink: false
@@ -31,6 +36,7 @@ options:
     coordinate: [8, 8]
     rotation: 0
     state: enabled
+
 blocks:
 - name: N
   id: variable
@@ -42,6 +48,20 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [808, 12]
+    rotation: 0
+    state: enabled
+- name: ajustes_hackrf
+  id: variable
+  parameters:
+    comment: "Lo que el bloque Soapy le pedir\xEDa a la placa (frecuencia, muestreo,\
+      \ ganancias), como texto"
+    value: ("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(freq_mhz
+      * 1e6 - f_offset), float(samp_rate), float(lna), float(vga_rx), bool(amp_rx))).encode()
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [704, 300]
     rotation: 0
     state: enabled
 - name: amp_rx
@@ -64,7 +84,7 @@ blocks:
 - name: ber_est
   id: variable
   parameters:
-    comment: BER teórico de 4-QAM diferencial para el Eb/N0 estimado
+    comment: "BER te\xF3rico de 4-QAM diferencial para el Eb/N0 estimado"
     value: 2 * p_est * (1 - p_est)
   states:
     bus_sink: false
@@ -76,7 +96,8 @@ blocks:
 - name: cfo_hz
   id: variable
   parameters:
-    comment: Desvío de frecuencia de la señal recibida [Hz] (FLL + Costas; corrigen con el signo opuesto)
+    comment: "Desv\xEDo de frecuencia de la se\xF1al recibida [Hz] (FLL + Costas;\
+      \ corrigen con el signo opuesto)"
     value: -(w_fll * samp_rate_rx + w_costas * samp_rate_rx / sps) / (2 * math.pi)
   states:
     bus_sink: false
@@ -109,7 +130,7 @@ blocks:
 - name: decim
   id: variable
   parameters:
-    comment: 'Diezmado: después de filtrar quedan 1 M muestras/s'
+    comment: "Diezmado: despu\xE9s de filtrar quedan 1 M muestras/s"
     value: '2'
   states:
     bus_sink: false
@@ -121,7 +142,8 @@ blocks:
 - name: dispositivo
   id: variable
   parameters:
-    comment: 'Para elegir un HackRF: "serial=..." (ver hackrf_info). Vacío = el primero'
+    comment: "Para elegir un HackRF: \"serial=...\" (ver hackrf_info). Vac\xEDo =\
+      \ el primero"
     value: '""'
   states:
     bus_sink: false
@@ -133,7 +155,7 @@ blocks:
 - name: eb_n0_db
   id: variable
   parameters:
-    comment: Eb/N0 = Es/N0 - 3 dB (2 bits por símbolo)
+    comment: "Eb/N0 = Es/N0 - 3 dB (2 bits por s\xEDmbolo)"
     value: es_n0_db - 10 * math.log10(2)
   states:
     bus_sink: false
@@ -257,7 +279,7 @@ blocks:
     comment: ''
     formatter: 'lambda x: ''%.1e'' % x if x == x else ''-'''
     gui_hint: 2,3,1,1
-    label: 'BER teórico (Eb/N0 est.): '
+    label: "BER te\xF3rico (Eb/N0 est.): "
     type: real
     value: ber_est
   states:
@@ -273,7 +295,7 @@ blocks:
     comment: ''
     formatter: 'lambda x: ''%.0f Hz'' % x'
     gui_hint: 1,3,1,1
-    label: 'Desvío de frecuencia: '
+    label: "Desv\xEDo de frecuencia: "
     type: real
     value: cfo_hz
   states:
@@ -303,7 +325,7 @@ blocks:
   id: variable_qtgui_label
   parameters:
     comment: ''
-    formatter: 'lambda x: ''%.1f dB'' % x if x == x else ''sin señal'''
+    formatter: "lambda x: '%.1f dB' % x if x == x else 'sin se\xF1al'"
     gui_hint: 2,2,1,1
     label: 'Eb/N0 estimado: '
     type: real
@@ -353,7 +375,7 @@ blocks:
     comment: ''
     formatter: 'lambda x: ''%.1e'' % x if x == x else ''-'''
     gui_hint: 2,4,1,1
-    label: 'PER teórico (Eb/N0 est.): '
+    label: "PER te\xF3rico (Eb/N0 est.): "
     type: real
     value: per_est
   states:
@@ -369,7 +391,7 @@ blocks:
     comment: ''
     formatter: 'lambda x: ''%.1f'' % x'
     gui_hint: 1,4,1,1
-    label: 'Desvío [ppm]: '
+    label: "Desv\xEDo [ppm]: "
     type: real
     value: cfo_hz / freq_mhz
   states:
@@ -427,7 +449,8 @@ blocks:
 - name: per_est
   id: variable
   parameters:
-    comment: 'PER teórico: cada error del canal arruina 2 bits seguidos de la MISMA trama -> depende de p, no del BER'
+    comment: "PER te\xF3rico: cada error del canal arruina 2 bits seguidos de la MISMA\
+      \ trama -> depende de p, no del BER"
     value: 1 - (1 - p_est) ** (8 * (N + 18))
   states:
     bus_sink: false
@@ -483,7 +506,8 @@ blocks:
 - name: sps
   id: variable
   parameters:
-    comment: Muestras por símbolo en el receptor (250 000 símbolos/s, como en el transmisor)
+    comment: "Muestras por s\xEDmbolo en el receptor (250 000 s\xEDmbolos/s, como\
+      \ en el transmisor)"
     value: '4'
   states:
     bus_sink: false
@@ -497,7 +521,7 @@ blocks:
   parameters:
     comment: ''
     gui_hint: 1,2,1,1
-    label: BW sinc. de símbolo
+    label: "BW sinc. de s\xEDmbolo"
     min_len: '100'
     orient: QtCore.Qt.Horizontal
     rangeType: float
@@ -516,7 +540,8 @@ blocks:
 - name: taps_canal
   id: variable
   parameters:
-    comment: 'Filtro pasabajos del canal: deja pasar la señal (±170 kHz, +40 kHz de desvío) y elimina la portadora residual y lo demás'
+    comment: "Filtro pasabajos del canal: deja pasar la se\xF1al (\xB1170 kHz, +40\
+      \ kHz de desv\xEDo) y elimina la portadora residual y lo dem\xE1s"
     value: firdes.low_pass(1, samp_rate, 300e3, 100e3)
   states:
     bus_sink: false
@@ -528,7 +553,8 @@ blocks:
 - name: tramas_detectadas
   id: variable
   parameters:
-    comment: Tramas cuyo preámbulo se encontró (el detector entrega N + 6 bytes en bits)
+    comment: "Tramas cuyo pre\xE1mbulo se encontr\xF3 (el detector entrega N + 6 bytes\
+      \ en bits)"
     value: int(items_detectados) // (8 * (N + 6))
   states:
     bus_sink: false
@@ -540,7 +566,7 @@ blocks:
 - name: umbral
   id: variable
   parameters:
-    comment: Bits erróneos tolerados al buscar el preámbulo de 64 bits
+    comment: "Bits err\xF3neos tolerados al buscar el pre\xE1mbulo de 64 bits"
     value: '12'
   states:
     bus_sink: false
@@ -615,7 +641,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1376, 892]
+    coordinate: [1360, 1048.0]
     rotation: 0
     state: enabled
 - name: a_bytes
@@ -678,6 +704,44 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [968, 500]
+    rotation: 0
+    state: enabled
+- name: ajustes_periodicos
+  id: blocks_message_strobe
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Repite los ajustes cada 200 ms (si cambian en la interfaz, cambia el
+      mensaje)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    msg: pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(ajustes_hackrf), list(ajustes_hackrf)))
+    period: '200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [904, 300]
+    rotation: 0
+    state: enabled
+- name: ajustes_red
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Manda los ajustes al emulador (UDP)
+    host: 127.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '5552'
+    tcp_no_delay: 'False'
+    type: UDP_CLIENT
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 300]
     rotation: 0
     state: enabled
 - name: alto_f
@@ -761,7 +825,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 884]
+    coordinate: [632, 888.0]
     rotation: 0
     state: enabled
 - name: costas_promedio
@@ -781,7 +845,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 1028]
+    coordinate: [1032, 1060.0]
     rotation: 0
     state: enabled
 - name: costas_sonda
@@ -795,7 +859,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 1036]
+    coordinate: [1176, 1160.0]
     rotation: 0
     state: enabled
 - name: crc
@@ -902,7 +966,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 972]
+    coordinate: [840, 992.0]
     rotation: 0
     state: enabled
 - name: filtro_adaptado
@@ -1087,7 +1151,7 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '"Después del AGC (nivel normalizado)"'
+    name: "\"Despu\xE9s del AGC (nivel normalizado)\""
     nconnections: '1'
     size: '400'
     srate: samp_rate_rx
@@ -1224,7 +1288,7 @@ blocks:
     gui_hint: 'pestanas@1: 0,2,1,1'
     label1: Antes
     label10: ''
-    label2: Después
+    label2: "Despu\xE9s"
     label3: ''
     label4: ''
     label5: ''
@@ -1243,7 +1307,7 @@ blocks:
     marker7: '0'
     marker8: '0'
     marker9: '0'
-    name: '"Constelación antes y después de Costas"'
+    name: "\"Constelaci\xF3n antes y despu\xE9s de Costas\""
     nconnections: '2'
     size: '1024'
     style1: '0'
@@ -1337,7 +1401,7 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '"Señal cruda del HackRF (si toca ±1, bajar ganancias)"'
+    name: "\"Se\xF1al cruda del HackRF (si toca \xB11, bajar ganancias)\""
     nconnections: '1'
     size: '1000'
     srate: samp_rate
@@ -1512,7 +1576,7 @@ blocks:
     legend: 'False'
     maxoutbuf: '0'
     minoutbuf: '0'
-    name: '"Espectro del HackRF (señal en +400 kHz; pico del oscilador en 0)"'
+    name: "\"Espectro del HackRF (se\xF1al en +400 kHz; pico del oscilador en 0)\""
     nconnections: '1'
     norm_window: 'False'
     showports: 'False'
@@ -1596,7 +1660,7 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '"Desvío de frecuencia que estima el FLL [Hz]"'
+    name: "\"Desv\xEDo de frecuencia que estima el FLL [Hz]\""
     nconnections: '1'
     size: '2000'
     srate: samp_rate_rx
@@ -1693,7 +1757,8 @@ blocks:
     marker7: '-1'
     marker8: '-1'
     marker9: '-1'
-    name: '"Número de cada paquete recibido con CRC correcto (los saltos son paquetes perdidos)"'
+    name: "\"N\xFAmero de cada paquete recibido con CRC correcto (los saltos son paquetes\
+      \ perdidos)\""
     nconnections: '1'
     size: '1000'
     srate: samp_rate_rx / sps / (8 * (N + 18) / 2)
@@ -1726,7 +1791,7 @@ blocks:
     width7: '1'
     width8: '1'
     width9: '1'
-    ylabel: Número de paquete
+    ylabel: "N\xFAmero de paquete"
     ymax: '300'
     ymin: '-5'
     yunit: '""'
@@ -1851,14 +1916,88 @@ blocks:
     coordinate: [232, 756]
     rotation: 0
     state: disabled
+- name: hackrf_rx
+  id: blocks_tag_gate
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Borra las marcas de cada paquete de red
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    propagate_tags: 'False'
+    single_key: '""'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [56, 512]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx_bytes
+  id: pdu_pdu_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Paquetes de red -> flujo de bytes
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: trozo_udp
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [232, 300]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx_iq
+  id: blocks_interleaved_char_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Bytes (I, Q) de 8 bits -> complejo entre -1 y 1, como hace el driver
+      de la HackRF
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale_factor: '128'
+    vector_input: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [440, 300]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx_red
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: Recibe del emulador paquetes UDP con I/Q de 8 bits
+    host: 127.0.0.1
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    mtu: '10000'
+    port: '5551'
+    tcp_no_delay: 'False'
+    type: UDP_SERVER
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 290]
+    rotation: 0
+    state: enabled
 - name: imports
   id: import
   parameters:
     alias: ''
     comment: ''
-    imports: |-
-      import math
-      from gnuradio.filter import firdes
+    imports: 'import math
+
+      from gnuradio.filter import firdes'
   states:
     bus_sink: false
     bus_source: false
@@ -1909,7 +2048,10 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    note: 'ENTRADA: HackRF sintonizado 400 kHz por debajo (la señal aparece en +400 kHz). Para grabar la señal, habilitar ''grabar_iq''; para analizar una grabación sin HackRF, deshabilitar ''hackrf_rx'' y habilitar ''leer_grabacion'' y ''acelerador''.'
+    note: "ENTRADA: HackRF sintonizado 400 kHz por debajo (la se\xF1al aparece en\
+      \ +400 kHz). Para grabar la se\xF1al, habilitar 'grabar_iq'; para analizar una\
+      \ grabaci\xF3n sin HackRF, deshabilitar 'hackrf_rx' y habilitar 'leer_grabacion'\
+      \ y 'acelerador'."
   states:
     bus_sink: false
     bus_source: false
@@ -1922,7 +2064,10 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    note: 'PAQUETES: detector de tramas (preámbulo + longitud) -> bytes -> CRC-32 (descarta las erróneas). paquetes_recibidos.bin = [número | datos] de cada paquete correcto (lo usa reconstruir_archivo.py); datos_recibidos.bin = solo los datos, en el orden en que llegaron.'
+    note: "PAQUETES: detector de tramas (pre\xE1mbulo + longitud) -> bytes -> CRC-32\
+      \ (descarta las err\xF3neas). paquetes_recibidos.bin = [n\xFAmero | datos] de\
+      \ cada paquete correcto (lo usa reconstruir_archivo.py); datos_recibidos.bin\
+      \ = solo los datos, en el orden en que llegaron."
   states:
     bus_sink: false
     bus_source: false
@@ -1935,12 +2080,32 @@ blocks:
   parameters:
     alias: ''
     comment: ''
-    note: 'RECEPTOR: trasladar -400 kHz y filtrar (1 M muestras/s) -> AGC (nivel 1) -> FLL band-edge (corrige el desvío grueso entre osciladores, kHz) -> filtro adaptado RRC -> sincronismo de símbolo -> Costas -> decisión -> decodificación diferencial -> bits'
+    note: "RECEPTOR: trasladar -400 kHz y filtrar (1 M muestras/s) -> AGC (nivel 1)\
+      \ -> FLL band-edge (corrige el desv\xEDo grueso entre osciladores, kHz) -> filtro\
+      \ adaptado RRC -> sincronismo de s\xEDmbolo -> Costas -> decisi\xF3n -> decodificaci\xF3\
+      n diferencial -> bits"
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [704, 420]
+    rotation: 0
+    state: enabled
+- name: nota_simulada
+  id: note
+  parameters:
+    alias: ''
+    comment: ''
+    note: "VERSI\xD3N SIMULADA, generada por generar_grc_simulados.py a partir de\
+      \ ../grc_hackrf/hackrf_rx_archivo.grc.\nEs igual al original, salvo los bloques\
+      \ de esta franja: en lugar de la HackRF usa el emulador\n(python hackrf_simulada/emulador_hackrf.py,\
+      \ corriendo antes de apretar F6).\nNo editar este archivo: cambiar el original\
+      \ y volver a generar."
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 180]
     rotation: 0
     state: enabled
 - name: numero_paquete
@@ -2003,7 +2168,7 @@ blocks:
     alias: ''
     comment: ''
     gui_hint: 3,0,1,5
-    label0: 1. Señal del HackRF
+    label0: "1. Se\xF1al del HackRF"
     label1: 2. Sincronismo (frecuencia, tiempo y fase)
     label10: Tab 10
     label11: Tab 11
@@ -2082,7 +2247,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 980]
+    coordinate: [760, 824.0]
     rotation: 0
     state: enabled
 - name: sinc_null_2
@@ -2204,151 +2369,14 @@ blocks:
     coordinate: [704, 508]
     rotation: 0
     state: enabled
-- name: nota_simulada
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: |-
-      VERSIÓN SIMULADA, generada por generar_grc_simulados.py a partir de ../grc_hackrf/hackrf_rx_archivo.grc.
-      Es igual al original, salvo los bloques de esta franja: en lugar de la HackRF usa el emulador
-      (python hackrf_simulada/emulador_hackrf.py, corriendo antes de apretar F6).
-      No editar este archivo: cambiar el original y volver a generar.
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 180]
-    rotation: 0
-    state: enabled
-- name: hackrf_rx_red
-  id: network_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: Recibe del emulador paquetes UDP con I/Q de 8 bits
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: UDP_SERVER
-    host: 127.0.0.1
-    port: '5551'
-    mtu: '10000'
-    tcp_no_delay: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 290]
-    rotation: 0
-    state: enabled
-- name: hackrf_rx_bytes
-  id: pdu_pdu_to_tagged_stream
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: Paquetes de red -> flujo de bytes
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    tag: trozo_udp
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [232, 300]
-    rotation: 0
-    state: enabled
-- name: hackrf_rx_iq
-  id: blocks_interleaved_char_to_complex
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: Bytes (I, Q) de 8 bits -> complejo entre -1 y 1, como hace el driver de la HackRF
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vector_input: 'False'
-    scale_factor: '128'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [440, 300]
-    rotation: 0
-    state: enabled
-- name: hackrf_rx
-  id: blocks_tag_gate
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: Borra las marcas de cada paquete de red
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-    propagate_tags: 'False'
-    single_key: '""'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [56, 512]
-    rotation: 0
-    state: enabled
-- name: ajustes_hackrf
-  id: variable
-  parameters:
-    comment: Lo que el bloque Soapy le pediría a la placa (frecuencia, muestreo, ganancias), como texto
-    value: ("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(freq_mhz * 1e6 - f_offset), float(samp_rate), float(lna), float(vga_rx), bool(amp_rx))).encode()
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [704, 300]
-    rotation: 0
-    state: enabled
-- name: ajustes_periodicos
-  id: blocks_message_strobe
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: Repite los ajustes cada 200 ms (si cambian en la interfaz, cambia el mensaje)
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    msg: pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(ajustes_hackrf), list(ajustes_hackrf)))
-    period: '200'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [904, 300]
-    rotation: 0
-    state: enabled
-- name: ajustes_red
-  id: network_socket_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: Manda los ajustes al emulador (UDP)
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: UDP_CLIENT
-    host: 127.0.0.1
-    port: '5552'
-    mtu: '10000'
-    tcp_no_delay: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1144, 300]
-    rotation: 0
-    state: enabled
+
 connections:
 - [a_bits, '0', detector_trama, '0']
 - [a_bytes, '0', crc, '0']
 - [acelerador, '0', entrada, '0']
 - [agc, '0', fll, '0']
 - [agc, '0', g_agc, '0']
+- [ajustes_periodicos, strobe, ajustes_red, pdus]
 - [alto_f, '0', por_256, '0']
 - [bajo_f, '0', numero_paquete, '1']
 - [costas, '0', decisor, '0']
@@ -2377,6 +2405,9 @@ connections:
 - [fll_promedio, '0', fll_sonda, '0']
 - [hackrf_rx, '0', entrada, '0']
 - [hackrf_rx, '0', grabar_iq, '0']
+- [hackrf_rx_bytes, '0', hackrf_rx_iq, '0']
+- [hackrf_rx_iq, '0', hackrf_rx, '0']
+- [hackrf_rx_red, pdus, hackrf_rx_bytes, pdus]
 - [leer_grabacion, '0', acelerador, '0']
 - [mapa_gray, '0', a_bits, '0']
 - [numero_paquete, '0', g_numero, '0']
@@ -2394,10 +2425,7 @@ connections:
 - [solo_numero, '0', separar_bytes, '0']
 - [trasladar, '0', agc, '0']
 - [trasladar, '0', g_espectro_banda, '0']
-- [hackrf_rx_red, pdus, hackrf_rx_bytes, pdus]
-- [hackrf_rx_bytes, '0', hackrf_rx_iq, '0']
-- [hackrf_rx_iq, '0', hackrf_rx, '0']
-- [ajustes_periodicos, strobe, ajustes_red, pdus]
+
 metadata:
   file_format: 1
   grc_version: 3.10.12.0
