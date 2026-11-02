@@ -106,7 +106,9 @@ espiga angosta en el centro: es la portadora residual del oscilador del HackRF, 
 
 1. Abrir `hackrf_tx_archivo.grc`.
 2. En el parámetro `archivo` poner el nombre del archivo. En `repeticiones` poner cuántas veces se envía
-   (3 por defecto; 0 = sin fin).
+   (3 por defecto; 0 = sin fin). Para ajustar las ganancias y revisar las gráficas conviene **0**: con 3 pasadas
+   de un archivo chico la transmisión dura menos de un segundo (el de ejemplo, 0,3 s). Después las gráficas del
+   transmisor quedan quietas, porque ya terminó.
 3. Ejecutarlo (F6). Arriba se ven el nombre, el tamaño, los paquetes por pasada, la duración de cada pasada y la
    huella SHA-256 (los primeros 16 caracteres).
 
@@ -151,8 +153,9 @@ paquete perdido.
 
 ### 6.5 Terminar y reconstruir el archivo
 
-1. Esperar a que el transmisor termine: "Pasadas enviadas" llega al número de repeticiones. Cerrar las dos
-   ventanas con la **X**.
+1. Esperar a que el transmisor termine: "Pasadas enviadas" llega al número de repeticiones (con 0 = sin fin,
+   cuando ya pasó de 3). Cerrar con la **X** primero la ventana del transmisor y, un segundo después, la del
+   receptor.
 2. Correr `python reconstruir_archivo.py`. Lee `grc_hackrf/paquetes_recibidos.bin`, escribe
    `grc_hackrf/recibido_<nombre>` y muestra cuántos paquetes llegaron y cuántos se perdieron, el PER medido y si la
    huella SHA-256 es **IGUAL** a la del transmisor (o sea, si el archivo llegó idéntico).
@@ -289,6 +292,7 @@ completas, así que no se perdió ningún paquete.*
 | El desvío medido pasa de unos 40 kHz y no se reciben tramas | El filtro de canal solo deja pasar ±40 kHz de desvío: corregir la frecuencia del RX en esa diferencia (por ejemplo, 915,050 MHz), o compartir el reloj entre las placas (prueba 4) |
 | En la consola aparecen muchas `U` (TX) u `O` (RX) | La PC no da abasto: cerrar otros programas o usar una PC por HackRF |
 | `reconstruir_archivo.py` dice que faltan paquetes | Transmitir más pasadas (`repeticiones`) o mejorar la señal |
+| Las gráficas del transmisor se quedan quietas enseguida | El transmisor ya terminó sus pasadas (con un archivo chico, menos de 1 s). Para mirar más tiempo: `repeticiones` = 0 (sin fin) |
 | `reconstruir_archivo.py` pide `--n` | `N` (bytes por paquete) tiene que ser igual en los dos `.grc` |
 
 **Archivos que genera el receptor** (en la carpeta del `.grc`):

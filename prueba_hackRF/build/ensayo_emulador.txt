@@ -6,14 +6,14 @@ Emulador de dos HackRF One listo (Ctrl+C para cortar)
           RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
 [    6 s] TX: apagado
           RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
-[    8 s] TX: apagado
-          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
   >> se conectó el TX
-  >> el TX se desconectó (terminó de transmitir o se cerró su ventana)
+[    8 s] TX: transmite en 914.600 MHz, -37.0 dBm (VGA 20 dB, amplificador no)
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -38.2 dBFS
+              señal en el RX: -82.0 dBm (-36.0 dBFS), S/R 11.4 dB en 2 MHz, Es/N0 ~ 20.4 dB, desvío +12.8 kHz
 [   10 s] TX: transmite en 914.600 MHz, -37.0 dBm (VGA 20 dB, amplificador no)
-          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -39.3 dBFS
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -34.9 dBFS
               señal en el RX: -82.0 dBm (-36.0 dBFS), S/R 11.4 dB en 2 MHz, Es/N0 ~ 20.4 dB, desvío +12.9 kHz
-[   12 s] TX: apagado
-          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
-[   14 s] TX: apagado
-          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -40.8 dBFS
+[   12 s] TX: transmite en 914.600 MHz, -37.0 dBm (VGA 20 dB, amplificador no)
+          RX: 914.600 MHz (LNA 16 dB, VGA 20 dB, amplificador no), nivel -34.9 dBFS
+              señal en el RX: -82.0 dBm (-36.0 dBFS), S/R 11.4 dB en 2 MHz, Es/N0 ~ 20.4 dB, desvío +12.9 kHz
+  >> el TX se desconectó: transmitió 6.00 s de señal (terminó sus pasadas o se cerró su ventana; sus gráficos quedan quietos)

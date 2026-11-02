@@ -1240,8 +1240,8 @@ class enlace_4qam_tramas(gr.top_block, Qt.QWidget):
 
     def set_ebn0_db(self, ebn0_db):
         self.ebn0_db = ebn0_db
-        self.set_ruido(math.sqrt(self.sps / (2 * 10**(self.ebn0_db / 10))))
         self.set_p_qpsk(0.5 * math.erfc(math.sqrt(10**(self.ebn0_db / 10))))
+        self.set_ruido(math.sqrt(self.sps / (2 * 10**(self.ebn0_db / 10))))
 
     def get_payload(self):
         return self.payload
@@ -1265,26 +1265,26 @@ class enlace_4qam_tramas(gr.top_block, Qt.QWidget):
     def set_sps(self, sps):
         self.sps = sps
         self.set_ruido(math.sqrt(self.sps / (2 * 10**(self.ebn0_db / 10))))
-        self.g_bits_tx.set_samp_rate(self.samp_rate/self.sps*2)
-        self.filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
-        self.sinc_simbolo.set_sps(self.sps)
-        self.g_ojo.set_samp_per_symbol((4*self.sps))
-        self.g_periodo.set_samp_rate(self.samp_rate/self.sps)
-        self.frec_hz.set_k((self.samp_rate / self.sps / (2 * math.pi)))
         self.cfo_real.set_sampling_freq((self.samp_rate/self.sps))
-        self.g_frec.set_samp_rate(self.samp_rate/self.sps)
-        self.g_payload.set_samp_rate(self.samp_rate/self.sps*2)
-        self.log_teo.set_sampling_freq((self.samp_rate/self.sps*2/1000))
+        self.filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
+        self.frec_hz.set_k((self.samp_rate / self.sps / (2 * math.pi)))
         self.g_ber_t.set_samp_rate(self.samp_rate/self.sps*2/1000)
         self.g_bits.set_samp_rate(self.samp_rate/self.sps*2)
+        self.g_bits_tx.set_samp_rate(self.samp_rate/self.sps*2)
+        self.g_frec.set_samp_rate(self.samp_rate/self.sps)
+        self.g_ojo.set_samp_per_symbol((4*self.sps))
+        self.g_payload.set_samp_rate(self.samp_rate/self.sps*2)
+        self.g_periodo.set_samp_rate(self.samp_rate/self.sps)
+        self.log_teo.set_sampling_freq((self.samp_rate/self.sps*2/1000))
+        self.sinc_simbolo.set_sps(self.sps)
 
     def get_ber_teo(self):
         return self.ber_teo
 
     def set_ber_teo(self, ber_teo):
         self.ber_teo = ber_teo
-        self.set_lbl_teo(self.ber_teo)
         self.set_lbl_ratio((self.ber_rec / self.ber_teo))
+        self.set_lbl_teo(self.ber_teo)
         self.log_teo.set_amplitude(math.log10(self.ber_teo))
 
     def get_ber_rec(self):
@@ -1292,8 +1292,8 @@ class enlace_4qam_tramas(gr.top_block, Qt.QWidget):
 
     def set_ber_rec(self, ber_rec):
         self.ber_rec = ber_rec
-        self.set_lbl_rec(self.ber_rec)
         self.set_lbl_ratio((self.ber_rec / self.ber_teo))
+        self.set_lbl_rec(self.ber_rec)
 
     def get_ber_acum_log(self):
         return self.ber_acum_log
@@ -1310,10 +1310,10 @@ class enlace_4qam_tramas(gr.top_block, Qt.QWidget):
         self.set_bits_trama(8*(8 + 4 + self.L + 4))
         self.a_paquetes.set_packet_len(self.L)
         self.a_paquetes.set_packet_len_pmt(self.L)
-        self.una_de_cien.set_m(self.L)
-        self.una_de_cien.set_n((100*self.L))
         self.ref_paquetes.set_packet_len(self.L)
         self.ref_paquetes.set_packet_len_pmt(self.L)
+        self.una_de_cien.set_m(self.L)
+        self.una_de_cien.set_n((100*self.L))
 
     def get_ventana(self):
         return self.ventana
@@ -1342,23 +1342,23 @@ class enlace_4qam_tramas(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.acelerador.set_sample_rate(self.samp_rate)
-        self.g_bits_tx.set_samp_rate(self.samp_rate/self.sps*2)
-        self.g_tx_iq.set_samp_rate(self.samp_rate)
-        self.g_tx_esp.set_frequency_range(0, self.samp_rate)
         self.cfo.set_phase_inc((2 * math.pi * self.cfo_hz / self.samp_rate))
-        self.g_canal_esp.set_frequency_range(0, self.samp_rate)
-        self.g_canal_t.set_samp_rate(self.samp_rate)
-        self.filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
-        self.g_ojo.set_samp_rate(4*self.samp_rate)
-        self.g_mf_t.set_samp_rate(self.samp_rate)
-        self.g_periodo.set_samp_rate(self.samp_rate/self.sps)
-        self.frec_hz.set_k((self.samp_rate / self.sps / (2 * math.pi)))
         self.cfo_real.set_sampling_freq((self.samp_rate/self.sps))
-        self.g_frec.set_samp_rate(self.samp_rate/self.sps)
-        self.g_payload.set_samp_rate(self.samp_rate/self.sps*2)
-        self.log_teo.set_sampling_freq((self.samp_rate/self.sps*2/1000))
+        self.filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
+        self.frec_hz.set_k((self.samp_rate / self.sps / (2 * math.pi)))
         self.g_ber_t.set_samp_rate(self.samp_rate/self.sps*2/1000)
         self.g_bits.set_samp_rate(self.samp_rate/self.sps*2)
+        self.g_bits_tx.set_samp_rate(self.samp_rate/self.sps*2)
+        self.g_canal_esp.set_frequency_range(0, self.samp_rate)
+        self.g_canal_t.set_samp_rate(self.samp_rate)
+        self.g_frec.set_samp_rate(self.samp_rate/self.sps)
+        self.g_mf_t.set_samp_rate(self.samp_rate)
+        self.g_ojo.set_samp_rate(4*self.samp_rate)
+        self.g_payload.set_samp_rate(self.samp_rate/self.sps*2)
+        self.g_periodo.set_samp_rate(self.samp_rate/self.sps)
+        self.g_tx_esp.set_frequency_range(0, self.samp_rate)
+        self.g_tx_iq.set_samp_rate(self.samp_rate)
+        self.log_teo.set_sampling_freq((self.samp_rate/self.sps*2/1000))
 
     def get_ruido(self):
         return self.ruido

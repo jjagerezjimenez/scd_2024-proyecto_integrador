@@ -140,7 +140,9 @@ espiga angosta en el centro: es la portadora residual del oscilador del HackRF, 
 <ol>
 <li>Abrir <code>hackrf_tx_archivo.grc</code>.</li>
 <li>En el parámetro <code>archivo</code> poner el nombre del archivo. En <code>repeticiones</code> poner cuántas veces se envía
-   (3 por defecto; 0 = sin fin).</li>
+   (3 por defecto; 0 = sin fin). Para ajustar las ganancias y revisar las gráficas conviene <strong>0</strong>: con 3 pasadas
+   de un archivo chico la transmisión dura menos de un segundo (el de ejemplo, 0,3 s). Después las gráficas del
+   transmisor quedan quietas, porque ya terminó.</li>
 <li>Ejecutarlo (F6). Arriba se ven el nombre, el tamaño, los paquetes por pasada, la duración de cada pasada y la
    huella SHA-256 (los primeros 16 caracteres).</li>
 </ol>
@@ -176,8 +178,9 @@ paquete perdido.</p>
 <p><strong>Anotar</strong> el desvío de frecuencia [Hz] y [ppm] y el Eb/N0 estimado.</p>
 <h3>6.5 Terminar y reconstruir el archivo</h3>
 <ol>
-<li>Esperar a que el transmisor termine: "Pasadas enviadas" llega al número de repeticiones. Cerrar las dos
-   ventanas con la <strong>X</strong>.</li>
+<li>Esperar a que el transmisor termine: "Pasadas enviadas" llega al número de repeticiones (con 0 = sin fin,
+   cuando ya pasó de 3). Cerrar con la <strong>X</strong> primero la ventana del transmisor y, un segundo después, la del
+   receptor.</li>
 <li>Correr <code>python reconstruir_archivo.py</code>. Lee <code>grc_hackrf/paquetes_recibidos.bin</code>, escribe
    <code>grc_hackrf/recibido_&lt;nombre&gt;</code> y muestra cuántos paquetes llegaron y cuántos se perdieron, el PER medido y si la
    huella SHA-256 es <strong>IGUAL</strong> a la del transmisor (o sea, si el archivo llegó idéntico).</li>
@@ -469,6 +472,10 @@ completas, así que no se perdió ningún paquete.</em></p>
 <tr>
 <td><code>reconstruir_archivo.py</code> dice que faltan paquetes</td>
 <td>Transmitir más pasadas (<code>repeticiones</code>) o mejorar la señal</td>
+</tr>
+<tr>
+<td>Las gráficas del transmisor se quedan quietas enseguida</td>
+<td>El transmisor ya terminó sus pasadas (con un archivo chico, menos de 1 s). Para mirar más tiempo: <code>repeticiones</code> = 0 (sin fin)</td>
 </tr>
 <tr>
 <td><code>reconstruir_archivo.py</code> pide <code>--n</code></td>

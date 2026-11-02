@@ -5,7 +5,8 @@ Esta carpeta sirve para ensayar **todo el procedimiento del laboratorio sin las 
 1. Un programa de Python (`emulador_hackrf.py`) hace de "dos HackRF One + el aire entre ellas". Se deja
    corriendo en un *radioconda Prompt*.
 2. En GNU Radio Companion se abren las versiones simuladas del transmisor y del receptor. Son copias exactas de
-   los `.grc` del laboratorio, salvo el bloque de la placa.
+   los `.grc` del laboratorio, salvo el bloque de la placa. Además, el transmisor simulado manda el archivo sin
+   parar (`repeticiones` = 0), para que haya tiempo de mirar las gráficas.
 3. Al final se reconstruye el archivo recibido con `reconstruir_archivo.py`, igual que en el laboratorio.
 
 Los `.grc` del laboratorio (`grc_hackrf/`) **no se tocan**: el día del laboratorio se usan tal cual.
@@ -49,6 +50,10 @@ El emulador le manda al RX pares de bytes (I, Q) de 8 bits, que es lo mismo que 
 `PDU to Tagged Stream` pone en cada paquete de red. Todo lo demás (filtros, AGC, FLL, sincronismo, Costas, CRC,
 archivos) es **exactamente** lo del laboratorio.
 
+En GRC, los bloques nuevos tienen un comentario que empieza con **"HackRF SIMULADA"**. Los que avisan la frecuencia
+y las ganancias están en una franja arriba de todo, junto a una nota de aviso. Los demás bloques llevan el mismo
+comentario que en `grc_hackrf/`: qué hace cada uno, qué le entra y qué le sale.
+
 ## Paso a paso
 
 1. Abrir un **radioconda Prompt**, ir a la carpeta del proyecto y arrancar el emulador:
@@ -62,14 +67,14 @@ archivos) es **exactamente** lo del laboratorio.
 2. En GNU Radio Companion, abrir `hackrf_simulada/hackrf_rx_archivo_sim.grc` y apretar **F6**.
     Primero el receptor, como en el laboratorio, para que el AGC se acomode al ruido.
 
-3. Abrir `hackrf_simulada/hackrf_tx_archivo_sim.grc` y apretar **F6**. Por defecto manda
-    `grc_hackrf/archivo_a_enviar.txt` 3 veces. Para mandar otro archivo, cambiar el bloque *Parameter*
-    `archivo` (ruta completa, o relativa a la carpeta `hackrf_simulada/`).
+3. Abrir `hackrf_simulada/hackrf_tx_archivo_sim.grc` y apretar **F6**. Manda
+    `grc_hackrf/archivo_a_enviar.txt` sin parar (`repeticiones` = 0). Para mandar otro archivo, cambiar el
+    bloque *Parameter* `archivo` (ruta completa con barras `/`, o relativa a la carpeta `hackrf_simulada/`).
 
 4. Mirar las dos ventanas y el emulador, que cada 2 s muestra lo que pasa en el "aire" (ver abajo).
 
-5. Cuando "Pasadas enviadas" llega al número de repeticiones, esperar un segundo y cerrar las dos ventanas.
-    Después, en el prompt:
+5. Cuando "Pasadas enviadas" ya pasó de 3, cerrar la ventana del TX. El emulador dice `el TX se desconectó:
+    transmitió ... s de señal`. Esperar un segundo y cerrar la del RX. Después, en el prompt:
 
         python reconstruir_archivo.py hackrf_simulada\paquetes_recibidos.bin
 
@@ -157,8 +162,9 @@ Por eso el ensayo no reemplaza la prueba real. Lo que sí comprueba es que:
     python hackrf_simulada\prueba_completa.py 4 8      # solo algunos casos
 
 Para cada caso arranca un emulador, corre el RX y el TX simulados sin ventanas, reconstruye el archivo y revisa el
-resultado: archivo idéntico, desvío medido, avisos del emulador. Antes comprueba que los `.grc` simulados estén
-al día con los de `grc_hackrf/`. Lo que genera queda en `build/hackrf_simulada/`.
+resultado: archivo idéntico, desvío medido, avisos del emulador. Prueba siempre copias recién generadas desde
+`grc_hackrf/`, y avisa si los `.grc` simulados de esta carpeta no son iguales a esas copias. Lo que genera queda
+en `build/hackrf_simulada/`.
 
 ## Si se cambian los `.grc` del laboratorio
 
@@ -167,7 +173,7 @@ Los `_sim.grc` se generan, no se editan: si se modifica `grc_hackrf/hackrf_tx_ar
 
     python hackrf_simulada\generar_grc_simulados.py
 
-Si alguien se olvida, `prueba_completa.py` avisa que quedaron desactualizados.
+Si alguien se olvida, `prueba_completa.py` avisa que no son iguales a los que se generan.
 
 ## Problemas comunes
 
@@ -179,7 +185,8 @@ Si alguien se olvida, `prueba_completa.py` avisa que quedaron desactualizados.
 | El RX no arranca y GRC muestra `UnicodeDecodeError: 'utf-8' codec can't decode byte 0xf3 ...` | Ya hay otra ventana del RX simulado abierta. Es el aviso de Windows "solo se permite un uso de cada dirección", que viene en español y Python no lo puede leer |
 | GRC muestra `RuntimeError: SoapySDR::Device::make() no match` | Se abrió el `.grc` del laboratorio (`grc_hackrf/`), que busca una placa real: abrir el de `hackrf_simulada/` |
 | GRC avisa `This flow graph may not have flow control` | Es normal: el ritmo lo pone el emulador, que hace de reloj de la placa |
-| Terminaron las pasadas: el emulador dice `el TX se desconectó` y `TX: apagado`, pero la ventana del TX sigue abierta | Es normal; cerrar la ventana. Con la placa real también hay que cerrarla |
+| Las gráficas del TX se quedan quietas enseguida y el emulador dice `el TX se desconectó: transmitió 0.29 s de señal` (o un número chico) | El TX terminó sus pasadas: no es un error. Pasa si `repeticiones` no es 0; con 3 pasadas del archivo de ejemplo dura 0,3 s. La ventana queda abierta: cerrarla. Con la placa real pasa lo mismo |
+| La prueba automática dice `AVISO ... no es igual al que se genera` | Se cambió el `.grc` simulado en GRC (al apretar F6, GRC guarda los cambios): no afecta a la prueba. Para volver a los valores por defecto, `python hackrf_simulada\generar_grc_simulados.py` |
 | "Pasadas enviadas" llega al final medio segundo antes de que termine la señal | Entre el contador y la placa hay buffers (~0,5 s); con la HackRF real pasa lo mismo |
 | El emulador dice `el emulador se atrasó` | La PC estuvo ocupada, o se hizo clic en la ventana del emulador (Esc) |
 

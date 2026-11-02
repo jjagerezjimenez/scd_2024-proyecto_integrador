@@ -4,7 +4,9 @@ options:
     catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
-    comment: ''
+    comment: "Opciones del flowgraph: t\xEDtulo de la ventana,\ninterfaz QT GUI y\
+      \ nombre del programa que arma\nGRC al apretar F6 (halfduplex_4qam.py, en esta\n\
+      misma carpeta)."
     copyright: ''
     description: "Dos nodos que se turnan un canal compartido (TDD) con tramas (pre\xE1\
       mbulo + longitud + CRC-32), 4-QAM diferencial y medici\xF3n de BER; solo bloques\
@@ -30,7 +32,7 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 8]
+    coordinate: [8, 32.0]
     rotation: 0
     state: enabled
 
@@ -38,32 +40,36 @@ blocks:
 - name: L_A
   id: variable
   parameters:
-    comment: Bytes de payload del nodo A
+    comment: 'Bytes de payload de cada trama del nodo A
+
+      (largo de su mensaje).'
     value: len(payload_A)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [992, 8.0]
+    coordinate: [1336, 264.0]
     rotation: 0
     state: enabled
 - name: L_B
   id: variable
   parameters:
-    comment: Bytes de payload del nodo B
+    comment: Bytes de payload de cada trama del nodo B.
     value: len(payload_B)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 112.0]
+    coordinate: [1336, 400.0]
     rotation: 0
     state: enabled
 - name: ber_A_log
   id: variable_function_probe
   parameters:
     block_id: rxA_sonda_ber
-    comment: ''
+    comment: 'Lee 4 veces por segundo el log10 del BER
+
+      acumulado del nodo A (bloque "rxA_sonda_ber").'
     function_args: ''
     function_name: level
     poll_rate: '4'
@@ -72,14 +78,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1872, 0.0]
+    coordinate: [2144, 240.0]
     rotation: 0
     state: enabled
 - name: ber_B_log
   id: variable_function_probe
   parameters:
     block_id: rxB_sonda_ber
-    comment: ''
+    comment: 'Lee 4 veces por segundo el log10 del BER
+
+      acumulado del nodo B (bloque "rxB_sonda_ber").'
     function_args: ''
     function_name: level
     poll_rate: '4'
@@ -88,25 +96,33 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2008, 0.0]
+    coordinate: [2680, 240.0]
     rotation: 0
     state: enabled
 - name: ber_teo
   id: variable
   parameters:
-    comment: "4-QAM con codificaci\xF3n diferencial: 2p(1-p)"
+    comment: "BER te\xF3rico de 4-QAM con codificaci\xF3n\ndiferencial: 2 p (1 - p).\
+      \ Un bit sale mal si\nexactamente uno de los dos s\xEDmbolos que se\ncomparan\
+      \ se decidi\xF3 mal."
     value: 2 * p_qpsk * (1 - p_qpsk)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 208.0]
+    coordinate: [552, 400.0]
     rotation: 0
     state: enabled
 - name: cfo_hz
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: 'Control de la ventana: diferencia de
+
+      frecuencia entre los osciladores de A y B, en
+
+      Hz (el receptor de B la ve como +CFO y el de A
+
+      como -CFO).'
     gui_hint: 0,4,1,2
     label: "Desv\xEDo entre osciladores A-B [Hz]"
     min_len: '150'
@@ -121,13 +137,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1688, 8.0]
+    coordinate: [2416, 8.0]
     rotation: 0
     state: enabled
 - name: costas_bw
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: "Control de la ventana: ancho de banda de los\nlazos de Costas. M\xE1\
+      s grande = corrige m\xE1s\nr\xE1pido, pero con m\xE1s ruido."
     gui_hint: 1,0,1,1
     label: BW lazo de Costas
     min_len: '100'
@@ -142,13 +159,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 152.0]
+    coordinate: [2680, 8.0]
     rotation: 0
     state: enabled
 - name: ebn0_db
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: 'Control de la ventana: Eb/N0 del canal en dB
+
+      (0 a 15). Cambia el nivel del ruido (variable
+
+      "ruido").'
     gui_hint: 0,0,1,2
     label: Eb/N0 [dB]
     min_len: '150'
@@ -163,25 +184,30 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1432, 8.0]
+    coordinate: [1888, 8.0]
     rotation: 0
     state: enabled
 - name: excess_bw
   id: variable
   parameters:
-    comment: Factor de roll-off del filtro RRC
+    comment: "Roll-off del filtro RRC (0,35): cu\xE1nto m\xE1s\nancho que el m\xED\
+      nimo es el espectro. La se\xF1al\nocupa 125 k \xD7 1,35 \u2248 170 kHz."
     value: '0.35'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 16.0]
+    coordinate: [552, 264.0]
     rotation: 0
     state: enabled
 - name: fase_deg
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: 'Control de la ventana: fase que gira el canal,
+
+      en grados. La corrige el lazo de Costas de
+
+      cada receptor.'
     gui_hint: 0,2,1,2
     label: "Fase del canal [\xB0]"
     min_len: '150'
@@ -196,7 +222,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1552, 8.0]
+    coordinate: [2144, 8.0]
     rotation: 0
     state: enabled
 - name: formato_trama
@@ -204,31 +230,36 @@ blocks:
   parameters:
     access_code: '0'
     bps: '1'
-    comment: ''
+    comment: "Formato del encabezado de cada trama:\npre\xE1mbulo de 64 bits (Access\
+      \ Code 0 = el\npre\xE1mbulo est\xE1ndar de GNU Radio) + longitud\ndel payload\
+      \ en 16 bits, escrita 2 veces. Lo\nusan los Protocol Formatter."
     threshold: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 112.0]
+    coordinate: [824, 40.0]
     rotation: 0
     state: enabled
 - name: guarda
   id: variable
   parameters:
-    comment: Muestras de silencio entre turnos (nadie transmite)
+    comment: 'Muestras de silencio entre turnos (nadie
+
+      transmite).'
     value: '256'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 136.0]
+    coordinate: [1600, 56.0]
     rotation: 0
     state: enabled
 - name: lbl_A
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el BER medido por el\nnodo A desde que arranc\xF3\
+      ."
     formatter: 'lambda x: ''%.2e'' % x'
     gui_hint: 1,3,1,1
     label: 'BER nodo A (acum.): '
@@ -238,13 +269,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1840, 120.0]
+    coordinate: [2416, 248.0]
     rotation: 0
     state: enabled
 - name: lbl_B
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el BER medido por el\nnodo B desde que arranc\xF3\
+      ."
     formatter: 'lambda x: ''%.2e'' % x'
     gui_hint: 1,4,1,1
     label: 'BER nodo B (acum.): '
@@ -254,13 +286,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1992, 120.0]
+    coordinate: [2952, 248.0]
     rotation: 0
     state: enabled
 - name: lbl_ratio
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el cociente BER medido /\nBER te\xF3rico de cada\
+      \ nodo (cerca de 1 = anda\ncomo dice la teor\xEDa)."
     formatter: 'lambda x: ''%.2f | %.2f'' % x'
     gui_hint: 1,5,1,1
     label: "Medido / te\xF3rico (A | B): "
@@ -270,13 +303,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2152, 120.0]
+    coordinate: [3208, 248.0]
     rotation: 0
     state: enabled
 - name: lbl_teo
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el BER te\xF3rico para el\nEb/N0 elegido."
     formatter: 'lambda x: ''%.2e'' % x'
     gui_hint: 1,2,1,1
     label: "BER te\xF3rico: "
@@ -286,75 +319,77 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1704, 208.0]
+    coordinate: [1888, 248.0]
     rotation: 0
     state: enabled
 - name: mensaje_A
   id: variable
   parameters:
-    comment: Texto que transmite el nodo A
+    comment: Texto que transmite el nodo A en cada trama.
     value: '"Hola, soy el nodo A. Este mensaje viaja por el canal compartido en mi
       ranura de tiempo (TDD)."'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [328, 112.0]
+    coordinate: [824, 264.0]
     rotation: 0
     state: enabled
 - name: mensaje_B
   id: variable
   parameters:
-    comment: Texto que transmite el nodo B
+    comment: Texto que transmite el nodo B en cada trama.
     value: '"Hola, soy el nodo B. Respondo en la otra ranura: nunca transmitimos los
       dos al mismo tiempo!!"'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 208.0]
+    coordinate: [824, 400.0]
     rotation: 0
     state: enabled
 - name: p_qpsk
   id: variable
   parameters:
-    comment: 'Q(raiz(2 Eb/N0)): 4-QAM coherente'
+    comment: "p = Q(ra\xEDz(2 Eb/N0)): probabilidad de decidir\nmal un eje de la 4-QAM."
     value: 0.5 * math.erfc(math.sqrt(10**(ebn0_db / 10)))
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [336, 256.0]
+    coordinate: [288, 400.0]
     rotation: 0
     state: enabled
 - name: payload_A
   id: variable
   parameters:
-    comment: ''
+    comment: "El mensaje del nodo A como lista de bytes\n(n\xFAmeros de 0 a 255)."
     value: list(mensaje_A.encode())
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 16.0]
+    coordinate: [1088, 264.0]
     rotation: 0
     state: enabled
 - name: payload_B
   id: variable
   parameters:
-    comment: ''
+    comment: El mensaje del nodo B como lista de bytes.
     value: list(mensaje_B.encode())
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 16.0]
+    coordinate: [1088, 400.0]
     rotation: 0
     state: enabled
 - name: qpsk
   id: variable_constellation_rect
   parameters:
-    comment: ''
+    comment: "Constelaci\xF3n 4-QAM: 4 puntos (\xB10,707 \xB1 j0,707)\ncon c\xF3digo\
+      \ Gray (Symbol Map 0, 1, 3, 2: los\nvecinos difieren en un solo bit). La usan\
+      \ los\nmoduladores y los decisores."
     const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
     imag_sect: '2'
     precision: '8'
@@ -368,62 +403,66 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1488, 304.0]
+    coordinate: [552, 8.0]
     rotation: 0
     state: enabled
 - name: ranura
   id: variable
   parameters:
-    comment: "Muestras de cada turno de transmisi\xF3n (m\xFAltiplo de sps)"
+    comment: "Muestras de cada turno de transmisi\xF3n (2048 =\n512 s\xEDmbolos; tiene\
+      \ que ser m\xFAltiplo de sps)."
     value: '2048'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 208.0]
+    coordinate: [1336, 56.0]
     rotation: 0
     state: enabled
 - name: ruido
   id: variable
   parameters:
-    comment: "Desv\xEDo del ruido complejo: potencia de se\xF1al = 1 por muestra,\
-      \ Es/N0 = 2 Eb/N0"
+    comment: "Amplitud del ruido que agrega el canal,\ncalculada para que haya el\
+      \ Eb/N0 elegido: la\nse\xF1al tiene potencia 1 y 4 muestras por\ns\xEDmbolo,\
+      \ y Es/N0 = 2 Eb/N0 (2 bits por\ns\xEDmbolo)."
     value: math.sqrt(sps / (2 * 10**(ebn0_db / 10)))
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 304.0]
+    coordinate: [8, 400.0]
     rotation: 0
     state: enabled
 - name: samp_rate
   id: variable
   parameters:
-    comment: Frecuencia de muestreo [muestras/s]
+    comment: "Muestreo: 500 000 muestras por segundo. Con 4\nmuestras por s\xEDmbolo\
+      \ son 125 000 s\xEDmbolos/s =\n250 kbit/s mientras un nodo transmite."
     value: '500000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 12]
+    coordinate: [8, 264.0]
     rotation: 0
     state: enabled
 - name: sps
   id: variable
   parameters:
-    comment: "Muestras por s\xEDmbolo"
+    comment: "Muestras por s\xEDmbolo (4)."
     value: '4'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 16.0]
+    coordinate: [288, 264.0]
     rotation: 0
     state: enabled
 - name: sync_bw
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: "Control de la ventana: ancho de banda de los\nlazos del sincronismo\
+      \ de s\xEDmbolo."
     gui_hint: 1,1,1,1
     label: "BW sinc. de s\xEDmbolo"
     min_len: '100'
@@ -438,31 +477,33 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1552, 152.0]
+    coordinate: [2952, 8.0]
     rotation: 0
     state: enabled
 - name: umbral
   id: variable
   parameters:
-    comment: "Bits err\xF3neos tolerados al buscar el pre\xE1mbulo de 64 bits"
+    comment: "Cu\xE1ntos bits del pre\xE1mbulo (de 64) pueden\nllegar mal y aun as\xED\
+      \ se acepta la trama."
     value: '12'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1144, 8.0]
+    coordinate: [1088, 56.0]
     rotation: 0
     state: enabled
 - name: ventana
   id: variable
   parameters:
-    comment: Bits de la ventana del BER 'reciente'
+    comment: "Cantidad de bits que se promedian para el BER\n\"reciente\" (1 mill\xF3\
+      n)."
     value: '1000000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 112.0]
+    coordinate: [1600, 400.0]
     rotation: 0
     state: enabled
 - name: acelerador
@@ -470,7 +511,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Frena el flujo a 500 k\nmuestras/s (samp_rate): as\xED la\nsimulaci\xF3\
+      n va a tiempo real y\nno usa toda la CPU.\nEntra: complejos.\nSale: los mismos\
+      \ complejos, a\n  500 k/s."
     ignoretag: 'True'
     limit: auto
     maximum: '0.1'
@@ -483,33 +526,35 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 836]
+    coordinate: [536, 2584.0]
     rotation: 0
     state: enabled
 - name: canal_tx_A
   id: virtual_source
   parameters:
     alias: ''
-    comment: ''
+    comment: "Toma sin cable la se\xF1al\ndel nodo A (Virtual Sink\n\"tx_A\").\nEntra:\
+      \ nada a la vista.\nSale: complejos."
     stream_id: tx_A
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 788]
+    coordinate: [8, 2592.0]
     rotation: 0
     state: enabled
 - name: canal_tx_B
   id: virtual_source
   parameters:
     alias: ''
-    comment: ''
+    comment: "Toma sin cable la se\xF1al\ndel nodo B (Virtual Sink\n\"tx_B\").\nEntra:\
+      \ nada a la vista.\nSale: complejos."
     stream_id: tx_B
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 868]
+    coordinate: [8, 3032.0]
     rotation: 0
     state: enabled
 - name: conmutador_rx
@@ -517,7 +562,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Conmutador de recepci\xF3n:\nreparte las muestras con los\nmismos turnos:\
+      \ la ranura de A\nva a out0 (receptor de B), la\nde B a out2 (receptor de A)\
+      \ y\nlas guardas a out1 y out3 (se\ntiran).\nEntra: complejos.\nSale: 4 salidas\
+      \ de complejos."
     lengths: '[ranura, guarda, ranura, guarda]'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -528,7 +576,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 840]
+    coordinate: [1280, 2552.0]
     rotation: 0
     state: enabled
 - name: fase
@@ -536,7 +584,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Gira la constelaci\xF3n la\nfase elegida (multiplica\npor e^(j\xB7fase)).\n\
+      Entra: complejos.\nSale: complejos girados."
     const: cmath.exp(1j * math.radians(fase_deg))
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -546,7 +595,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 836]
+    coordinate: [736, 2592.0]
     rotation: 0
     state: enabled
 - name: g_canal_const
@@ -576,7 +625,8 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): constelaci\xF3n de las\nmuestras del canal,\
+      \ con ruido y sin\nsincronizar.\nEntra: complejos.\nSale: nada (solo dibuja)."
     grid: 'True'
     gui_hint: 'pestanas@0: 1,2,1,1'
     label1: Canal
@@ -638,7 +688,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 1056.0]
+    coordinate: [1280, 2176.0]
     rotation: 0
     state: enabled
 - name: g_canal_esp
@@ -670,7 +720,8 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): espectro de lo que hay en\nel canal compartido.\n\
+      Entra: complejos.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     fc: '0'
     fftsize: '1024'
@@ -719,7 +770,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 1040.0]
+    coordinate: [1280, 2360.0]
     rotation: 0
     state: enabled
 - name: g_turnos
@@ -749,7 +800,10 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): turnos de A y de B y el\nm\xF3dulo de la\
+      \ se\xF1al en el canal: cada nodo\ntransmite solo en su ranura.\nEntra: in0\
+      \ = turno de A, in1 = turno de B, in2\n  = m\xF3dulo (reales).\nSale: nada (solo\
+      \ dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -816,7 +870,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [360, 1200.0]
+    coordinate: [1008, 1960.0]
     rotation: 0
     state: enabled
 - name: g_txA
@@ -846,7 +900,8 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): I y Q de la se\xF1al que\ntransmite el nodo\
+      \ A.\nEntra: complejos.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'True'
     grid: 'True'
@@ -913,20 +968,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 1148]
+    coordinate: [288, 3344.0]
     rotation: 0
     state: enabled
 - name: g_txA_src
   id: virtual_source
   parameters:
     alias: ''
-    comment: ''
+    comment: "Toma sin cable la se\xF1al\ndel nodo A, para\ngraficarla.\nEntra: nada\
+      \ a la vista.\nSale: complejos."
     stream_id: tx_A
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 1164]
+    coordinate: [8, 3368.0]
     rotation: 0
     state: enabled
 - name: g_txB
@@ -956,7 +1012,8 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): I y Q de la se\xF1al que\ntransmite el nodo\
+      \ B.\nEntra: complejos.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'True'
     grid: 'True'
@@ -1023,20 +1080,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1240, 1256.0]
+    coordinate: [288, 3536.0]
     rotation: 0
     state: enabled
 - name: g_txB_src
   id: virtual_source
   parameters:
     alias: ''
-    comment: ''
+    comment: "Toma sin cable la se\xF1al\ndel nodo B, para\ngraficarla.\nEntra: nada\
+      \ a la vista.\nSale: complejos."
     stream_id: tx_B
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1040, 1244]
+    coordinate: [8, 3560.0]
     rotation: 0
     state: enabled
 - name: guarda_1
@@ -1045,7 +1103,13 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: 'Tira la guarda que
+
+      sigue al turno de A.
+
+      Entra: complejos.
+
+      Sale: nada.'
     num_inputs: '1'
     type: complex
     vlen: '1'
@@ -1053,7 +1117,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 868]
+    coordinate: [1552, 2880.0]
     rotation: 0
     state: enabled
 - name: guarda_3
@@ -1062,7 +1126,13 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: 'Tira la guarda que
+
+      sigue al turno de B.
+
+      Entra: complejos.
+
+      Sale: nada.'
     num_inputs: '1'
     type: complex
     vlen: '1'
@@ -1070,20 +1140,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 932]
+    coordinate: [1552, 3200.0]
     rotation: 0
     state: enabled
 - name: imports
   id: import
   parameters:
     alias: ''
-    comment: ''
+    comment: "M\xF3dulos de Python que usan las variables y los\nbloques: math y cmath\
+      \ (cuentas con n\xFAmeros\ncomplejos)."
     imports: import math, cmath
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 232.0]
+    coordinate: [288, 64.0]
     rotation: 0
     state: enabled
 - name: modulo_canal
@@ -1091,7 +1162,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Calcula el m\xF3dulo\n|se\xF1al| de cada muestra\ndel canal, para ver\
+      \ los\nturnos.\nEntra: complejos.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     vlen: '1'
@@ -1099,28 +1171,32 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 1012]
+    coordinate: [736, 1992.0]
     rotation: 0
     state: enabled
 - name: nota_osc
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "El desv\xEDo de frecuencia (CFO) es la diferencia\nentre los osciladores\
+      \ de A y B: cada receptor\nlo ve con signo opuesto (B: +CFO, A: -CFO)."
     note: "El desv\xEDo de frecuencia (CFO) es la diferencia entre los osciladores\
       \ de A y B: cada receptor lo ve con signo opuesto (B: +CFO, A: -CFO)."
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 1076]
+    coordinate: [1824, 2872.0]
     rotation: 0
     state: enabled
 - name: nota_tdd
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "CANAL COMPARTIDO (half-duplex por TDD)\nStream Mux arma los turnos [A\
+      \ | guarda | B |\nguarda]; mientras un nodo no tiene el turno,\nsu transmisor\
+      \ espera. Stream Demux es el\nconmutador de recepci\xF3n: las ranuras de A van\n\
+      al receptor de B y las de B al receptor de A\n(nadie se escucha a s\xED mismo)."
     note: "CANAL COMPARTIDO (half-duplex por TDD): Stream Mux arma los turnos [A |\
       \ guarda | B | guarda]; mientras un nodo no tiene el turno, su transmisor espera.\
       \ Stream Demux es el conmutador de recepci\xF3n: las ranuras de A van al receptor\
@@ -1129,21 +1205,23 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 700]
+    coordinate: [8, 1600.0]
     rotation: 0
     state: enabled
 - name: nota_tx
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "TRANSMISORES\ncada nodo arma sus tramas (mensaje -> CRC-32\n-> pre\xE1\
+      mbulo de 64 bits + longitud \xD72) y las\nmodula en 4-QAM diferencial con filtro\
+      \ RRC."
     note: "TRANSMISORES: cada nodo arma sus tramas (mensaje -> CRC-32 -> pre\xE1mbulo\
       \ 64 b + longitud x2) y las modula en 4-QAM diferencial con filtro RRC"
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 152.0]
+    coordinate: [8, 616.0]
     rotation: 0
     state: enabled
 - name: osc_rxA
@@ -1151,7 +1229,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Oscilador del receptor de A: le agrega a lo\nque transmiti\xF3 B el\
+      \ desv\xEDo -CFO (signo opuesto\nal que ve B).\nEntra: complejos (ranuras de\
+      \ B).\nSale: complejos con -CFO."
     maxoutbuf: '0'
     minoutbuf: '0'
     phase_inc: -2 * math.pi * cfo_hz / samp_rate
@@ -1160,7 +1240,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 996]
+    coordinate: [1568, 3024.0]
     rotation: 0
     state: enabled
 - name: osc_rxB
@@ -1168,7 +1248,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Oscilador del receptor de B: le agrega a lo\nque transmiti\xF3 A el\
+      \ desv\xEDo de frecuencia +CFO\n(la diferencia entre los osciladores de los\n\
+      dos nodos).\nEntra: complejos (ranuras de A).\nSale: complejos con +CFO."
     maxoutbuf: '0'
     minoutbuf: '0'
     phase_inc: 2 * math.pi * cfo_hz / samp_rate
@@ -1177,14 +1259,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 804]
+    coordinate: [1568, 2584.0]
     rotation: 0
     state: enabled
 - name: pestanas
   id: qtgui_tab_widget
   parameters:
     alias: ''
-    comment: ''
+    comment: "Las 3 pesta\xF1as de la ventana: 1. Canal\ncompartido (TDD), 2. Nodo\
+      \ A recibe (lo que\ntransmite B), 3. Nodo B recibe (lo que\ntransmite A). Cada\
+      \ gr\xE1fico dice en su \"GUI\nHint\" en qu\xE9 pesta\xF1a va."
     gui_hint: 2,0,1,6
     label0: 1. Canal compartido (TDD)
     label1: 2. Nodo A recibe (lo que transmite B)
@@ -1211,7 +1295,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2152, 0.0]
+    coordinate: [3208, 16.0]
     rotation: 0
     state: enabled
 - name: ruido_awgn
@@ -1220,7 +1304,8 @@ blocks:
     affinity: ''
     alias: ''
     amp: ruido
-    comment: ''
+    comment: "Genera ruido blanco gaussiano complejo, con la\namplitud \"ruido\" (seg\xFA\
+      n el Eb/N0 elegido).\nEntra: nada (es una fuente).\nSale: complejos (ruido)."
     maxoutbuf: '0'
     minoutbuf: '0'
     noise_type: analog.GR_GAUSSIAN
@@ -1230,7 +1315,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [632, 916]
+    coordinate: [728, 2856.0]
     rotation: 0
     state: enabled
 - name: rxA_a_bits
@@ -1238,7 +1323,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Separa cada n\xFAmero en sus 2 bits (primero el\nm\xE1s significativo).\n\
+      Entra: bytes con 2 bits \xFAtiles (0 a 3).\nSale: bits sueltos (1 bit por byte:\
+      \ 0 o 1)."
     k: '2'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1246,8 +1333,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1624.0, 1592]
-    rotation: 270
+    coordinate: [1992, 4968.0]
+    rotation: 0
     state: enabled
 - name: rxA_a_bytes
   id: blocks_repack_bits_bb
@@ -1255,7 +1342,9 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'True'
-    comment: ''
+    comment: "Junta los bits de a 8 para volver a formar\nbytes, respetando d\xF3\
+      nde empieza cada trama\n(packet_len).\nEntra: bits sueltos (1 por byte).\nSale:\
+      \ bytes: L_B + 4 por trama (packet_len)."
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -1266,7 +1355,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 1780]
+    coordinate: [2536, 4960.0]
     rotation: 0
     state: enabled
 - name: rxA_alinear
@@ -1274,7 +1363,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Descarta los bits que llegan antes\nde la primera etiqueta\ninicio_trama:\
+      \ as\xED lo recibido\narranca justo despu\xE9s de un\npre\xE1mbulo, alineado\
+      \ con la copia\ndel transmisor.\nEntra: bits con etiquetas.\nSale: bits alineados."
     lengthtagname: '"inicio_trama"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1284,7 +1375,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 2040.0]
+    coordinate: [280, 5552.0]
     rotation: 0
     state: enabled
 - name: rxA_archivo
@@ -1293,7 +1384,15 @@ blocks:
     affinity: ''
     alias: ''
     append: 'False'
-    comment: ''
+    comment: 'Guarda esos mensajes en
+
+      mensajes_recibidos_A.txt (en la carpeta de
+
+      este .grc).
+
+      Entra: bytes.
+
+      Sale: nada (escribe el archivo).'
     file: '"mensajes_recibidos_A.txt"'
     type: byte
     unbuffered: 'True'
@@ -1302,7 +1401,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 1748]
+    coordinate: [3320, 4952.0]
     rotation: 0
     state: enabled
 - name: rxA_ber_ventana
@@ -1310,7 +1409,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Promedia los errores en el \xFAltimo mill\xF3n de\nbits: da el BER reciente.\n\
+      Entra: reales (0 o 1).\nSale: reales: BER."
     length: ventana
     max_iter: '4000'
     maxoutbuf: '0'
@@ -1322,7 +1422,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1680, 1908]
+    coordinate: [2296, 5528.0]
     rotation: 0
     state: enabled
 - name: rxA_cfo_esperado
@@ -1331,7 +1431,9 @@ blocks:
     affinity: ''
     alias: ''
     amp: -cfo_hz
-    comment: ''
+    comment: "Genera un valor constante igual\nal desv\xEDo que ve el nodo A\n(-CFO),\
+      \ para compararlo con lo\nque estima Costas.\nEntra: nada (es una fuente).\n\
+      Sale: reales (Hz)."
     freq: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1345,7 +1447,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 1776.0]
+    coordinate: [1136, 4248.0]
     rotation: 0
     state: enabled
 - name: rxA_comparar
@@ -1353,7 +1455,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Compara bit a bit lo recibido con lo\ntransmitido (XOR): sale 1 donde\
+      \ hay un error y\n0 donde coinciden.\nEntra: in0 = bits recibidos, in1 = bits\n\
+      \  transmitidos (1 por byte).\nSale: bytes: 1 = error, 0 = bien."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '2'
@@ -1362,7 +1466,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 1920]
+    coordinate: [1752, 5544.0]
     rotation: 0
     state: enabled
 - name: rxA_costas
@@ -1370,7 +1474,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Lazo de Costas de orden 4: corrige\nla fase y el desv\xEDo de frecuencia\n\
+      del canal, para que la\nconstelaci\xF3n quede quieta en los 4\npuntos.\nEntra:\
+      \ complejos, 1 muestra por\n  s\xEDmbolo.\nSale: out0 = s\xEDmbolos corregidos\n\
+      \  (complejos); out1 = frecuencia\n  que corrige (rad/s\xEDmbolo); out2\n  =\
+      \ fase y out3 = error (no se\n  usan)."
     maxoutbuf: '0'
     minoutbuf: '0'
     order: '4'
@@ -1380,7 +1488,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 1376.0]
+    coordinate: [936, 4928.0]
     rotation: 0
     state: enabled
 - name: rxA_crc
@@ -1389,7 +1497,10 @@ blocks:
     affinity: ''
     alias: ''
     check: 'True'
-    comment: ''
+    comment: "Vuelve a calcular el CRC-32 de\ncada trama: si coincide, la deja\npasar\
+      \ sin los 4 bytes del CRC;\nsi no, la descarta (ten\xEDa\nerrores).\nEntra:\
+      \ bytes: payload + CRC (L_B\n  + 4).\nSale: bytes: payloads correctos\n  (L_B\
+      \ bytes cada uno)."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '70000'
@@ -1398,7 +1509,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 1780]
+    coordinate: [2808, 4952.0]
     rotation: 0
     state: enabled
 - name: rxA_dec_diferencial
@@ -1407,7 +1518,10 @@ blocks:
     affinity: ''
     alias: ''
     coding: digital.DIFF_DIFFERENTIAL
-    comment: ''
+    comment: "Decodificaci\xF3n diferencial: resta el s\xEDmbolo\nanterior (m\xF3\
+      dulo 4), o sea, mide el cambio de\nfase. Por eso no importa si Costas qued\xF3\
+      \ngirado 90\xB0, 180\xB0 o 270\xB0.\nEntra: s\xEDmbolos 0 a 3 (bytes).\nSale:\
+      \ s\xEDmbolos 0 a 3 (el cambio de fase)."
     maxoutbuf: '0'
     minoutbuf: '0'
     modulus: '4'
@@ -1415,7 +1529,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 1556]
+    coordinate: [1440, 4960.0]
     rotation: 0
     state: enabled
 - name: rxA_decisor
@@ -1423,7 +1537,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Decide a cu\xE1l de los 4 puntos de la\nconstelaci\xF3n est\xE1 m\xE1\
+      s cerca cada s\xEDmbolo y\nentrega su n\xFAmero.\nEntra: complejos, 1 por s\xED\
+      mbolo.\nSale: bytes con valores 0 a 3 (un s\xEDmbolo cada\n  uno)."
     constellation: qpsk
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1431,7 +1547,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 1564]
+    coordinate: [1152, 4968.0]
     rotation: 0
     state: enabled
 - name: rxA_detector_trama
@@ -1440,7 +1556,12 @@ blocks:
     access_code: digital.packet_utils.default_access_code
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Busca en los bits el pre\xE1mbulo de 64\nbits (acepta hasta \"umbral\"\
+      \ bits mal),\nlee la longitud (2 copias que tienen que\ncoincidir) y entrega\
+      \ solo el payload +\nCRC de cada trama, marcado con\npacket_len.\nEntra: bits\
+      \ sueltos (1 por byte).\nSale: bits sueltos: 8 \xD7 (L_B + 4) por\n  trama.\n\
+      (En Advanced, Min Output Buffer =\n600000: lugar para la trama m\xE1s larga,\n\
+      as\xED una longitud da\xF1ada no traba el\nflujo.)"
     maxoutbuf: '0'
     minoutbuf: '600000'
     tagname: '"packet_len"'
@@ -1450,20 +1571,34 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 1780]
+    coordinate: [2264, 4952.0]
     rotation: 0
     state: enabled
 - name: rxA_entrada
   id: virtual_source
   parameters:
     alias: ''
-    comment: ''
+    comment: 'Toma sin cable lo que le
+
+      llega al nodo A (Virtual
+
+      Sink "entrada_rx_A"): solo
+
+      las ranuras en que
+
+      transmite B, una tras
+
+      otra.
+
+      Entra: nada a la vista.
+
+      Sale: complejos.'
     stream_id: entrada_rx_A
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 1564]
+    coordinate: [8, 4968.0]
     rotation: 0
     state: enabled
 - name: rxA_errores
@@ -1471,7 +1606,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa cada error (0 o\n1) a n\xFAmero real, para\npromediarlo y\ngraficarlo.\n\
+      Entra: bytes (0 o 1).\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -1480,7 +1616,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 1924]
+    coordinate: [2032, 5552.0]
     rotation: 0
     state: enabled
 - name: rxA_filtro_adaptado
@@ -1489,7 +1625,10 @@ blocks:
     affinity: ''
     alias: ''
     alpha: excess_bw
-    comment: ''
+    comment: "Filtro adaptado RRC (igual al del\ntransmisor): junto con el del TX\n\
+      da un pulso sin interferencia\nentre s\xEDmbolos y deja afuera la\nmayor parte\
+      \ del ruido.\nEntra: complejos, 4 muestras por\n  s\xEDmbolo.\nSale: complejos\
+      \ filtrados, 4\n  muestras por s\xEDmbolo."
     decim: '1'
     gain: '1'
     maxoutbuf: '0'
@@ -1503,7 +1642,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 1540]
+    coordinate: [296, 4920.0]
     rotation: 0
     state: enabled
 - name: rxA_frec_hz
@@ -1511,7 +1650,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa la frecuencia de Costas\nde radianes por s\xEDmbolo a Hz.\nEntra:\
+      \ reales (rad/s\xEDmbolo).\nSale: reales (Hz)."
     const: samp_rate / sps / (2 * math.pi)
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1521,7 +1661,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 1652]
+    coordinate: [1152, 4520.0]
     rotation: 0
     state: enabled
 - name: rxA_g_ber
@@ -1551,7 +1691,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): log10 del BER medido en\nel \xFAltimo mill\xF3\
+      n de bits (azul) y te\xF3rico\n(rojo).\nEntra: in0 = medido, in1 = te\xF3rico\
+      \ (reales).\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1618,7 +1760,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2152, 1992.0]
+    coordinate: [3056, 5528.0]
     rotation: 0
     state: enabled
 - name: rxA_g_bits
@@ -1648,7 +1790,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): bits recibidos, bits\ntransmitidos (corridos\
+      \ +1,5) y errores (1 =\nerror).\nEntra: in0 = RX, in1 = TX + 1,5, in2 = errores\n\
+      \  (reales).\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1715,7 +1859,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 2188]
+    coordinate: [2296, 5744.0]
     rotation: 0
     state: enabled
 - name: rxA_g_const
@@ -1745,7 +1889,10 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): constelaci\xF3n antes (azul)\ny despu\xE9\
+      s (rojo) de Costas. Despu\xE9s tienen que\nverse 4 grupos de puntos quietos.\n\
+      Entra: in0 = antes, in1 = despu\xE9s (complejos,\n  1 por s\xEDmbolo).\nSale:\
+      \ nada (solo dibuja)."
     grid: 'True'
     gui_hint: 'pestanas@1: 0,1,1,1'
     label1: Antes
@@ -1807,7 +1954,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 1644]
+    coordinate: [1160, 4712.0]
     rotation: 0
     state: enabled
 - name: rxA_g_frec
@@ -1837,7 +1984,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): frecuencia que corrige\nCostas (azul) y desv\xED\
+      o esperado (rojo): cuando\nCostas se engancha, coinciden.\nEntra: in0 = Costas,\
+      \ in1 = esperado (reales,\n  Hz).\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1904,7 +2053,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 1568.0]
+    coordinate: [1448, 4496.0]
     rotation: 0
     state: enabled
 - name: rxA_g_ojo
@@ -1934,7 +2083,9 @@ blocks:
     color7: blue
     color8: blue
     color9: blue
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): diagrama de ojo de I\n(antes del sincronismo\
+      \ y de Costas): el \"ojo\"\nabierto es el mejor instante para muestrear.\nEntra:\
+      \ reales.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -2000,7 +2151,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [488, 1352.0]
+    coordinate: [1152, 3912.0]
     rotation: 0
     state: enabled
 - name: rxA_g_payload
@@ -2030,7 +2181,8 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): bits que\nentrega el detector (payload +\n\
+      CRC de cada trama).\nEntra: reales.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'True'
     grid: 'True'
@@ -2097,7 +2249,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 1828]
+    coordinate: [2808, 4496.0]
     rotation: 0
     state: enabled
 - name: rxA_log_ber
@@ -2105,7 +2257,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Calcula el log10 del BER.
+
+      Entra: reales.
+
+      Sale: reales: log10(BER).'
     k: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2115,7 +2271,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2064, 1924]
+    coordinate: [2848, 5552.0]
     rotation: 0
     state: enabled
 - name: rxA_log_teo
@@ -2124,7 +2280,8 @@ blocks:
     affinity: ''
     alias: ''
     amp: math.log10(ber_teo)
-    comment: ''
+    comment: "Genera un valor constante\nigual al log10 del BER\nte\xF3rico, para\
+      \ el gr\xE1fico.\nEntra: nada (es una fuente).\nSale: reales."
     freq: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2138,7 +2295,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1904, 2084]
+    coordinate: [2840, 5296.0]
     rotation: 0
     state: enabled
 - name: rxA_mapa_gray
@@ -2146,7 +2303,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Deshace el c\xF3digo Gray: cambia cada s\xEDmbolo\npor los 2 bits que\
+      \ mand\xF3 el transmisor (0->0,\n1->1, 2->3, 3->2).\nEntra: s\xEDmbolos 0 a\
+      \ 3 (bytes).\nSale: n\xFAmeros 0 a 3 = 2 bits de datos (bytes)."
     map: '[0, 1, 3, 2]'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2154,7 +2313,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 1440.0]
+    coordinate: [1720, 4968.0]
     rotation: 0
     state: enabled
 - name: rxA_marca_preambulo
@@ -2163,7 +2322,9 @@ blocks:
     access_code: digital.packet_utils.default_access_code
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Busca el pre\xE1mbulo en los bits y pone una\netiqueta \"inicio_trama\"\
+      \ donde termina. No\nquita nada.\nEntra: bits sueltos (1 por byte).\nSale: los\
+      \ mismos bits, con etiquetas\n  inicio_trama."
     maxoutbuf: '0'
     minoutbuf: '0'
     tagname: '"inicio_trama"'
@@ -2173,7 +2334,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [224, 2032.0]
+    coordinate: [24, 5536.0]
     rotation: 0
     state: enabled
 - name: rxA_medidor_ber
@@ -2183,7 +2344,10 @@ blocks:
     alias: ''
     berlimit: '-7.0'
     berminerrors: '100'
-    comment: ''
+    comment: "Cuenta los bits\ndistintos entre sus dos\nentradas desde el\ncomienzo\
+      \ y entrega el\nlog10 del BER acumulado\n(con 0 errores da\n-infinito).\nEntra:\
+      \ in0 = bytes\n  recibidos, in1 = bytes\n  transmitidos.\nSale: reales: log10(BER\n\
+      \  acumulado)."
     maxoutbuf: '0'
     minoutbuf: '0'
     test_mode: 'False'
@@ -2191,14 +2355,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1600, 2068]
+    coordinate: [2296, 5960.0]
     rotation: 0
     state: enabled
 - name: rxA_nota
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "RECEPTOR DEL NODO A (recibe lo que transmite\nB)\nfiltro adaptado ->\
+      \ sincronismo de s\xEDmbolo ->\nCostas -> decisi\xF3n -> decodificaci\xF3n\n\
+      diferencial -> tramas (CRC-32) y BER"
     note: "RECEPTOR DEL NODO A (recibe lo que transmite B): filtro adaptado -> sincronismo\
       \ de s\xEDmbolo -> Costas -> decisi\xF3n -> decodificaci\xF3n diferencial ->\
       \ tramas (CRC-32) y BER"
@@ -2206,7 +2372,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 1480]
+    coordinate: [8, 3760.0]
     rotation: 0
     state: enabled
 - name: rxA_ojo_interp
@@ -2214,7 +2380,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Agrega 3 muestras entre cada par (interpola \xD7\n4: 16 por s\xEDmbolo)\
+      \ solo para que el diagrama\nde ojo se vea suave.\nEntra: complejos.\nSale:\
+      \ complejos (4 veces m\xE1s muestras)."
     decim: '1'
     fbw: '0'
     interp: '4'
@@ -2226,15 +2394,21 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [256, 1360.0]
-    rotation: 180
+    coordinate: [536, 3912.0]
+    rotation: 0
     state: enabled
 - name: rxA_ojo_re
   id: blocks_complex_to_real
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Se queda con la parte real (I), para el
+
+      diagrama de ojo.
+
+      Entra: complejos.
+
+      Sale: reales.'
     maxoutbuf: '0'
     minoutbuf: '0'
     vlen: '1'
@@ -2242,7 +2416,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 1480.0]
+    coordinate: [912, 3944.0]
     rotation: 0
     state: enabled
 - name: rxA_payload_f
@@ -2250,7 +2424,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa cada bit a n\xFAmero real, para el gr\xE1fico.\nEntra: bits sueltos\
+      \ (bytes 0 o 1).\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -2259,7 +2434,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 1844]
+    coordinate: [2536, 4520.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_a_paquetes
@@ -2267,7 +2442,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Copia del transmisor: corta en
+
+      grupos de L_B bytes marcados con
+
+      packet_len.
+
+      Entra: bytes.
+
+      Sale: bytes en grupos marcados.'
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2278,7 +2461,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [200, 2192.0]
+    coordinate: [280, 6576.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_bit_f
@@ -2286,7 +2469,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa los bits transmitidos a n\xFAmeros reales,\npara el gr\xE1fico.\n\
+      Entra: bits sueltos.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -2295,7 +2479,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 2220]
+    coordinate: [1752, 6392.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_bits
@@ -2303,7 +2487,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Separa cada byte de las tramas de referencia\nen sus 8 bits (primero\
+      \ el m\xE1s significativo).\nEntra: bytes.\nSale: bits sueltos (1 por byte)."
     k: '8'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2311,7 +2496,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 2068]
+    coordinate: [1264, 6584.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_bytes
@@ -2320,7 +2505,13 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'False'
-    comment: ''
+    comment: 'Junta los bits transmitidos de a 8, como los
+
+      recibidos.
+
+      Entra: bits sueltos.
+
+      Sale: bytes.'
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -2331,7 +2522,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 2156]
+    coordinate: [1752, 6224.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_crc
@@ -2340,7 +2531,13 @@ blocks:
     affinity: ''
     alias: ''
     check: 'False'
-    comment: ''
+    comment: 'Copia del transmisor: agrega el CRC-32 de cada
+
+      payload.
+
+      Entra: bytes: payload (packet_len).
+
+      Sale: bytes: payload + CRC.'
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2349,7 +2546,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 2184.0]
+    coordinate: [512, 6568.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_desplazar
@@ -2357,7 +2554,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Suma 1,5 a los bits transmitidos, para verlos\nseparados de los recibidos\
+      \ en el gr\xE1fico.\nEntra: reales.\nSale: reales (1,5 o 2,5)."
     const: '1.5'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2367,7 +2565,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 2220]
+    coordinate: [2032, 6392.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_encabezado
@@ -2375,7 +2573,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor: arma el\nencabezado (pre\xE1mbulo + longitud\n\
+      \xD72).\nEntra: bytes: payload + CRC.\nSale: bytes: encabezado (12\n  bytes)."
     format: formato_trama
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
@@ -2384,7 +2583,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [616, 2128.0]
+    coordinate: [792, 6384.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_fuente
@@ -2392,7 +2591,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor, para saber qu\xE9 bits se\nmandaron: entrega una\
+      \ y otra vez el mensaje\ndel nodo B (lista \"payload_B\").\nEntra: nada (es\
+      \ una fuente).\nSale: bytes."
     maxoutbuf: '0'
     minoutbuf: '0'
     repeat: 'True'
@@ -2404,7 +2605,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 2184.0]
+    coordinate: [8, 6568.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_saltar_preambulo
@@ -2412,7 +2613,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Saltea los primeros 64 bits (el\nprimer pre\xE1mbulo), para arrancar\n\
+      en el mismo lugar que lo recibido\ndespu\xE9s de \"alinear\".\nEntra: bits sueltos.\n\
+      Sale: los mismos bits, sin los 64\n  primeros."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_items: '64'
@@ -2422,7 +2625,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 2068]
+    coordinate: [1536, 6584.0]
     rotation: 0
     state: enabled
 - name: rxA_ref_trama
@@ -2430,7 +2633,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor: pone el\nencabezado delante del\npayload.\nEntra:\
+      \ in0 = encabezado, in1 =\n  payload + CRC.\nSale: bytes: tramas completas."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2442,7 +2646,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [840, 2176.0]
+    coordinate: [1032, 6576.0]
     rotation: 0
     state: enabled
 - name: rxA_rx_bit_f
@@ -2450,7 +2654,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa los bits recibidos (ya alineados) a\nn\xFAmeros reales, para el\
+      \ gr\xE1fico.\nEntra: bits sueltos.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -2459,7 +2664,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 1944.0]
+    coordinate: [512, 5768.0]
     rotation: 0
     state: enabled
 - name: rxA_rx_bytes
@@ -2468,7 +2673,13 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'False'
-    comment: ''
+    comment: 'Junta los bits recibidos de a 8, sin mirar
+
+      etiquetas: el medidor de BER compara bytes.
+
+      Entra: bits sueltos.
+
+      Sale: bytes.'
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -2479,7 +2690,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 2004]
+    coordinate: [512, 5960.0]
     rotation: 0
     state: enabled
 - name: rxA_sinc_null_1
@@ -2488,7 +2699,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el error del\nsincronismo de s\xEDmbolo (no se\nusa).\nEntra:\
+      \ reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -2496,7 +2708,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 1640.0]
+    coordinate: [912, 4528.0]
     rotation: 0
     state: enabled
 - name: rxA_sinc_null_2
@@ -2505,7 +2717,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el per\xEDodo\ninstant\xE1neo del sincronismo de\ns\xEDmbolo\
+      \ (no se usa).\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -2513,7 +2726,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 1672.0]
+    coordinate: [912, 4296.0]
     rotation: 0
     state: enabled
 - name: rxA_sinc_null_3
@@ -2522,7 +2735,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el per\xEDodo promedio\ndel sincronismo de s\xEDmbolo (no\n\
+      se usa).\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -2530,7 +2744,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 1704.0]
+    coordinate: [912, 4112.0]
     rotation: 0
     state: enabled
 - name: rxA_sinc_simbolo
@@ -2538,7 +2752,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Sincronismo de s\xEDmbolo: encuentra el mejor\ninstante para muestrear\
+      \ cada s\xEDmbolo (el\ncentro del ojo) y entrega una muestra por\ns\xEDmbolo.\n\
+      Entra: complejos, 4 muestras por s\xEDmbolo.\nSale: out0 = complejos, 1 muestra\
+      \ por s\xEDmbolo;\n  out1 = error, out2 = per\xEDodo instant\xE1neo y\n  out3\
+      \ = per\xEDodo promedio del reloj (reales)."
     constellation: digital.constellation_bpsk().base()
     damping: '1.0'
     loop_bw: sync_bw
@@ -2557,7 +2775,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 1500]
+    coordinate: [536, 4912.0]
     rotation: 0
     state: enabled
 - name: rxA_sonda_ber
@@ -2565,13 +2783,14 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Guarda el \xFAltimo valor que le llega, para que\nla variable ber_A_log\
+      \ lo pueda leer.\nEntra: reales.\nSale: nada (se lee con un Function Probe)."
     type: float
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1824, 2076]
+    coordinate: [2568, 5968.0]
     rotation: 0
     state: enabled
 - name: rxA_submuestreo
@@ -2579,7 +2798,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Se queda con 1 de cada 1000 valores, para que\nel gr\xE1fico no tenga\
+      \ que dibujar tantos.\nEntra: reales.\nSale: reales (1000 veces menos)."
     maxoutbuf: '0'
     minoutbuf: '0'
     n: '1000'
@@ -2589,7 +2809,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1904, 1924]
+    coordinate: [2568, 5560.0]
     rotation: 0
     state: enabled
 - name: rxA_una_de_cien
@@ -2597,7 +2817,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "De cada 100 mensajes correctos se queda con 1\n(para no llenar el disco).\n\
+      Entra: bytes: mensajes correctos (L_B bytes\n  cada uno).\nSale: bytes: 1 mensaje\
+      \ de cada 100."
     m: L_B
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2608,20 +2830,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 1764]
+    coordinate: [3032, 4952.0]
     rotation: 0
     state: enabled
 - name: rxA_vs_entrada
   id: virtual_sink
   parameters:
     alias: ''
-    comment: ''
+    comment: "Conexi\xF3n sin cable: lo que le llega al nodo A\nsigue en el Virtual\
+      \ Source \"entrada_rx_A\"\n(receptor de A).\nEntra: complejos.\nSale: nada a\
+      \ la vista."
     stream_id: entrada_rx_A
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1648, 1004]
+    coordinate: [1840, 3032.0]
     rotation: 0
     state: enabled
 - name: rxB_a_bits
@@ -2629,7 +2853,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Separa cada n\xFAmero en sus 2 bits (primero el\nm\xE1s significativo).\n\
+      Entra: bytes con 2 bits \xFAtiles (0 a 3).\nSale: bits sueltos (1 bit por byte:\
+      \ 0 o 1)."
     k: '2'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2637,8 +2863,8 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1672.0, 2600]
-    rotation: 270
+    coordinate: [1992, 8008.0]
+    rotation: 0
     state: enabled
 - name: rxB_a_bytes
   id: blocks_repack_bits_bb
@@ -2646,7 +2872,9 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'True'
-    comment: ''
+    comment: "Junta los bits de a 8 para volver a formar\nbytes, respetando d\xF3\
+      nde empieza cada trama\n(packet_len).\nEntra: bits sueltos (1 por byte).\nSale:\
+      \ bytes: L_A + 4 por trama (packet_len)."
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -2657,7 +2885,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 2680]
+    coordinate: [2536, 8000.0]
     rotation: 0
     state: enabled
 - name: rxB_alinear
@@ -2665,7 +2893,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Descarta los bits que llegan antes\nde la primera etiqueta\ninicio_trama:\
+      \ as\xED lo recibido\narranca justo despu\xE9s de un\npre\xE1mbulo, alineado\
+      \ con la copia\ndel transmisor.\nEntra: bits con etiquetas.\nSale: bits alineados."
     lengthtagname: '"inicio_trama"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2675,7 +2905,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 2808]
+    coordinate: [280, 8592.0]
     rotation: 0
     state: enabled
 - name: rxB_archivo
@@ -2684,7 +2914,15 @@ blocks:
     affinity: ''
     alias: ''
     append: 'False'
-    comment: ''
+    comment: 'Guarda esos mensajes en
+
+      mensajes_recibidos_B.txt (en la carpeta de
+
+      este .grc).
+
+      Entra: bytes.
+
+      Sale: nada (escribe el archivo).'
     file: '"mensajes_recibidos_B.txt"'
     type: byte
     unbuffered: 'True'
@@ -2693,7 +2931,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1176, 2648]
+    coordinate: [3320, 7992.0]
     rotation: 0
     state: enabled
 - name: rxB_ber_ventana
@@ -2701,7 +2939,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Promedia los errores en el \xFAltimo mill\xF3n de\nbits: da el BER reciente.\n\
+      Entra: reales (0 o 1).\nSale: reales: BER."
     length: ventana
     max_iter: '4000'
     maxoutbuf: '0'
@@ -2713,7 +2952,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1680, 2768.0]
+    coordinate: [2296, 8568.0]
     rotation: 0
     state: enabled
 - name: rxB_cfo_esperado
@@ -2722,7 +2961,9 @@ blocks:
     affinity: ''
     alias: ''
     amp: cfo_hz
-    comment: ''
+    comment: "Genera un valor constante igual\nal desv\xEDo que ve el nodo B\n(+CFO),\
+      \ para compararlo con lo\nque estima Costas.\nEntra: nada (es una fuente).\n\
+      Sale: reales (Hz)."
     freq: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2736,7 +2977,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 2608]
+    coordinate: [1136, 7288.0]
     rotation: 0
     state: enabled
 - name: rxB_comparar
@@ -2744,7 +2985,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Compara bit a bit lo recibido con lo\ntransmitido (XOR): sale 1 donde\
+      \ hay un error y\n0 donde coinciden.\nEntra: in0 = bits recibidos, in1 = bits\n\
+      \  transmitidos (1 por byte).\nSale: bytes: 1 = error, 0 = bien."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '2'
@@ -2753,7 +2996,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 2820]
+    coordinate: [1752, 8584.0]
     rotation: 0
     state: enabled
 - name: rxB_costas
@@ -2761,7 +3004,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Lazo de Costas de orden 4: corrige\nla fase y el desv\xEDo de frecuencia\n\
+      del canal, para que la\nconstelaci\xF3n quede quieta en los 4\npuntos.\nEntra:\
+      \ complejos, 1 muestra por\n  s\xEDmbolo.\nSale: out0 = s\xEDmbolos corregidos\n\
+      \  (complejos); out1 = frecuencia\n  que corrige (rad/s\xEDmbolo); out2\n  =\
+      \ fase y out3 = error (no se\n  usan)."
     maxoutbuf: '0'
     minoutbuf: '0'
     order: '4'
@@ -2771,7 +3018,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [856, 2376.0]
+    coordinate: [936, 7968.0]
     rotation: 0
     state: enabled
 - name: rxB_crc
@@ -2780,7 +3027,10 @@ blocks:
     affinity: ''
     alias: ''
     check: 'True'
-    comment: ''
+    comment: "Vuelve a calcular el CRC-32 de\ncada trama: si coincide, la deja\npasar\
+      \ sin los 4 bytes del CRC;\nsi no, la descarta (ten\xEDa\nerrores).\nEntra:\
+      \ bytes: payload + CRC (L_A\n  + 4).\nSale: bytes: payloads correctos\n  (L_A\
+      \ bytes cada uno)."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '70000'
@@ -2789,7 +3039,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [712, 2680]
+    coordinate: [2808, 7992.0]
     rotation: 0
     state: enabled
 - name: rxB_dec_diferencial
@@ -2798,7 +3048,10 @@ blocks:
     affinity: ''
     alias: ''
     coding: digital.DIFF_DIFFERENTIAL
-    comment: ''
+    comment: "Decodificaci\xF3n diferencial: resta el s\xEDmbolo\nanterior (m\xF3\
+      dulo 4), o sea, mide el cambio de\nfase. Por eso no importa si Costas qued\xF3\
+      \ngirado 90\xB0, 180\xB0 o 270\xB0.\nEntra: s\xEDmbolos 0 a 3 (bytes).\nSale:\
+      \ s\xEDmbolos 0 a 3 (el cambio de fase)."
     maxoutbuf: '0'
     minoutbuf: '0'
     modulus: '4'
@@ -2806,7 +3059,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 2456]
+    coordinate: [1440, 8000.0]
     rotation: 0
     state: enabled
 - name: rxB_decisor
@@ -2814,7 +3067,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Decide a cu\xE1l de los 4 puntos de la\nconstelaci\xF3n est\xE1 m\xE1\
+      s cerca cada s\xEDmbolo y\nentrega su n\xFAmero.\nEntra: complejos, 1 por s\xED\
+      mbolo.\nSale: bytes con valores 0 a 3 (un s\xEDmbolo cada\n  uno)."
     constellation: qpsk
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2822,7 +3077,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 2464]
+    coordinate: [1152, 8008.0]
     rotation: 0
     state: enabled
 - name: rxB_detector_trama
@@ -2831,7 +3086,12 @@ blocks:
     access_code: digital.packet_utils.default_access_code
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Busca en los bits el pre\xE1mbulo de 64\nbits (acepta hasta \"umbral\"\
+      \ bits mal),\nlee la longitud (2 copias que tienen que\ncoincidir) y entrega\
+      \ solo el payload +\nCRC de cada trama, marcado con\npacket_len.\nEntra: bits\
+      \ sueltos (1 por byte).\nSale: bits sueltos: 8 \xD7 (L_A + 4) por\n  trama.\n\
+      (En Advanced, Min Output Buffer =\n600000: lugar para la trama m\xE1s larga,\n\
+      as\xED una longitud da\xF1ada no traba el\nflujo.)"
     maxoutbuf: '0'
     minoutbuf: '600000'
     tagname: '"packet_len"'
@@ -2841,20 +3101,34 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 2680]
+    coordinate: [2264, 7992.0]
     rotation: 0
     state: enabled
 - name: rxB_entrada
   id: virtual_source
   parameters:
     alias: ''
-    comment: ''
+    comment: 'Toma sin cable lo que le
+
+      llega al nodo B (Virtual
+
+      Sink "entrada_rx_B"): solo
+
+      las ranuras en que
+
+      transmite A, una tras
+
+      otra.
+
+      Entra: nada a la vista.
+
+      Sale: complejos.'
     stream_id: entrada_rx_B
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 2544.0]
+    coordinate: [8, 8008.0]
     rotation: 0
     state: enabled
 - name: rxB_errores
@@ -2862,7 +3136,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa cada error (0 o\n1) a n\xFAmero real, para\npromediarlo y\ngraficarlo.\n\
+      Entra: bytes (0 o 1).\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -2871,7 +3146,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 2824]
+    coordinate: [2032, 8592.0]
     rotation: 0
     state: enabled
 - name: rxB_filtro_adaptado
@@ -2880,7 +3155,10 @@ blocks:
     affinity: ''
     alias: ''
     alpha: excess_bw
-    comment: ''
+    comment: "Filtro adaptado RRC (igual al del\ntransmisor): junto con el del TX\n\
+      da un pulso sin interferencia\nentre s\xEDmbolos y deja afuera la\nmayor parte\
+      \ del ruido.\nEntra: complejos, 4 muestras por\n  s\xEDmbolo.\nSale: complejos\
+      \ filtrados, 4\n  muestras por s\xEDmbolo."
     decim: '1'
     gain: '1'
     maxoutbuf: '0'
@@ -2894,7 +3172,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 2440]
+    coordinate: [296, 7960.0]
     rotation: 0
     state: enabled
 - name: rxB_frec_hz
@@ -2902,7 +3180,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa la frecuencia de Costas\nde radianes por s\xEDmbolo a Hz.\nEntra:\
+      \ reales (rad/s\xEDmbolo).\nSale: reales (Hz)."
     const: samp_rate / sps / (2 * math.pi)
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2912,7 +3191,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 2552]
+    coordinate: [1152, 7560.0]
     rotation: 0
     state: enabled
 - name: rxB_g_ber
@@ -2942,7 +3221,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): log10 del BER medido en\nel \xFAltimo mill\xF3\
+      n de bits (azul) y te\xF3rico\n(rojo).\nEntra: in0 = medido, in1 = te\xF3rico\
+      \ (reales).\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -3009,7 +3290,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2168, 2888.0]
+    coordinate: [3056, 8568.0]
     rotation: 0
     state: enabled
 - name: rxB_g_bits
@@ -3039,7 +3320,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): bits recibidos, bits\ntransmitidos (corridos\
+      \ +1,5) y errores (1 =\nerror).\nEntra: in0 = RX, in1 = TX + 1,5, in2 = errores\n\
+      \  (reales).\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -3106,7 +3389,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 3088]
+    coordinate: [2296, 8784.0]
     rotation: 0
     state: enabled
 - name: rxB_g_const
@@ -3136,7 +3419,10 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): constelaci\xF3n antes (azul)\ny despu\xE9\
+      s (rojo) de Costas. Despu\xE9s tienen que\nverse 4 grupos de puntos quietos.\n\
+      Entra: in0 = antes, in1 = despu\xE9s (complejos,\n  1 por s\xEDmbolo).\nSale:\
+      \ nada (solo dibuja)."
     grid: 'True'
     gui_hint: 'pestanas@2: 0,1,1,1'
     label1: Antes
@@ -3198,7 +3484,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 2544]
+    coordinate: [1160, 7752.0]
     rotation: 0
     state: enabled
 - name: rxB_g_frec
@@ -3228,7 +3514,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): frecuencia que corrige\nCostas (azul) y desv\xED\
+      o esperado (rojo): cuando\nCostas se engancha, coinciden.\nEntra: in0 = Costas,\
+      \ in1 = esperado (reales,\n  Hz).\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -3295,7 +3583,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 2544]
+    coordinate: [1448, 7536.0]
     rotation: 0
     state: enabled
 - name: rxB_g_ojo
@@ -3325,7 +3613,9 @@ blocks:
     color7: blue
     color8: blue
     color9: blue
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): diagrama de ojo de I\n(antes del sincronismo\
+      \ y de Costas): el \"ojo\"\nabierto es el mejor instante para muestrear.\nEntra:\
+      \ reales.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -3391,7 +3681,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [720, 2288.0]
+    coordinate: [1152, 6952.0]
     rotation: 0
     state: enabled
 - name: rxB_g_payload
@@ -3421,7 +3711,8 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): bits que\nentrega el detector (payload +\n\
+      CRC de cada trama).\nEntra: reales.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'True'
     grid: 'True'
@@ -3488,7 +3779,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 2776.0]
+    coordinate: [2808, 7536.0]
     rotation: 0
     state: enabled
 - name: rxB_log_ber
@@ -3496,7 +3787,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Calcula el log10 del BER.
+
+      Entra: reales.
+
+      Sale: reales: log10(BER).'
     k: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3506,7 +3801,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2064, 2824]
+    coordinate: [2848, 8592.0]
     rotation: 0
     state: enabled
 - name: rxB_log_teo
@@ -3515,7 +3810,8 @@ blocks:
     affinity: ''
     alias: ''
     amp: math.log10(ber_teo)
-    comment: ''
+    comment: "Genera un valor constante\nigual al log10 del BER\nte\xF3rico, para\
+      \ el gr\xE1fico.\nEntra: nada (es una fuente).\nSale: reales."
     freq: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3529,7 +3825,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1856, 2928.0]
+    coordinate: [2840, 8336.0]
     rotation: 0
     state: enabled
 - name: rxB_mapa_gray
@@ -3537,7 +3833,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Deshace el c\xF3digo Gray: cambia cada s\xEDmbolo\npor los 2 bits que\
+      \ mand\xF3 el transmisor (0->0,\n1->1, 2->3, 3->2).\nEntra: s\xEDmbolos 0 a\
+      \ 3 (bytes).\nSale: n\xFAmeros 0 a 3 = 2 bits de datos (bytes)."
     map: '[0, 1, 3, 2]'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3545,7 +3843,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1416, 2464]
+    coordinate: [1720, 8008.0]
     rotation: 0
     state: enabled
 - name: rxB_marca_preambulo
@@ -3554,7 +3852,9 @@ blocks:
     access_code: digital.packet_utils.default_access_code
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Busca el pre\xE1mbulo en los bits y pone una\netiqueta \"inicio_trama\"\
+      \ donde termina. No\nquita nada.\nEntra: bits sueltos (1 por byte).\nSale: los\
+      \ mismos bits, con etiquetas\n  inicio_trama."
     maxoutbuf: '0'
     minoutbuf: '0'
     tagname: '"inicio_trama"'
@@ -3564,7 +3864,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 2800]
+    coordinate: [24, 8576.0]
     rotation: 0
     state: enabled
 - name: rxB_medidor_ber
@@ -3574,7 +3874,10 @@ blocks:
     alias: ''
     berlimit: '-7.0'
     berminerrors: '100'
-    comment: ''
+    comment: "Cuenta los bits\ndistintos entre sus dos\nentradas desde el\ncomienzo\
+      \ y entrega el\nlog10 del BER acumulado\n(con 0 errores da\n-infinito).\nEntra:\
+      \ in0 = bytes\n  recibidos, in1 = bytes\n  transmitidos.\nSale: reales: log10(BER\n\
+      \  acumulado)."
     maxoutbuf: '0'
     minoutbuf: '0'
     test_mode: 'False'
@@ -3582,14 +3885,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 2968.0]
+    coordinate: [2296, 9000.0]
     rotation: 0
     state: enabled
 - name: rxB_nota
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "RECEPTOR DEL NODO B (recibe lo que transmite\nA)\nfiltro adaptado ->\
+      \ sincronismo de s\xEDmbolo ->\nCostas -> decisi\xF3n -> decodificaci\xF3n\n\
+      diferencial -> tramas (CRC-32) y BER"
     note: "RECEPTOR DEL NODO B (recibe lo que transmite A): filtro adaptado -> sincronismo\
       \ de s\xEDmbolo -> Costas -> decisi\xF3n -> decodificaci\xF3n diferencial ->\
       \ tramas (CRC-32) y BER"
@@ -3597,7 +3902,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 2380]
+    coordinate: [8, 6800.0]
     rotation: 0
     state: enabled
 - name: rxB_ojo_interp
@@ -3605,7 +3910,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Agrega 3 muestras entre cada par (interpola \xD7\n4: 16 por s\xEDmbolo)\
+      \ solo para que el diagrama\nde ojo se vea suave.\nEntra: complejos.\nSale:\
+      \ complejos (4 veces m\xE1s muestras)."
     decim: '1'
     fbw: '0'
     interp: '4'
@@ -3617,7 +3924,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 2296.0]
+    coordinate: [536, 6952.0]
     rotation: 0
     state: enabled
 - name: rxB_ojo_re
@@ -3625,7 +3932,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Se queda con la parte real (I), para el
+
+      diagrama de ojo.
+
+      Entra: complejos.
+
+      Sale: reales.'
     maxoutbuf: '0'
     minoutbuf: '0'
     vlen: '1'
@@ -3633,7 +3946,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 2328.0]
+    coordinate: [912, 6984.0]
     rotation: 0
     state: enabled
 - name: rxB_payload_f
@@ -3641,7 +3954,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa cada bit a n\xFAmero real, para el gr\xE1fico.\nEntra: bits sueltos\
+      \ (bytes 0 o 1).\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -3650,7 +3964,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 2744]
+    coordinate: [2536, 7560.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_a_paquetes
@@ -3658,7 +3972,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Copia del transmisor: corta en
+
+      grupos de L_A bytes marcados con
+
+      packet_len.
+
+      Entra: bytes.
+
+      Sale: bytes en grupos marcados.'
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3669,7 +3991,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 2968]
+    coordinate: [280, 9616.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_bit_f
@@ -3677,7 +3999,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa los bits transmitidos a n\xFAmeros reales,\npara el gr\xE1fico.\n\
+      Entra: bits sueltos.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -3686,7 +4009,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1304, 3176.0]
+    coordinate: [1752, 9432.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_bits
@@ -3694,7 +4017,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Separa cada byte de las tramas de referencia\nen sus 8 bits (primero\
+      \ el m\xE1s significativo).\nEntra: bytes.\nSale: bits sueltos (1 por byte)."
     k: '8'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3702,7 +4026,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1000, 2968]
+    coordinate: [1264, 9624.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_bytes
@@ -3711,7 +4035,13 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'False'
-    comment: ''
+    comment: 'Junta los bits transmitidos de a 8, como los
+
+      recibidos.
+
+      Entra: bits sueltos.
+
+      Sale: bytes.'
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -3722,7 +4052,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 3056]
+    coordinate: [1752, 9264.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_crc
@@ -3731,7 +4061,13 @@ blocks:
     affinity: ''
     alias: ''
     check: 'False'
-    comment: ''
+    comment: 'Copia del transmisor: agrega el CRC-32 de cada
+
+      payload.
+
+      Entra: bytes: payload (packet_len).
+
+      Sale: bytes: payload + CRC.'
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3740,7 +4076,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 2960]
+    coordinate: [512, 9608.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_desplazar
@@ -3748,7 +4084,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Suma 1,5 a los bits transmitidos, para verlos\nseparados de los recibidos\
+      \ en el gr\xE1fico.\nEntra: reales.\nSale: reales (1,5 o 2,5)."
     const: '1.5'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3758,7 +4095,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1528, 3176.0]
+    coordinate: [2032, 9432.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_encabezado
@@ -3766,7 +4103,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor: arma el\nencabezado (pre\xE1mbulo + longitud\n\
+      \xD72).\nEntra: bytes: payload + CRC.\nSale: bytes: encabezado (12\n  bytes)."
     format: formato_trama
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
@@ -3775,7 +4113,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 2904]
+    coordinate: [792, 9424.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_fuente
@@ -3783,7 +4121,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor, para saber qu\xE9 bits se\nmandaron: entrega una\
+      \ y otra vez el mensaje\ndel nodo A (lista \"payload_A\").\nEntra: nada (es\
+      \ una fuente).\nSale: bytes."
     maxoutbuf: '0'
     minoutbuf: '0'
     repeat: 'True'
@@ -3795,7 +4135,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 2960]
+    coordinate: [8, 9608.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_saltar_preambulo
@@ -3803,7 +4143,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Saltea los primeros 64 bits (el\nprimer pre\xE1mbulo), para arrancar\n\
+      en el mismo lugar que lo recibido\ndespu\xE9s de \"alinear\".\nEntra: bits sueltos.\n\
+      Sale: los mismos bits, sin los 64\n  primeros."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_items: '64'
@@ -3813,7 +4155,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 2968]
+    coordinate: [1536, 9624.0]
     rotation: 0
     state: enabled
 - name: rxB_ref_trama
@@ -3821,7 +4163,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor: pone el\nencabezado delante del\npayload.\nEntra:\
+      \ in0 = encabezado, in1 =\n  payload + CRC.\nSale: bytes: tramas completas."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3833,7 +4176,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 2956]
+    coordinate: [1032, 9616.0]
     rotation: 0
     state: enabled
 - name: rxB_rx_bit_f
@@ -3841,7 +4184,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa los bits recibidos (ya alineados) a\nn\xFAmeros reales, para el\
+      \ gr\xE1fico.\nEntra: bits sueltos.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     scale: '1'
@@ -3850,7 +4194,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 2880.0]
+    coordinate: [512, 8808.0]
     rotation: 0
     state: enabled
 - name: rxB_rx_bytes
@@ -3859,7 +4203,13 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'False'
-    comment: ''
+    comment: 'Junta los bits recibidos de a 8, sin mirar
+
+      etiquetas: el medidor de BER compara bytes.
+
+      Entra: bits sueltos.
+
+      Sale: bytes.'
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -3870,7 +4220,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 2904]
+    coordinate: [512, 9000.0]
     rotation: 0
     state: enabled
 - name: rxB_sinc_null_1
@@ -3879,7 +4229,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el error del\nsincronismo de s\xEDmbolo (no se\nusa).\nEntra:\
+      \ reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -3887,7 +4238,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 2552]
+    coordinate: [912, 7568.0]
     rotation: 0
     state: enabled
 - name: rxB_sinc_null_2
@@ -3896,7 +4247,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el per\xEDodo\ninstant\xE1neo del sincronismo de\ns\xEDmbolo\
+      \ (no se usa).\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -3904,7 +4256,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 2584]
+    coordinate: [912, 7336.0]
     rotation: 0
     state: enabled
 - name: rxB_sinc_null_3
@@ -3913,7 +4265,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el per\xEDodo promedio\ndel sincronismo de s\xEDmbolo (no\n\
+      se usa).\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -3921,7 +4274,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [752, 2616]
+    coordinate: [912, 7152.0]
     rotation: 0
     state: enabled
 - name: rxB_sinc_simbolo
@@ -3929,7 +4282,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Sincronismo de s\xEDmbolo: encuentra el mejor\ninstante para muestrear\
+      \ cada s\xEDmbolo (el\ncentro del ojo) y entrega una muestra por\ns\xEDmbolo.\n\
+      Entra: complejos, 4 muestras por s\xEDmbolo.\nSale: out0 = complejos, 1 muestra\
+      \ por s\xEDmbolo;\n  out1 = error, out2 = per\xEDodo instant\xE1neo y\n  out3\
+      \ = per\xEDodo promedio del reloj (reales)."
     constellation: digital.constellation_bpsk().base()
     damping: '1.0'
     loop_bw: sync_bw
@@ -3948,7 +4305,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 2400]
+    coordinate: [536, 7952.0]
     rotation: 0
     state: enabled
 - name: rxB_sonda_ber
@@ -3956,13 +4313,14 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Guarda el \xFAltimo valor que le llega, para que\nla variable ber_B_log\
+      \ lo pueda leer.\nEntra: reales.\nSale: nada (se lee con un Function Probe)."
     type: float
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 2976.0]
+    coordinate: [2568, 9008.0]
     rotation: 0
     state: enabled
 - name: rxB_submuestreo
@@ -3970,7 +4328,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Se queda con 1 de cada 1000 valores, para que\nel gr\xE1fico no tenga\
+      \ que dibujar tantos.\nEntra: reales.\nSale: reales (1000 veces menos)."
     maxoutbuf: '0'
     minoutbuf: '0'
     n: '1000'
@@ -3980,7 +4339,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1872, 2816.0]
+    coordinate: [2568, 8600.0]
     rotation: 0
     state: enabled
 - name: rxB_una_de_cien
@@ -3988,7 +4347,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "De cada 100 mensajes correctos se queda con 1\n(para no llenar el disco).\n\
+      Entra: bytes: mensajes correctos (L_A bytes\n  cada uno).\nSale: bytes: 1 mensaje\
+      \ de cada 100."
     m: L_A
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -3999,20 +4360,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 2664]
+    coordinate: [3032, 7992.0]
     rotation: 0
     state: enabled
 - name: rxB_vs_entrada
   id: virtual_sink
   parameters:
     alias: ''
-    comment: ''
+    comment: "Conexi\xF3n sin cable: lo que le llega al nodo B\nsigue en el Virtual\
+      \ Source \"entrada_rx_B\"\n(receptor de B).\nEntra: complejos.\nSale: nada a\
+      \ la vista."
     stream_id: entrada_rx_B
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1648, 812]
+    coordinate: [1840, 2592.0]
     rotation: 0
     state: enabled
 - name: silencio_1
@@ -4021,7 +4384,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_source: '[[0,],]'
-    comment: ''
+    comment: "Entrega ceros: el\nsilencio de la guarda\ndespu\xE9s del turno de A.\n\
+      Entra: nada (es una\n  fuente).\nSale: complejos (0)."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_outputs: '1'
@@ -4031,7 +4395,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 948]
+    coordinate: [8, 2880.0]
     rotation: 0
     state: enabled
 - name: silencio_3
@@ -4040,7 +4404,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_source: '[[0,],]'
-    comment: ''
+    comment: "Entrega ceros: el\nsilencio de la guarda\ndespu\xE9s del turno de B.\n\
+      Entra: nada (es una\n  fuente).\nSale: complejos (0)."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_outputs: '1'
@@ -4050,7 +4415,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 1012]
+    coordinate: [8, 3200.0]
     rotation: 0
     state: enabled
 - name: suma_ruido
@@ -4058,7 +4423,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Suma la se\xF1al y el\nruido: es lo que hay\nen el canal\ncompartido.\n\
+      Entra: in0 = se\xF1al,\n  in1 = ruido\n  (complejos).\nSale: complejos."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '2'
@@ -4068,7 +4434,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [864, 856]
+    coordinate: [1008, 2584.0]
     rotation: 0
     state: enabled
 - name: turno_A
@@ -4076,7 +4442,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Entrega 1,8 durante el turno\nde A y 0 el resto, para\nmarcarlo en el\
+      \ gr\xE1fico.\nEntra: nada (es una fuente).\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
     repeat: 'True'
@@ -4088,7 +4455,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 1164]
+    coordinate: [728, 1776.0]
     rotation: 0
     state: enabled
 - name: turno_B
@@ -4096,7 +4463,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Entrega 1,8 durante el turno
+
+      de B y 0 el resto.
+
+      Entra: nada (es una fuente).
+
+      Sale: reales.'
     maxoutbuf: '0'
     minoutbuf: '0'
     repeat: 'True'
@@ -4108,7 +4481,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 1252]
+    coordinate: [728, 1584.0]
     rotation: 0
     state: enabled
 - name: turnos
@@ -4116,7 +4489,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Arma los turnos: toma \"ranura\"\nmuestras de A, \"guarda\" de\nsilencio,\
+      \ \"ranura\" de B y \"guarda\"\nde silencio, y repite. Cuenta\nmuestras: no\
+      \ mira etiquetas.\nEntra: in0 = A, in1 = silencio,\n  in2 = B, in3 = silencio\n\
+      \  (complejos).\nSale: complejos: [A | guarda | B |\n  guarda] ..."
     lengths: '[ranura, guarda, ranura, guarda]'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4127,7 +4503,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 820]
+    coordinate: [296, 2552.0]
     rotation: 0
     state: enabled
 - name: txA_a_paquetes
@@ -4135,7 +4511,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Corta el flujo en grupos de L_A\nbytes (uno por trama) y marca el\n\
+      comienzo de cada grupo con la\netiqueta packet_len. As\xED los bloques\nsiguientes\
+      \ saben d\xF3nde empieza y\ntermina cada trama.\nEntra: bytes sin marcas.\n\
+      Sale: los mismos bytes, en grupos de\n  L_A marcados con packet_len."
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4146,7 +4525,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 408]
+    coordinate: [296, 848.0]
     rotation: 0
     state: enabled
 - name: txA_crc
@@ -4155,7 +4534,10 @@ blocks:
     affinity: ''
     alias: ''
     check: 'False'
-    comment: ''
+    comment: "Calcula el CRC-32 de cada payload y se lo\nagrega al final (4 bytes).\
+      \ El receptor lo\nvuelve a calcular para descartar las tramas\ncon errores.\n\
+      Entra: bytes: payload de L_A bytes\n  (packet_len).\nSale: bytes: payload +\
+      \ CRC = L_A + 4 bytes."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4164,7 +4546,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 400]
+    coordinate: [528, 840.0]
     rotation: 0
     state: enabled
 - name: txA_encabezado
@@ -4172,7 +4554,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Arma el encabezado de cada trama\ncon el formato \"formato_trama\":\n\
+      pre\xE1mbulo de 64 bits + longitud (2\nveces). Solo produce el\nencabezado,\
+      \ no copia el payload.\nEntra: bytes: payload + CRC\n  (packet_len).\nSale:\
+      \ bytes: encabezado de 12\n  bytes (packet_len = 12)."
     format: formato_trama
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
@@ -4181,7 +4566,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 344]
+    coordinate: [792, 608.0]
     rotation: 0
     state: enabled
 - name: txA_fuente
@@ -4189,7 +4574,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Entrega una y otra vez el mensaje del nodo A
+
+      (lista "payload_A").
+
+      Entra: nada (es una fuente).
+
+      Sale: bytes del mensaje.'
     maxoutbuf: '0'
     minoutbuf: '0'
     repeat: 'True'
@@ -4201,7 +4592,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 400]
+    coordinate: [8, 840.0]
     rotation: 0
     state: enabled
 - name: txA_modulador
@@ -4209,7 +4600,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Modulador 4-QAM: toma los bytes de a 2 bits,\naplica la codificaci\xF3\
+      n diferencial (la\ninformaci\xF3n va en el cambio de fase entre\ns\xEDmbolos)\
+      \ y forma cada pulso con un filtro RRC\n(roll-off 0,35).\nEntra: bytes (8 bits\
+      \ cada uno).\nSale: complejos (I + jQ), 4 muestras por\n  s\xEDmbolo (mientras\
+      \ tiene el turno)."
     constellation: qpsk
     differential: 'True'
     excess_bw: excess_bw
@@ -4223,7 +4618,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 388]
+    coordinate: [1264, 832.0]
     rotation: 0
     state: enabled
 - name: txA_trama
@@ -4231,7 +4626,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pone el encabezado delante del\npayload: arma la trama\ncompleta.\n\
+      Entra: in0 = encabezado (12\n  bytes), in1 = payload + CRC\n  (L_A + 4 bytes).\n\
+      Sale: bytes: trama de L_A + 16\n  bytes (packet_len)."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4243,20 +4640,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 396]
+    coordinate: [1032, 848.0]
     rotation: 0
     state: enabled
 - name: txA_vs
   id: virtual_sink
   parameters:
     alias: ''
-    comment: ''
+    comment: "Conexi\xF3n sin cable: la se\xF1al del nodo A sigue\nen los Virtual\
+      \ Source \"tx_A\" (canal compartido\ny gr\xE1ficos).\nEntra: complejos.\nSale:\
+      \ nada a la vista."
     stream_id: tx_A
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1280, 400]
+    coordinate: [1536, 856.0]
     rotation: 0
     state: enabled
 - name: txB_a_paquetes
@@ -4264,7 +4663,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Corta el flujo en grupos de L_B\nbytes (uno por trama) y marca el\n\
+      comienzo de cada grupo con la\netiqueta packet_len. As\xED los bloques\nsiguientes\
+      \ saben d\xF3nde empieza y\ntermina cada trama.\nEntra: bytes sin marcas.\n\
+      Sale: los mismos bytes, en grupos de\n  L_B marcados con packet_len."
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4275,7 +4677,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [176, 568]
+    coordinate: [296, 1320.0]
     rotation: 0
     state: enabled
 - name: txB_crc
@@ -4284,7 +4686,10 @@ blocks:
     affinity: ''
     alias: ''
     check: 'False'
-    comment: ''
+    comment: "Calcula el CRC-32 de cada payload y se lo\nagrega al final (4 bytes).\
+      \ El receptor lo\nvuelve a calcular para descartar las tramas\ncon errores.\n\
+      Entra: bytes: payload de L_B bytes\n  (packet_len).\nSale: bytes: payload +\
+      \ CRC = L_B + 4 bytes."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4293,7 +4698,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 560]
+    coordinate: [528, 1312.0]
     rotation: 0
     state: enabled
 - name: txB_encabezado
@@ -4301,7 +4706,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Arma el encabezado de cada trama\ncon el formato \"formato_trama\":\n\
+      pre\xE1mbulo de 64 bits + longitud (2\nveces). Solo produce el\nencabezado,\
+      \ no copia el payload.\nEntra: bytes: payload + CRC\n  (packet_len).\nSale:\
+      \ bytes: encabezado de 12\n  bytes (packet_len = 12)."
     format: formato_trama
     len_tag_key: '"packet_len"'
     maxoutbuf: '0'
@@ -4310,7 +4718,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [592, 504]
+    coordinate: [792, 1080.0]
     rotation: 0
     state: enabled
 - name: txB_fuente
@@ -4318,7 +4726,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Entrega una y otra vez el mensaje del nodo B
+
+      (lista "payload_B").
+
+      Entra: nada (es una fuente).
+
+      Sale: bytes del mensaje.'
     maxoutbuf: '0'
     minoutbuf: '0'
     repeat: 'True'
@@ -4330,7 +4744,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 560]
+    coordinate: [8, 1312.0]
     rotation: 0
     state: enabled
 - name: txB_modulador
@@ -4338,7 +4752,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Modulador 4-QAM: toma los bytes de a 2 bits,\naplica la codificaci\xF3\
+      n diferencial (la\ninformaci\xF3n va en el cambio de fase entre\ns\xEDmbolos)\
+      \ y forma cada pulso con un filtro RRC\n(roll-off 0,35).\nEntra: bytes (8 bits\
+      \ cada uno).\nSale: complejos (I + jQ), 4 muestras por\n  s\xEDmbolo (mientras\
+      \ tiene el turno)."
     constellation: qpsk
     differential: 'True'
     excess_bw: excess_bw
@@ -4352,7 +4770,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 548]
+    coordinate: [1264, 1304.0]
     rotation: 0
     state: enabled
 - name: txB_trama
@@ -4360,7 +4778,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pone el encabezado delante del\npayload: arma la trama\ncompleta.\n\
+      Entra: in0 = encabezado (12\n  bytes), in1 = payload + CRC\n  (L_B + 4 bytes).\n\
+      Sale: bytes: trama de L_B + 16\n  bytes (packet_len)."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -4372,20 +4792,22 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [816, 556]
+    coordinate: [1032, 1320.0]
     rotation: 0
     state: enabled
 - name: txB_vs
   id: virtual_sink
   parameters:
     alias: ''
-    comment: ''
+    comment: "Conexi\xF3n sin cable: la se\xF1al del nodo B sigue\nen los Virtual\
+      \ Source \"tx_B\" (canal compartido\ny gr\xE1ficos).\nEntra: complejos.\nSale:\
+      \ nada a la vista."
     stream_id: tx_B
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1280, 560]
+    coordinate: [1536, 1328.0]
     rotation: 0
     state: enabled
 

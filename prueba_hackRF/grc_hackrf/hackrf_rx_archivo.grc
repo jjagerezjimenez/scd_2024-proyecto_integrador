@@ -4,7 +4,9 @@ options:
     catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
-    comment: ''
+    comment: "Opciones del flowgraph: t\xEDtulo de la ventana,\ninterfaz QT GUI y\
+      \ nombre del programa que arma\nGRC al apretar F6 (hackrf_rx_archivo.py, en\n\
+      esta misma carpeta)."
     copyright: ''
     description: "Recibe con un HackRF los paquetes de hackrf_tx_archivo.grc (FLL,\
       \ sincronismo, Costas, CRC-32) y guarda los correctos en paquetes_recibidos.bin\
@@ -30,7 +32,7 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 8]
+    coordinate: [8, 32.0]
     rotation: 0
     state: enabled
 
@@ -38,19 +40,24 @@ blocks:
 - name: N
   id: variable
   parameters:
-    comment: Bytes del archivo por paquete (igual que en el transmisor)
+    comment: "Bytes del archivo en cada paquete. Tiene que\nser el mismo n\xFAmero\
+      \ que en el transmisor."
     value: '200'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 12]
+    coordinate: [288, 392.0]
     rotation: 0
     state: enabled
 - name: amp_rx
   id: variable_qtgui_check_box
   parameters:
-    comment: ''
+    comment: 'Casilla de la ventana: prende el amplificador
+
+      extra del RX (+11 dB). Empezar con la casilla
+
+      apagada.'
     'false': 'False'
     gui_hint: 0,1,1,1
     label: Amplificador RX (+11 dB)
@@ -61,38 +68,41 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 100]
+    coordinate: [1672, 16.0]
     rotation: 0
     state: enabled
 - name: ber_est
   id: variable
   parameters:
-    comment: "BER te\xF3rico de 4-QAM diferencial para el Eb/N0 estimado"
+    comment: "BER te\xF3rico de 4-QAM con codificaci\xF3n\ndiferencial: 2 p (1 - p)\
+      \ (cada error del canal\narruina 2 bits)."
     value: 2 * p_est * (1 - p_est)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 564]
+    coordinate: [280, 1088.0]
     rotation: 0
     state: enabled
 - name: cfo_hz
   id: variable
   parameters:
-    comment: "Desv\xEDo de frecuencia de la se\xF1al recibida [Hz] (FLL + Costas;\
-      \ corrigen con el signo opuesto)"
+    comment: "Desv\xEDo de frecuencia de la se\xF1al recibida, en\nHz: suma lo que\
+      \ corrigen el FLL y Costas (los\ndos corrigen con el signo opuesto al desv\xED\
+      o)."
     value: -(w_fll * samp_rate_rx + w_costas * samp_rate_rx / sps) / (2 * math.pi)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 484]
+    coordinate: [808, 952.0]
     rotation: 0
     state: enabled
 - name: costas_bw
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: "Control de la ventana: ancho de banda del lazo\nde Costas (corrige la\
+      \ fase que le queda a la\nse\xF1al)."
     gui_hint: 1,1,1,1
     label: BW lazo de Costas
     min_len: '100'
@@ -107,51 +117,54 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 228]
+    coordinate: [1672, 224.0]
     rotation: 0
     state: enabled
 - name: decim
   id: variable
   parameters:
-    comment: "Diezmado: despu\xE9s de filtrar quedan 1 M muestras/s"
+    comment: "Diezmado: despu\xE9s de filtrar el canal se queda\n1 de cada 2 muestras\
+      \ (2 M -> 1 M muestras/s)."
     value: '2'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [296, 12]
+    coordinate: [288, 248.0]
     rotation: 0
     state: enabled
 - name: dispositivo
   id: variable
   parameters:
-    comment: "Para elegir un HackRF: \"serial=...\" (ver hackrf_info). Vac\xEDo =\
-      \ el primero"
+    comment: "Qu\xE9 HackRF usar: \"serial=...\" (el n\xFAmero lo\nmuestra hackrf_info).\
+      \ Vac\xEDo = la primera que\nencuentre."
     value: '""'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [984, 12]
+    coordinate: [560, 56.0]
     rotation: 0
     state: enabled
 - name: eb_n0_db
   id: variable
   parameters:
-    comment: "Eb/N0 = Es/N0 - 3 dB (2 bits por s\xEDmbolo)"
+    comment: "Eb/N0 = Es/N0 - 3 dB (cada s\xEDmbolo lleva 2\nbits)."
     value: es_n0_db - 10 * math.log10(2)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1792, 484]
+    coordinate: [544, 952.0]
     rotation: 0
     state: enabled
 - name: es_n0_db
   id: variable_function_probe
   parameters:
     block_id: estimador_snr
-    comment: ''
+    comment: 'Lee 2 veces por segundo el Es/N0 (en dB) que
+
+      calcula el bloque "estimador_snr".'
     function_args: ''
     function_name: snr
     poll_rate: '2'
@@ -160,37 +173,43 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 356]
+    coordinate: [544, 776.0]
     rotation: 0
     state: enabled
 - name: excess_bw
   id: variable
   parameters:
-    comment: Factor de roll-off del filtro RRC
+    comment: 'Roll-off del filtro RRC (0,35), igual que en
+
+      el transmisor. Lo usan el FLL y el filtro
+
+      adaptado.'
     value: '0.35'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 12]
+    coordinate: [1112, 248.0]
     rotation: 0
     state: enabled
 - name: f_offset
   id: variable
   parameters:
-    comment: Desplazamiento digital [Hz] (igual que en el transmisor)
+    comment: "Corrimiento digital de 400 kHz (igual que en\nel transmisor): la HackRF\
+      \ se sintoniza 400 kHz\nm\xE1s abajo, as\xED que la se\xF1al llega en +400 kHz."
     value: 400e3
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [688, 12]
+    coordinate: [8, 392.0]
     rotation: 0
     state: enabled
 - name: fll_bw
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: "Control de la ventana: ancho de banda del lazo\ndel FLL. M\xE1s grande\
+      \ = engancha m\xE1s r\xE1pido pero\ncon m\xE1s ruido."
     gui_hint: 1,0,1,1
     label: BW lazo FLL
     min_len: '100'
@@ -205,13 +224,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 228]
+    coordinate: [1400, 224.0]
     rotation: 0
     state: enabled
 - name: freq_mhz
   id: variable_qtgui_entry
   parameters:
-    comment: ''
+    comment: 'Casilla de la ventana: frecuencia de la
+
+      portadora en MHz (la misma que en el
+
+      transmisor). Se aplica al apretar Enter.'
     entry_signal: editingFinished
     gui_hint: 0,0,1,1
     label: Frecuencia [MHz]
@@ -221,14 +244,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 100]
+    coordinate: [1400, 32.0]
     rotation: 0
     state: enabled
 - name: items_detectados
   id: variable_function_probe
   parameters:
     block_id: detector_trama
-    comment: ''
+    comment: "Lee 2 veces por segundo cu\xE1ntos bits entreg\xF3\nel detector de tramas\
+      \ (nitems_written del\nbloque \"detector_trama\")."
     function_args: '0'
     function_name: nitems_written
     poll_rate: '2'
@@ -237,14 +261,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 356]
+    coordinate: [280, 776.0]
     rotation: 0
     state: enabled
 - name: items_ok
   id: variable_function_probe
   parameters:
     block_id: crc
-    comment: ''
+    comment: "Lee 2 veces por segundo cu\xE1ntos bytes ya\nsalieron del CRC (funci\xF3\
+      n nitems_written del\nbloque \"crc\")."
     function_args: '0'
     function_name: nitems_written
     poll_rate: '2'
@@ -253,13 +278,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 356]
+    coordinate: [8, 776.0]
     rotation: 0
     state: enabled
 - name: lbl_ber
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el BER que da la teor\xEDa\npara ese Eb/N0."
     formatter: 'lambda x: ''%.1e'' % x if x == x else ''-'''
     gui_hint: 2,3,1,1
     label: "BER te\xF3rico (Eb/N0 est.): "
@@ -269,13 +294,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1744, 644]
+    coordinate: [2472, 424.0]
     rotation: 0
     state: enabled
 - name: lbl_cfo
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el desv\xEDo de frecuencia\nde la se\xF1al recibida,\
+      \ en Hz."
     formatter: 'lambda x: ''%.0f Hz'' % x'
     gui_hint: 1,3,1,1
     label: "Desv\xEDo de frecuencia: "
@@ -285,13 +311,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1744, 228]
+    coordinate: [1672, 424.0]
     rotation: 0
     state: enabled
 - name: lbl_detectadas
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana cu\xE1ntas tramas se\ndetectaron (pre\xE1mbulo\
+      \ encontrado), est\xE9n bien\no mal."
     formatter: None
     gui_hint: 0,4,1,1
     label: 'Tramas detectadas: '
@@ -301,13 +328,13 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1896, 100]
+    coordinate: [2200, 248.0]
     rotation: 0
     state: enabled
 - name: lbl_ebn0
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el Eb/N0 que se estima\ncon los s\xEDmbolos recibidos."
     formatter: "lambda x: '%.1f dB' % x if x == x else 'sin se\xF1al'"
     gui_hint: 2,2,1,1
     label: 'Eb/N0 estimado: '
@@ -317,13 +344,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 644]
+    coordinate: [2200, 424.0]
     rotation: 0
     state: enabled
 - name: lbl_mal
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana cu\xE1ntas tramas se\ndetectaron pero el CRC descart\xF3\
+      ."
     formatter: None
     gui_hint: 2,1,1,1
     label: 'Descartadas por CRC: '
@@ -333,13 +361,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 644]
+    coordinate: [1400, 424.0]
     rotation: 0
     state: enabled
 - name: lbl_ok
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana cu\xE1ntos paquetes pasaron\nel CRC (llegaron\
+      \ sin errores)."
     formatter: None
     gui_hint: 2,0,1,1
     label: 'Con CRC correcto: '
@@ -349,13 +378,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 644]
+    coordinate: [2472, 248.0]
     rotation: 0
     state: enabled
 - name: lbl_per
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el PER (fracci\xF3n de\npaquetes perdidos) que\
+      \ da la teor\xEDa para ese\nEb/N0."
     formatter: 'lambda x: ''%.1e'' % x if x == x else ''-'''
     gui_hint: 2,4,1,1
     label: "PER te\xF3rico (Eb/N0 est.): "
@@ -365,13 +395,14 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1896, 644]
+    coordinate: [1400, 584.0]
     rotation: 0
     state: enabled
 - name: lbl_ppm
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el mismo desv\xEDo en ppm\n(Hz por cada MHz de\
+      \ portadora): cu\xE1nto\ndifieren los relojes de las dos HackRF."
     formatter: 'lambda x: ''%.1f'' % x'
     gui_hint: 1,4,1,1
     label: "Desv\xEDo [ppm]: "
@@ -381,13 +412,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1896, 228]
+    coordinate: [1936, 424.0]
     rotation: 0
     state: enabled
 - name: lna
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: 'Control de la ventana: ganancia del LNA
+
+      (primer amplificador del RX), de 0 a 40 dB en
+
+      pasos de 8.'
     gui_hint: 0,2,1,1
     label: Ganancia LNA [dB]
     min_len: '120'
@@ -402,50 +437,54 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 100]
+    coordinate: [1936, 8.0]
     rotation: 0
     state: enabled
 - name: p_est
   id: variable
   parameters:
-    comment: ''
+    comment: "Probabilidad de que un s\xEDmbolo se decida mal\nen un eje: p = Q(ra\xED\
+      z(2 Eb/N0))."
     value: 0.5 * math.erfc(math.sqrt(10 ** (eb_n0_db / 10)))
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 564]
+    coordinate: [8, 1088.0]
     rotation: 0
     state: enabled
 - name: paquetes_ok
   id: variable
   parameters:
-    comment: Paquetes con CRC correcto (2 + N bytes cada uno)
+    comment: 'Paquetes con CRC correcto = bytes que salieron
+
+      del CRC / (N + 2).'
     value: int(items_ok) // (N + 2)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 484]
+    coordinate: [8, 952.0]
     rotation: 0
     state: enabled
 - name: per_est
   id: variable
   parameters:
-    comment: "PER te\xF3rico: cada error del canal arruina 2 bits seguidos de la MISMA\
-      \ trama -> depende de p, no del BER"
+    comment: "PER te\xF3rico: probabilidad de que una trama de\n8 \xD7 (N + 18) bits\
+      \ tenga alg\xFAn error = 1 - (1 -\np)^bits."
     value: 1 - (1 - p_est) ** (8 * (N + 18))
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 564]
+    coordinate: [544, 1088.0]
     rotation: 0
     state: enabled
 - name: qpsk
   id: variable_constellation_rect
   parameters:
-    comment: ''
+    comment: "Constelaci\xF3n 4-QAM: 4 puntos (\xB10,707 \xB1 j0,707)\ncon c\xF3digo\
+      \ Gray (Symbol Map 0, 1, 3, 2), la\nmisma del transmisor. La usa el decisor."
     const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
     imag_sect: '2'
     precision: '8'
@@ -459,50 +498,54 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 92]
+    coordinate: [840, 8.0]
     rotation: 0
     state: enabled
 - name: samp_rate
   id: variable
   parameters:
-    comment: Muestras por segundo del HackRF (igual que en el transmisor)
+    comment: 'Muestreo de la HackRF: 2 M muestras por
+
+      segundo (igual que en el transmisor).'
     value: 2e6
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 12]
+    coordinate: [8, 248.0]
     rotation: 0
     state: enabled
 - name: samp_rate_rx
   id: variable
   parameters:
-    comment: ''
+    comment: "Muestreo despu\xE9s del diezmado: 1 M muestras/s.\nLo usan los bloques\
+      \ del receptor."
     value: samp_rate / decim
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [376, 12]
+    coordinate: [560, 248.0]
     rotation: 0
     state: enabled
 - name: sps
   id: variable
   parameters:
-    comment: "Muestras por s\xEDmbolo en el receptor (250 000 s\xEDmbolos/s, como\
-      \ en el transmisor)"
+    comment: "Muestras por s\xEDmbolo en el receptor: 4 (1 M /\n4 = 250 000 s\xED\
+      mbolos/s, como en el\ntransmisor)."
     value: '4'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 12]
+    coordinate: [840, 248.0]
     rotation: 0
     state: enabled
 - name: sync_bw
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: "Control de la ventana: ancho de banda del lazo\ndel sincronismo de s\xED\
+      mbolo."
     gui_hint: 1,2,1,1
     label: "BW sinc. de s\xEDmbolo"
     min_len: '100'
@@ -517,51 +560,57 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1592, 228]
+    coordinate: [1936, 224.0]
     rotation: 0
     state: enabled
 - name: taps_canal
   id: variable
   parameters:
-    comment: "Filtro pasabajos del canal: deja pasar la se\xF1al (\xB1170 kHz, +40\
-      \ kHz de desv\xEDo) y elimina la portadora residual y lo dem\xE1s"
+    comment: "Coeficientes del filtro pasabajos del canal:\ncorte en 300 kHz y transici\xF3\
+      n de 100 kHz. Deja\npasar la se\xF1al (\xB1170 kHz, con hasta 40 kHz de\ndesv\xED\
+      o) y quita el pico del centro y lo dem\xE1s."
     value: firdes.low_pass(1, samp_rate, 300e3, 100e3)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1104, 12]
+    coordinate: [1112, 56.0]
     rotation: 0
     state: enabled
 - name: tramas_detectadas
   id: variable
   parameters:
-    comment: "Tramas cuyo pre\xE1mbulo se encontr\xF3 (el detector entrega N + 6 bytes\
-      \ en bits)"
+    comment: "Tramas detectadas = bits que entreg\xF3 el\ndetector / bits de cada\
+      \ trama (8 \xD7 (N + 6))."
     value: int(items_detectados) // (8 * (N + 6))
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 484]
+    coordinate: [280, 952.0]
     rotation: 0
     state: enabled
 - name: umbral
   id: variable
   parameters:
-    comment: "Bits err\xF3neos tolerados al buscar el pre\xE1mbulo de 64 bits"
+    comment: "Cu\xE1ntos bits del pre\xE1mbulo (de 64) pueden\nllegar mal y aun as\xED\
+      \ se acepta la trama."
     value: '12'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [888, 12]
+    coordinate: [560, 392.0]
     rotation: 0
     state: enabled
 - name: vga_rx
   id: variable_qtgui_range
   parameters:
-    comment: ''
+    comment: 'Control de la ventana: ganancia del VGA
+
+      (amplificador variable del RX), de 0 a 62 dB
+
+      en pasos de 2.'
     gui_hint: 0,3,1,1
     label: Ganancia VGA [dB]
     min_len: '120'
@@ -576,14 +625,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1744, 100]
+    coordinate: [2200, 8.0]
     rotation: 0
     state: enabled
 - name: w_costas
   id: variable_function_probe
   parameters:
     block_id: costas_sonda
-    comment: ''
+    comment: "Lee 2 veces por segundo la correcci\xF3n promedio\nde Costas (bloque\
+      \ \"costas_sonda\"), en radianes\npor s\xEDmbolo."
     function_args: ''
     function_name: level
     poll_rate: '2'
@@ -592,14 +642,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1896, 356]
+    coordinate: [1080, 776.0]
     rotation: 0
     state: enabled
 - name: w_fll
   id: variable_function_probe
   parameters:
     block_id: fll_sonda
-    comment: ''
+    comment: "Lee 2 veces por segundo la correcci\xF3n promedio\ndel FLL (bloque \"\
+      fll_sonda\"), en radianes por\nmuestra."
     function_args: ''
     function_name: level
     poll_rate: '2'
@@ -608,7 +659,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1744, 356]
+    coordinate: [808, 776.0]
     rotation: 0
     state: enabled
 - name: a_bits
@@ -616,7 +667,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Separa cada n\xFAmero en sus 2 bits (primero el\nm\xE1s significativo).\n\
+      Entra: bytes con 2 bits \xFAtiles (0 a 3), 250\n  k/s.\nSale: bits sueltos (1\
+      \ bit por byte: 0 o 1),\n  500 k/s."
     k: '2'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -624,7 +677,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1376, 652]
+    coordinate: [3008, 2584.0]
     rotation: 0
     state: enabled
 - name: a_bytes
@@ -633,7 +686,9 @@ blocks:
     affinity: ''
     alias: ''
     align_output: 'True'
-    comment: ''
+    comment: "Junta los bits de a 8 para volver a formar\nbytes, respetando d\xF3\
+      nde empieza cada paquete\n(packet_len).\nEntra: bits sueltos (1 por byte).\n\
+      Sale: bytes: N + 6 por paquete (packet_len)."
     endianness: gr.GR_MSB_FIRST
     k: '1'
     l: '8'
@@ -644,7 +699,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 964]
+    coordinate: [296, 3112.0]
     rotation: 0
     state: enabled
 - name: acelerador
@@ -652,7 +707,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "(Deshabilitado) Frena la lectura de la\ngrabaci\xF3n a 2 M muestras/s,\
+      \ la velocidad real\nde la HackRF.\nEntra: complejos.\nSale: los mismos complejos,\
+      \ a 2 M muestras/s."
     ignoretag: 'True'
     limit: auto
     maximum: '0.1'
@@ -665,7 +722,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 420]
+    coordinate: [24, 2312.0]
     rotation: 0
     state: disabled
 - name: agc
@@ -674,7 +731,9 @@ blocks:
     affinity: ''
     alias: ''
     attack_rate: 1e-2
-    comment: ''
+    comment: "Control autom\xE1tico de\nganancia: sube o baja la\nganancia para que\
+      \ la se\xF1al\ntenga nivel 1, llegue fuerte\no d\xE9bil.\nEntra: complejos a\
+      \ 1 M\n  muestras/s.\nSale: complejos a 1 M\n  muestras/s, con nivel 1."
     decay_rate: 1e-3
     gain: '1.0'
     max_gain: '65536'
@@ -686,7 +745,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [968, 260]
+    coordinate: [816, 2552.0]
     rotation: 0
     state: enabled
 - name: alto_f
@@ -694,14 +753,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa el byte alto (0 a 255) a n\xFAmero real,\npara hacer cuentas.\n\
+      Entra: bytes.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1200, 1132]
+    coordinate: [1352, 3584.0]
     rotation: 0
     state: enabled
 - name: archivo_datos
@@ -710,7 +770,15 @@ blocks:
     affinity: ''
     alias: ''
     append: 'False'
-    comment: ''
+    comment: 'Guarda solo los datos de los paquetes
+
+      correctos en datos_recibidos.bin, en el orden
+
+      en que llegaron.
+
+      Entra: bytes de datos.
+
+      Sale: nada (escribe el archivo).'
     file: '"datos_recibidos.bin"'
     type: byte
     unbuffered: 'True'
@@ -719,7 +787,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 1028]
+    coordinate: [1080, 3368.0]
     rotation: 0
     state: enabled
 - name: archivo_paquetes
@@ -728,7 +796,9 @@ blocks:
     affinity: ''
     alias: ''
     append: 'False'
-    comment: ''
+    comment: "Guarda los paquetes correctos, uno tras otro,\nen paquetes_recibidos.bin\
+      \ (en la carpeta de\neste .grc). De ah\xED arma el archivo\nreconstruir_archivo.py.\n\
+      Entra: bytes: [n\xFAmero | datos].\nSale: nada (escribe el archivo)."
     file: '"paquetes_recibidos.bin"'
     type: byte
     unbuffered: 'True'
@@ -737,7 +807,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 932]
+    coordinate: [808, 3104.0]
     rotation: 0
     state: enabled
 - name: bajo_f
@@ -745,14 +815,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa el byte bajo (0 a 255) a n\xFAmero real.\nEntra: bytes.\nSale:\
+      \ reales."
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1200, 1180]
+    coordinate: [1352, 3832.0]
     rotation: 0
     state: enabled
 - name: costas
@@ -760,7 +831,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Lazo de Costas de orden 4: corrige\nla fase y el desv\xEDo de frecuencia\n\
+      que quedan, para que la\nconstelaci\xF3n quede quieta en los 4\npuntos.\nEntra:\
+      \ complejos, 1 muestra por\n  s\xEDmbolo.\nSale: out0 = s\xEDmbolos corregidos\n\
+      \  (complejos); out1 = frecuencia,\n  out2 = fase, out3 = error\n  (reales)."
     maxoutbuf: '0'
     minoutbuf: '0'
     order: '4'
@@ -770,7 +844,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 644]
+    coordinate: [1944, 2544.0]
     rotation: 0
     state: enabled
 - name: costas_promedio
@@ -778,7 +852,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Promedia la frecuencia de Costas en 25 000\ns\xEDmbolos (0,1 s).\nEntra:\
+      \ reales (rad/s\xEDmbolo).\nSale: reales: el promedio."
     length: '25000'
     max_iter: '4000'
     maxoutbuf: '0'
@@ -790,7 +865,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 788]
+    coordinate: [2176, 1848.0]
     rotation: 0
     state: enabled
 - name: costas_sonda
@@ -798,13 +873,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Guarda el \xFAltimo valor que le llega, para que\nla variable w_costas\
+      \ lo pueda leer.\nEntra: reales (promedio de Costas).\nSale: nada (se lee con\
+      \ un Function Probe)."
     type: float
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1032, 796]
+    coordinate: [2464, 1872.0]
     rotation: 0
     state: enabled
 - name: crc
@@ -813,7 +890,10 @@ blocks:
     affinity: ''
     alias: ''
     check: 'True'
-    comment: ''
+    comment: "Vuelve a calcular el CRC-32 de\ncada paquete: si coincide, lo\ndeja\
+      \ pasar sin los 4 bytes del\nCRC; si no, lo descarta (ten\xEDa\nerrores).\n\
+      Entra: bytes: paquete + CRC (N +\n  6).\nSale: bytes: paquetes correctos\n \
+      \ [n\xFAmero | datos] (N + 2)."
     lengthtagname: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '70000'
@@ -822,7 +902,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [544, 964]
+    coordinate: [584, 3104.0]
     rotation: 0
     state: enabled
 - name: dec_diferencial
@@ -831,7 +911,10 @@ blocks:
     affinity: ''
     alias: ''
     coding: digital.DIFF_DIFFERENTIAL
-    comment: ''
+    comment: "Decodificaci\xF3n diferencial: resta el s\xEDmbolo\nanterior (m\xF3\
+      dulo 4), o sea, mide el cambio de\nfase. Por eso no importa si Costas qued\xF3\
+      \ngirado 90\xB0, 180\xB0 o 270\xB0.\nEntra: s\xEDmbolos 0 a 3 (bytes).\nSale:\
+      \ s\xEDmbolos 0 a 3 (el cambio de fase)."
     maxoutbuf: '0'
     minoutbuf: '0'
     modulus: '4'
@@ -839,7 +922,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1016, 644]
+    coordinate: [2464, 2576.0]
     rotation: 0
     state: enabled
 - name: decisor
@@ -847,7 +930,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Decide a cu\xE1l de los 4 puntos de la\nconstelaci\xF3n est\xE1 m\xE1\
+      s cerca cada s\xEDmbolo y\nentrega su n\xFAmero.\nEntra: complejos, 1 por s\xED\
+      mbolo (250 k/s).\nSale: bytes con valores 0 a 3 (un s\xEDmbolo cada\n  uno)."
     constellation: qpsk
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -855,7 +940,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 652]
+    coordinate: [2176, 2584.0]
     rotation: 0
     state: enabled
 - name: detector_trama
@@ -864,7 +949,12 @@ blocks:
     access_code: digital.packet_utils.default_access_code
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Busca en los bits el pre\xE1mbulo de 64 bits\n(acepta hasta \"umbral\"\
+      \ bits mal), lee la\nlongitud (2 copias que tienen que coincidir) y\nentrega\
+      \ solo el contenido de cada trama,\nmarcado con packet_len.\nEntra: bits sueltos\
+      \ (1 por byte).\nSale: bits sueltos del paquete + CRC: 8 \xD7 (N +\n  6) por\
+      \ trama.\n(En Advanced, Min Output Buffer = 600000:\nlugar para la trama m\xE1\
+      s larga, as\xED una\nlongitud da\xF1ada no traba el flujo.)"
     maxoutbuf: '0'
     minoutbuf: '600000'
     tagname: '"packet_len"'
@@ -874,7 +964,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 964]
+    coordinate: [24, 3104.0]
     rotation: 0
     state: enabled
 - name: entrada
@@ -882,7 +972,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Solo copia: es el punto de\nuni\xF3n donde se conecta la\nHackRF o,\
+      \ si se habilita,\nla grabaci\xF3n.\nEntra: complejos a 2 M\n  muestras/s.\n\
+      Sale: los mismos complejos\n  (al receptor y a los\n  gr\xE1ficos)."
     enabled: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -893,7 +985,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [472, 300]
+    coordinate: [296, 2584.0]
     rotation: 0
     state: enabled
 - name: estimador_snr
@@ -902,7 +994,9 @@ blocks:
     affinity: ''
     alias: ''
     alpha: '0.001'
-    comment: ''
+    comment: "Estima el Es/N0 con los s\xEDmbolos recibidos\n(m\xE9todo M2M4: usa\
+      \ la potencia media y la\ncuarta potencia). Lo lee la variable es_n0_db.\nEntra:\
+      \ complejos, 1 por s\xEDmbolo.\nSale: mensajes (no se usan)."
     maxoutbuf: '0'
     minoutbuf: '0'
     msg_nsamples: '10000'
@@ -911,7 +1005,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [808, 732]
+    coordinate: [2176, 2072.0]
     rotation: 0
     state: enabled
 - name: filtro_adaptado
@@ -920,7 +1014,10 @@ blocks:
     affinity: ''
     alias: ''
     alpha: excess_bw
-    comment: ''
+    comment: "Filtro adaptado RRC (igual al del\ntransmisor): junto con el del TX\n\
+      da un pulso sin interferencia\nentre s\xEDmbolos y deja afuera la\nmayor parte\
+      \ del ruido.\nEntra: complejos a 1 M muestras/s\n  (4 por s\xEDmbolo).\nSale:\
+      \ complejos a 1 M muestras/s,\n  filtrados."
     decim: '1'
     gain: '1'
     maxoutbuf: '0'
@@ -934,7 +1031,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 628]
+    coordinate: [1304, 2536.0]
     rotation: 0
     state: enabled
 - name: fll
@@ -942,7 +1039,10 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "FLL de borde de banda: estima el\ndesv\xEDo de frecuencia mirando los\n\
+      bordes del espectro y lo corrige\n(gira la se\xF1al al rev\xE9s).\nEntra: complejos\
+      \ a 1 M\n  muestras/s.\nSale: out0 = se\xF1al corregida\n  (complejos); out1\
+      \ = frecuencia\n  corregida, out2 = fase, out3 =\n  error (reales)."
     filter_size: '44'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -954,7 +1054,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1192, 268]
+    coordinate: [1072, 2544.0]
     rotation: 0
     state: enabled
 - name: fll_hz
@@ -962,7 +1062,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa la frecuencia del FLL de\nradianes por muestra a Hz, con el\nsigno\
+      \ cambiado: da el desv\xEDo de la\nse\xF1al.\nEntra: reales (rad/muestra) a\
+      \ 1\n  M/s.\nSale: reales (Hz) a 1 M/s."
     const: -samp_rate_rx / (2 * math.pi)
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -972,7 +1074,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 300]
+    coordinate: [1304, 2320.0]
     rotation: 0
     state: enabled
 - name: fll_null_2
@@ -981,7 +1083,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta la fase del FLL. Hace\nfalta conectarla: el FLL solo\ncalcula\
+      \ sus salidas extra si est\xE1n\nlas 4 conectadas.\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -989,7 +1092,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 236]
+    coordinate: [1304, 1880.0]
     rotation: 0
     state: enabled
 - name: fll_null_3
@@ -998,7 +1101,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el error del FLL (misma\nraz\xF3n: tienen que estar conectadas\n\
+      las 4 salidas).\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -1006,7 +1110,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 268]
+    coordinate: [1304, 1688.0]
     rotation: 0
     state: enabled
 - name: fll_promedio
@@ -1014,7 +1118,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Promedia la frecuencia del FLL en
+
+      100 000 muestras (0,1 s) para
+
+      tener un valor estable.
+
+      Entra: reales (rad/muestra).
+
+      Sale: reales: el promedio.'
     length: '100000'
     max_iter: '4000'
     maxoutbuf: '0'
@@ -1026,7 +1138,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1448, 380]
+    coordinate: [1304, 2072.0]
     rotation: 0
     state: enabled
 - name: fll_sonda
@@ -1034,13 +1146,15 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Guarda el \xFAltimo valor que le llega, para que\nla variable w_fll\
+      \ lo pueda leer.\nEntra: reales (promedio del FLL).\nSale: nada (se lee con\
+      \ un Function Probe)."
     type: float
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1672, 388]
+    coordinate: [1544, 2096.0]
     rotation: 0
     state: enabled
 - name: g_agc
@@ -1070,7 +1184,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): I y Q\ndespu\xE9s del AGC (el nivel tiene\n\
+      que quedar parejo).\nEntra: complejos a 1 M\n  muestras/s.\nSale: nada (solo\
+      \ dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1137,7 +1253,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 1300]
+    coordinate: [1072, 2296.0]
     rotation: 0
     state: enabled
 - name: g_cascada
@@ -1167,7 +1283,9 @@ blocks:
     color7: '0'
     color8: '0'
     color9: '0'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): cascada, el\nespectro a lo largo del tiempo\n\
+      (cada l\xEDnea es un instante; el\ncolor, la potencia).\nEntra: complejos a\
+      \ 2 M muestras/s.\nSale: nada (solo dibuja)."
     fc: '0'
     fftsize: '1024'
     freqhalf: 'True'
@@ -1198,7 +1316,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 1300]
+    coordinate: [552, 2072.0]
     rotation: 0
     state: enabled
 - name: g_const
@@ -1228,7 +1346,10 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): constelaci\xF3n antes (azul)\ny despu\xE9\
+      s (rojo) de Costas. Despu\xE9s tienen que\nverse 4 grupos de puntos.\nEntra:\
+      \ in0 = antes, in1 = despu\xE9s (complejos,\n  1 por s\xEDmbolo).\nSale: nada\
+      \ (solo dibuja)."
     grid: 'True'
     gui_hint: 'pestanas@1: 0,2,1,1'
     label1: Antes
@@ -1290,7 +1411,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [856, 1444]
+    coordinate: [2184, 2304.0]
     rotation: 0
     state: enabled
 - name: g_crudo
@@ -1320,7 +1441,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): I y Q tal\ncomo llegan de la HackRF. Si tocan\n\
+      \xB11, el ADC satura: bajar las\nganancias.\nEntra: complejos a 2 M muestras/s.\n\
+      Sale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1387,7 +1510,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 1300]
+    coordinate: [552, 1848.0]
     rotation: 0
     state: enabled
 - name: g_espectro_banda
@@ -1419,7 +1542,9 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): espectro despu\xE9s de\ntrasladar y filtrar:\
+      \ la se\xF1al tiene que quedar\ncentrada en 0.\nEntra: complejos a 1 M muestras/s.\n\
+      Sale: nada (solo dibuja)."
     ctrlpanel: 'False'
     fc: '0'
     fftsize: '1024'
@@ -1468,7 +1593,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [520, 1300]
+    coordinate: [816, 2072.0]
     rotation: 0
     state: enabled
 - name: g_espectro_crudo
@@ -1500,7 +1625,9 @@ blocks:
     color7: '"yellow"'
     color8: '"dark red"'
     color9: '"dark green"'
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 1): espectro de\nlo que entrega la HackRF. La\
+      \ se\xF1al\nest\xE1 en +400 kHz y el pico del\ncentro (0) es la fuga del\noscilador\
+      \ de la placa.\nEntra: complejos a 2 M muestras/s.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     fc: '0'
     fftsize: '1024'
@@ -1549,7 +1676,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [472, 404]
+    coordinate: [552, 2296.0]
     rotation: 0
     state: enabled
 - name: g_fll
@@ -1579,7 +1706,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): desv\xEDo de frecuencia que\nestima el FLL,\
+      \ en Hz. Al engancharse se queda\nquieto en un valor.\nEntra: reales (Hz).\n\
+      Sale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1646,7 +1775,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1640, 1300]
+    coordinate: [1544, 2296.0]
     rotation: 0
     state: enabled
 - name: g_numero
@@ -1676,7 +1805,9 @@ blocks:
     color7: yellow
     color8: dark red
     color9: dark green
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 3): n\xFAmero de cada paquete\nque lleg\xF3 bien.\
+      \ Se ve una rampa por pasada; un\nsalto = paquetes perdidos.\nEntra: reales.\n\
+      Sale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1744,7 +1875,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1760, 1124]
+    coordinate: [2048, 3800.0]
     rotation: 0
     state: enabled
 - name: g_ojo
@@ -1774,7 +1905,9 @@ blocks:
     color7: blue
     color8: blue
     color9: blue
-    comment: ''
+    comment: "Gr\xE1fico (pesta\xF1a 2): diagrama de ojo de I\n(antes del sincronismo\
+      \ y de Costas): muchas\ntrazas superpuestas; el \"ojo\" abierto es el\nmejor\
+      \ instante para muestrear.\nEntra: reales a 4 M/s.\nSale: nada (solo dibuja)."
     ctrlpanel: 'False'
     entags: 'False'
     grid: 'True'
@@ -1840,7 +1973,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 1444]
+    coordinate: [2176, 1448.0]
     rotation: 0
     state: enabled
 - name: grabar_iq
@@ -1849,7 +1982,9 @@ blocks:
     affinity: ''
     alias: ''
     append: 'False'
-    comment: ''
+    comment: "(Deshabilitado) Graba en grabacion_iq.cf32\ntodo lo que entrega la HackRF\
+      \ (16 MB por\nsegundo), para analizarlo despu\xE9s.\nEntra: complejos a 2 M\
+      \ muestras/s.\nSale: nada (escribe el archivo)."
     file: '"grabacion_iq.cf32"'
     type: complex
     unbuffered: 'False'
@@ -1858,7 +1993,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [232, 516]
+    coordinate: [296, 1664.0]
     rotation: 0
     state: disabled
 - name: hackrf_rx
@@ -1869,7 +2004,11 @@ blocks:
     amp: amp_rx
     bandwidth: '0'
     center_freq: freq_mhz * 1e6 - f_offset
-    comment: ''
+    comment: "La HackRF One recibiendo: baja la\nse\xF1al de la frecuencia elegida\
+      \ - 400\nkHz a banda base y la digitaliza\n(ADC de 8 bits), con las ganancias\n\
+      LNA, VGA y amplificador de la\nventana.\nEntra: nada en el flowgraph: la\n \
+      \ se\xF1al entra por la antena.\nSale: complejos (fc32) a 2 M\n  muestras/s;\
+      \ la se\xF1al est\xE1 en +400\n  kHz."
     dev_args: dispositivo
     gain: lna
     maxoutbuf: '0'
@@ -1881,14 +2020,15 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [56, 272.0]
+    coordinate: [32, 2576.0]
     rotation: 0
     state: enabled
 - name: imports
   id: import
   parameters:
     alias: ''
-    comment: ''
+    comment: "M\xF3dulos de Python que usan las variables: math\n(cuentas) y firdes\
+      \ (para dise\xF1ar el filtro del\ncanal)."
     imports: 'import math
 
       from gnuradio.filter import firdes'
@@ -1896,7 +2036,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1288, 12]
+    coordinate: [288, 64.0]
     rotation: 0
     state: enabled
 - name: leer_grabacion
@@ -1905,7 +2045,9 @@ blocks:
     affinity: ''
     alias: ''
     begin_tag: pmt.PMT_NIL
-    comment: ''
+    comment: "(Deshabilitado) Lee una grabaci\xF3n hecha con\n\"grabar_iq\", para\
+      \ probar el receptor sin\nHackRF.\nEntra: nada (lee el archivo\n  grabacion_iq.cf32).\n\
+      Sale: complejos, tan r\xE1pido como puede."
     file: '"grabacion_iq.cf32"'
     length: '0'
     maxoutbuf: '0'
@@ -1918,7 +2060,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 404]
+    coordinate: [8, 2064.0]
     rotation: 0
     state: disabled
 - name: mapa_gray
@@ -1926,7 +2068,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Deshace el c\xF3digo Gray: cambia cada s\xEDmbolo\npor los 2 bits que\
+      \ mand\xF3 el transmisor (0->0,\n1->1, 2->3, 3->2).\nEntra: s\xEDmbolos 0 a\
+      \ 3 (bytes).\nSale: n\xFAmeros 0 a 3 = 2 bits de datos (bytes)."
     map: '[0, 1, 3, 2]'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -1934,14 +2078,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 652]
+    coordinate: [2728, 2584.0]
     rotation: 0
     state: enabled
 - name: nota_entrada
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "ENTRADA\nLa HackRF se sintoniza 400 kHz por debajo: la\nse\xF1al aparece\
+      \ en +400 kHz.\nPara grabar la se\xF1al: habilitar \"grabar_iq\".\nPara analizar\
+      \ una grabaci\xF3n sin HackRF:\ndeshabilitar \"hackrf_rx\" y habilitar\n\"leer_grabacion\"\
+      \ y \"acelerador\"."
     note: "ENTRADA: HackRF sintonizado 400 kHz por debajo (la se\xF1al aparece en\
       \ +400 kHz). Para grabar la se\xF1al, habilitar 'grabar_iq'; para analizar una\
       \ grabaci\xF3n sin HackRF, deshabilitar 'hackrf_rx' y habilitar 'leer_grabacion'\
@@ -1950,14 +2097,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 180]
+    coordinate: [8, 1272.0]
     rotation: 0
     state: enabled
 - name: nota_paquetes
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "PAQUETES\ndetector de tramas (pre\xE1mbulo + longitud) ->\nbytes ->\
+      \ CRC-32 (descarta los paquetes con\nerrores).\npaquetes_recibidos.bin = [n\xFA\
+      mero | datos] de\ncada paquete correcto (lo usa\nreconstruir_archivo.py).\n\
+      datos_recibidos.bin = solo los datos, en el\norden en que llegaron."
     note: "PAQUETES: detector de tramas (pre\xE1mbulo + longitud) -> bytes -> CRC-32\
       \ (descarta las err\xF3neas). paquetes_recibidos.bin = [n\xFAmero | datos] de\
       \ cada paquete correcto (lo usa reconstruir_archivo.py); datos_recibidos.bin\
@@ -1966,14 +2116,17 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 884]
+    coordinate: [8, 2896.0]
     rotation: 0
     state: enabled
 - name: nota_rx
   id: note
   parameters:
     alias: ''
-    comment: ''
+    comment: "RECEPTOR\ntrasladar -400 kHz y filtrar (1 M muestras/s)\n-> AGC (nivel\
+      \ 1) -> FLL (corrige el desv\xEDo\ngrueso entre los osciladores, de kHz) ->\n\
+      filtro adaptado RRC -> sincronismo de s\xEDmbolo\n-> Costas -> decisi\xF3n ->\
+      \ decodificaci\xF3n\ndiferencial -> bits"
     note: "RECEPTOR: trasladar -400 kHz y filtrar (1 M muestras/s) -> AGC (nivel 1)\
       \ -> FLL band-edge (corrige el desv\xEDo grueso entre osciladores, kHz) -> filtro\
       \ adaptado RRC -> sincronismo de s\xEDmbolo -> Costas -> decisi\xF3n -> decodificaci\xF3\
@@ -1982,7 +2135,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 180]
+    coordinate: [544, 1272.0]
     rotation: 0
     state: enabled
 - name: numero_paquete
@@ -1990,7 +2143,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Suma: n\xFAmero de paquete = alto \xD7 256 + bajo.\nEntra: in0 = alto\
+      \ \xD7 256, in1 = bajo (reales).\nSale: reales: el n\xFAmero de cada paquete."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_inputs: '2'
@@ -2000,7 +2154,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1544, 1140]
+    coordinate: [1768, 3816.0]
     rotation: 0
     state: enabled
 - name: ojo_interp
@@ -2008,7 +2162,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Agrega 3 muestras entre cada par (interpola \xD7\n4: 16 por s\xEDmbolo)\
+      \ solo para que el diagrama\nde ojo se vea suave.\nEntra: complejos a 1 M muestras/s.\n\
+      Sale: complejos a 4 M muestras/s."
     decim: '1'
     fbw: '0'
     interp: '4'
@@ -2020,7 +2176,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 1460]
+    coordinate: [1544, 1448.0]
     rotation: 0
     state: enabled
 - name: ojo_re
@@ -2028,7 +2184,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Se queda con la parte real (I) de la se\xF1al,\npara el diagrama de\
+      \ ojo.\nEntra: complejos.\nSale: reales (I)."
     maxoutbuf: '0'
     minoutbuf: '0'
     vlen: '1'
@@ -2036,14 +2193,16 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [440, 1476]
+    coordinate: [1928, 1480.0]
     rotation: 0
     state: enabled
 - name: pestanas
   id: qtgui_tab_widget
   parameters:
     alias: ''
-    comment: ''
+    comment: "Las 3 pesta\xF1as de la ventana: 1. Se\xF1al del\nHackRF, 2. Sincronismo,\
+      \ 3. Paquetes recibidos.\nCada gr\xE1fico dice en su \"GUI Hint\" en qu\xE9\n\
+      pesta\xF1a va."
     gui_hint: 3,0,1,5
     label0: "1. Se\xF1al del HackRF"
     label1: 2. Sincronismo (frecuencia, tiempo y fase)
@@ -2070,7 +2229,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2048, 100]
+    coordinate: [2472, 16.0]
     rotation: 0
     state: enabled
 - name: por_256
@@ -2078,7 +2237,13 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: 'Multiplica el byte
+
+      alto por 256.
+
+      Entra: reales.
+
+      Sale: reales.'
     const: '256'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2088,7 +2253,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 1124]
+    coordinate: [1600, 3576.0]
     rotation: 0
     state: enabled
 - name: separar_bytes
@@ -2097,7 +2262,9 @@ blocks:
     affinity: ''
     alias: ''
     blocksize: '1'
-    comment: ''
+    comment: "Reparte los bytes uno\na cada salida: el byte\nalto del n\xFAmero va\
+      \ a\nout0 y el bajo a out1.\nEntra: bytes (alto,\n  bajo, alto, bajo,\n  ...).\n\
+      Sale: out0 = bytes\n  altos, out1 = bytes\n  bajos."
     maxoutbuf: '0'
     minoutbuf: '0'
     num_streams: '2'
@@ -2107,7 +2274,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 1140]
+    coordinate: [1080, 3568.0]
     rotation: 0
     state: enabled
 - name: sinc_null_1
@@ -2116,7 +2283,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el error del sincronismo\nde s\xEDmbolo (no se usa).\nEntra:\
+      \ reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -2124,7 +2292,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 740]
+    coordinate: [1928, 2104.0]
     rotation: 0
     state: enabled
 - name: sinc_null_2
@@ -2133,7 +2301,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el per\xEDodo instant\xE1neo\ndel reloj de s\xEDmbolo (no se\
+      \ usa).\nEntra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -2141,7 +2310,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 772]
+    coordinate: [1928, 1880.0]
     rotation: 0
     state: enabled
 - name: sinc_null_3
@@ -2150,7 +2319,8 @@ blocks:
     affinity: ''
     alias: ''
     bus_structure_sink: '[[0,],]'
-    comment: ''
+    comment: "Descarta el per\xEDodo promedio del\nreloj de s\xEDmbolo (no se usa).\n\
+      Entra: reales.\nSale: nada."
     num_inputs: '1'
     type: float
     vlen: '1'
@@ -2158,7 +2328,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [584, 804]
+    coordinate: [1928, 1688.0]
     rotation: 0
     state: enabled
 - name: sinc_simbolo
@@ -2166,7 +2336,11 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Sincronismo de s\xEDmbolo: encuentra el\nmejor instante para muestrear\
+      \ cada\ns\xEDmbolo (el centro del ojo) y entrega\nuna muestra por s\xEDmbolo.\n\
+      Entra: complejos, 4 muestras por\n  s\xEDmbolo (1 M/s).\nSale: out0 = complejos,\
+      \ 1 muestra por\n  s\xEDmbolo (250 k/s); out1 a out3 =\n  error y per\xEDodo\
+      \ del reloj (reales)."
     constellation: digital.constellation_bpsk().base()
     damping: '1.0'
     loop_bw: sync_bw
@@ -2185,7 +2359,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [264, 588]
+    coordinate: [1544, 2528.0]
     rotation: 0
     state: enabled
 - name: solo_datos
@@ -2193,7 +2367,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "De cada paquete de N + 2 bytes se queda con\nlos N bytes de datos (saltea\
+      \ los 2 del\nn\xFAmero).\nEntra: bytes: [n\xFAmero | datos].\nSale: bytes: solo\
+      \ los datos."
     m: N
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2204,7 +2380,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 1044]
+    coordinate: [808, 3368.0]
     rotation: 0
     state: enabled
 - name: solo_numero
@@ -2212,7 +2388,8 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "De cada paquete se queda con los 2 primeros\nbytes: el n\xFAmero de\
+      \ paquete.\nEntra: bytes: [n\xFAmero | datos].\nSale: bytes: 2 por paquete."
     m: '2'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2223,7 +2400,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [784, 1140]
+    coordinate: [808, 3560.0]
     rotation: 0
     state: enabled
 - name: trasladar
@@ -2232,7 +2409,10 @@ blocks:
     affinity: ''
     alias: ''
     center_freq: f_offset
-    comment: ''
+    comment: "Baja la se\xF1al de +400 kHz a 0 Hz,\nla filtra con \"taps_canal\" (deja\n\
+      solo la se\xF1al) y se queda con 1 de\ncada 2 muestras.\nEntra: complejos a\
+      \ 2 M muestras/s,\n  se\xF1al en +400 kHz.\nSale: complejos a 1 M muestras/s,\n\
+      \  se\xF1al centrada en 0 Hz."
     decim: decim
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -2243,7 +2423,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [704, 268]
+    coordinate: [568, 2560.0]
     rotation: 0
     state: enabled
 

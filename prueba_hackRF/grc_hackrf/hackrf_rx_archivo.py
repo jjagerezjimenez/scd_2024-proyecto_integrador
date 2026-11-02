@@ -986,18 +986,18 @@ class hackrf_rx_archivo(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_samp_rate_rx(self.samp_rate / self.decim)
         self.set_taps_canal(firdes.low_pass(1, self.samp_rate, 300e3, 100e3))
-        self.hackrf_rx.set_sample_rate(0, self.samp_rate)
-        self.g_espectro_crudo.set_frequency_range(0, self.samp_rate)
         self.g_cascada.set_frequency_range(0, self.samp_rate)
         self.g_crudo.set_samp_rate(self.samp_rate)
+        self.g_espectro_crudo.set_frequency_range(0, self.samp_rate)
+        self.hackrf_rx.set_sample_rate(0, self.samp_rate)
 
     def get_eb_n0_db(self):
         return self.eb_n0_db
 
     def set_eb_n0_db(self, eb_n0_db):
         self.eb_n0_db = eb_n0_db
-        self.set_p_est(0.5 * math.erfc(math.sqrt(10 ** (self.eb_n0_db / 10))))
         self.set_lbl_ebn0(self.eb_n0_db)
+        self.set_p_est(0.5 * math.erfc(math.sqrt(10 ** (self.eb_n0_db / 10))))
 
     def get_decim(self):
         return self.decim
@@ -1027,9 +1027,9 @@ class hackrf_rx_archivo(gr.top_block, Qt.QWidget):
         self.sps = sps
         self.set_cfo_hz(-(self.w_fll * self.samp_rate_rx + self.w_costas * self.samp_rate_rx / self.sps) / (2 * math.pi))
         self.filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate_rx, (self.samp_rate_rx / self.sps), self.excess_bw, (11 * self.sps)))
-        self.sinc_simbolo.set_sps(self.sps)
-        self.g_ojo.set_samp_per_symbol((4*self.sps))
         self.g_numero.set_samp_rate(self.samp_rate_rx / self.sps / (8 * (self.N + 18) / 2))
+        self.g_ojo.set_samp_per_symbol((4*self.sps))
+        self.sinc_simbolo.set_sps(self.sps)
 
     def get_samp_rate_rx(self):
         return self.samp_rate_rx
@@ -1038,12 +1038,12 @@ class hackrf_rx_archivo(gr.top_block, Qt.QWidget):
         self.samp_rate_rx = samp_rate_rx
         self.set_cfo_hz(-(self.w_fll * self.samp_rate_rx + self.w_costas * self.samp_rate_rx / self.sps) / (2 * math.pi))
         self.filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate_rx, (self.samp_rate_rx / self.sps), self.excess_bw, (11 * self.sps)))
-        self.g_espectro_banda.set_frequency_range(0, self.samp_rate_rx)
-        self.g_agc.set_samp_rate(self.samp_rate_rx)
         self.fll_hz.set_k((-self.samp_rate_rx / (2 * math.pi)))
+        self.g_agc.set_samp_rate(self.samp_rate_rx)
+        self.g_espectro_banda.set_frequency_range(0, self.samp_rate_rx)
         self.g_fll.set_samp_rate(self.samp_rate_rx)
-        self.g_ojo.set_samp_rate(4 * self.samp_rate_rx)
         self.g_numero.set_samp_rate(self.samp_rate_rx / self.sps / (8 * (self.N + 18) / 2))
+        self.g_ojo.set_samp_rate(4 * self.samp_rate_rx)
 
     def get_p_est(self):
         return self.p_est
@@ -1073,12 +1073,12 @@ class hackrf_rx_archivo(gr.top_block, Qt.QWidget):
     def set_N(self, N):
         self.N = N
         self.set_paquetes_ok(int(self.items_ok) // (self.N + 2))
-        self.set_tramas_detectadas(int(self.items_detectados) // (8 * (self.N + 6)))
         self.set_per_est(1 - (1 - self.p_est) ** (8 * (self.N + 18)))
+        self.set_tramas_detectadas(int(self.items_detectados) // (8 * (self.N + 6)))
+        self.g_numero.set_samp_rate(self.samp_rate_rx / self.sps / (8 * (self.N + 18) / 2))
         self.solo_datos.set_m(self.N)
         self.solo_datos.set_n((self.N + 2))
         self.solo_numero.set_n((self.N + 2))
-        self.g_numero.set_samp_rate(self.samp_rate_rx / self.sps / (8 * (self.N + 18) / 2))
 
     def get_tramas_detectadas(self):
         return self.tramas_detectadas
@@ -1100,8 +1100,8 @@ class hackrf_rx_archivo(gr.top_block, Qt.QWidget):
 
     def set_paquetes_ok(self, paquetes_ok):
         self.paquetes_ok = paquetes_ok
-        self.set_lbl_ok(self.paquetes_ok)
         self.set_lbl_mal((max(self.tramas_detectadas - self.paquetes_ok, 0)))
+        self.set_lbl_ok(self.paquetes_ok)
 
     def get_freq_mhz(self):
         return self.freq_mhz

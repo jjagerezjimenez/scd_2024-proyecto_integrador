@@ -46,6 +46,8 @@ cd /d "D:\Facultad\Sist_Com_Dig\Proyecto_integrador\claude\integrado\files\proye
 * **Abrir** un `.grc`: menú *File → Open*.
 * **Ejecutar**: tecla **F6** (o el botón ▶). Se abre una ventana con gráficos.
 * **Detener**: cerrar esa ventana con la **X**. Si se colgó, usar el botón *Kill* (tecla F7).
+* **Entender un bloque**: debajo de cada bloque hay un comentario que dice qué hace, qué le **entra** y qué le
+  **sale**. Si no se ven, activarlos en el menú *View → Show Block Comments*.
 
 **3. El orden siempre es el mismo:** primero el **receptor** y después el **transmisor**. Así el receptor ya está
 escuchando cuando empieza la transmisión.
@@ -79,8 +81,10 @@ python hackrf_simulada\emulador_hackrf.py
 
 **Tiene que aparecer:** `Emulador de dos HackRF One listo (Ctrl+C para cortar)`.
 
-Dejar esa ventana abierta todo el ensayo. **No hacer clic adentro:** si se selecciona texto, Windows pausa el
-programa. Si pasa, apretar **Esc**.
+Dejar esa ventana abierta todo el ensayo. **No hacer clic adentro:** si se selecciona texto (por ejemplo, para
+copiarlo), Windows pausa el programa. Si pasa, apretar **Esc**. Después aparece `el emulador se atrasó y saltó ... s`.
+También aparece si la PC estuvo ocupada un momento. No es grave: si pasa mientras transmite, se pierden algunos
+paquetes, que llegan en otra pasada.
 
 ### Paso 2: encender el receptor
 
@@ -94,14 +98,18 @@ En GRC, abrir `hackrf_simulada/hackrf_rx_archivo_sim.grc` y apretar **F6**.
 
 ### Paso 3: encender el transmisor
 
-En GRC, abrir `hackrf_simulada/hackrf_tx_archivo_sim.grc` y apretar **F6**. Por defecto manda el archivo de
-ejemplo `grc_hackrf/archivo_a_enviar.txt` 3 veces.
+En GRC, abrir `hackrf_simulada/hackrf_tx_archivo_sim.grc` y apretar **F6**. Manda el archivo de ejemplo
+`grc_hackrf/archivo_a_enviar.txt` **sin parar** (repeticiones = 0), así hay tiempo de revisar todo en el paso 4.
 
 **Tiene que pasar:**
 
 * Se abre la ventana del transmisor. Arriba muestra el nombre del archivo, los paquetes por pasada y
-  "Pasadas enviadas", que sube hasta 3.
-* En el emulador aparecen `>> se conectó el TX` y `TX: transmite en 914.600 MHz, -37.0 dBm`.
+  "Pasadas enviadas", que sube todo el tiempo: cada pasada dura 0,08 s.
+* En el emulador aparecen `>> se conectó el TX` y, cada 2 s, `TX: transmite en 914.600 MHz, -37.0 dBm`.
+
+**Si las gráficas del transmisor se quedan quietas enseguida** y el emulador dice `el TX se desconectó`, el TX ya
+terminó de transmitir: no es un error. Pasa si `repeticiones` no está en 0. Por ejemplo, con 3 pasadas del archivo
+de ejemplo la transmisión dura 0,3 s.
 
 ### Paso 4: revisar que se recibe bien
 
@@ -127,8 +135,9 @@ En la ventana del **receptor**, marcar cada punto:
 
 ### Paso 5: terminar
 
-Cuando "Pasadas enviadas" llegue a 3, esperar un segundo y cerrar con la **X** la ventana del transmisor y
-después la del receptor.
+Cuando terminaste de revisar (y "Pasadas enviadas" ya pasó de 3), cerrar con la **X** la ventana del transmisor.
+El emulador dice `el TX se desconectó: transmitió ... s de señal`. Esperar un segundo y cerrar la ventana del
+receptor.
 
 En el emulador, apretar **Ctrl+C** para cortarlo.
 
@@ -149,8 +158,7 @@ original.
 
 ## A3. Practicar (opcional, 10 minutos)
 
-Con todo corriendo (pasos 1 a 3), probar estos cambios en las ventanas y mirar qué dice el emulador. Para que el
-transmisor no termine enseguida, poner `repeticiones` en **0** (sin fin); ver la sección A4 para cambiar un parámetro.
+Con todo corriendo (pasos 1 a 3), probar estos cambios en las ventanas y mirar qué dice el emulador.
 
 | Qué cambiar | Qué tiene que pasar | Qué se aprende |
 |---|---|---|
@@ -166,11 +174,19 @@ Después de cada prueba, volver los controles a su valor original. Los 9 ejercic
 
 1. Copiar el archivo a la carpeta `grc_hackrf/` del proyecto. Conviene uno de menos de 200 kB: un texto o una
    foto chica.
-2. En GRC, en el transmisor simulado, hacer doble clic en el bloque **archivo** (arriba a la izquierda, es un
-   *Parameter*).
+2. En GRC, en el transmisor simulado, hacer doble clic en el bloque **archivo** (arriba a la izquierda, al lado del
+   bloque *Options*; es un *Parameter*).
 3. En *Value* escribir `../grc_hackrf/` y el nombre, por ejemplo `../grc_hackrf/foto.jpg`. Usar barras
-   `/`, no `\`. En el mismo lugar, el bloque **repeticiones** dice cuántas pasadas se mandan.
-4. Repetir los pasos 1 a 6. El archivo recibido queda en `hackrf_simulada\recibido_foto.jpg`.
+   `/`, no `\`. Al lado está el bloque **repeticiones** (cuántas pasadas se mandan; 0 = sin fin).
+4. Repetir los pasos 1 a 6. **El receptor no crea la foto**: solo guarda los paquetes en
+   `paquetes_recibidos.bin` y `datos_recibidos.bin`. La foto aparece recién en el paso 6, al correr
+   `python reconstruir_archivo.py hackrf_simulada\paquetes_recibidos.bin`, y queda en
+   `hackrf_simulada\recibido_foto.jpg`. Antes de cerrar el TX, dejar que complete al menos una pasada entera
+   (cada pasada dura alrededor de 1 s cada 55 kB del archivo): el nombre del archivo viaja en el último paquete.
+
+Al apretar F6, GRC guarda el cambio en el `.grc` simulado. No pasa nada: la prueba automática (A1) sigue
+funcionando y solo avisa que ese `.grc` cambió. Para volver al archivo de ejemplo, correr
+`python hackrf_simulada\generar_grc_simulados.py`.
 
 # PARTE B: prueba con las HackRF One reales (en el laboratorio)
 
@@ -245,8 +261,11 @@ Es normal.
 
 1. Abrir `grc_hackrf/hackrf_tx_archivo.grc`.
 2. Doble clic en el bloque **archivo**: escribir el nombre del archivo, por ejemplo `foto.jpg` (está en la misma
-   carpeta `grc_hackrf/`). En **repeticiones**, dejar 3.
-3. Apretar **F6**. Se prende la luz **TX** de la placa A.
+   carpeta `grc_hackrf/`).
+3. Doble clic en el bloque **repeticiones**: poner **0** (sin fin). Así hay tiempo de ajustar las ganancias y
+   revisar (pasos 3 y 4). Con 3 pasadas de un archivo chico, la transmisión dura menos de un segundo y las gráficas
+   del transmisor quedan quietas enseguida.
+4. Apretar **F6**. Se prende la luz **TX** de la placa A.
 
 ### Paso 3: ajustar las ganancias
 
@@ -275,8 +294,8 @@ usaron.
 
 ### Paso 5: terminar y armar el archivo
 
-Cuando "Pasadas enviadas" llegue a 3, esperar un segundo y cerrar las dos ventanas con la **X**. Después, en el
-prompt:
+Cuando terminaste de revisar y "Pasadas enviadas" ya pasó de 3, cerrar con la **X** la ventana del transmisor,
+esperar un segundo y cerrar la del receptor. Después, en el prompt:
 
 ```
 python reconstruir_archivo.py
@@ -346,6 +365,7 @@ Hay una prueba 4 opcional, con las dos placas usando el mismo reloj, en la secci
 | El desvío pasa de ~40 kHz y no llegan paquetes | Corregir la frecuencia del receptor en esa diferencia. Por ejemplo, con +50 kHz de desvío, escribir 915.050 |
 | En la consola de GRC aparecen muchas letras `U` u `O` | La PC no da abasto: cerrar otros programas, o usar una PC por placa |
 | `reconstruir_archivo.py` dice que faltan paquetes | Mandar más pasadas (repeticiones) o mejorar la señal |
+| Las gráficas del transmisor se quedan quietas enseguida | El TX ya terminó sus pasadas (con un archivo chico dura menos de 1 s). Para mirar más tiempo, repeticiones = 0 |
 
 La lista completa está en la sección 10 de `LABORATORIO_HACKRF.md`.
 

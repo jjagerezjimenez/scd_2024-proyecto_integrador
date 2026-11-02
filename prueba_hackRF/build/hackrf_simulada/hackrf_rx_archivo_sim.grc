@@ -1,0 +1,2864 @@
+options:
+  parameters:
+    author: Juan Gerez
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: |-
+      Opciones del flowgraph: título de la ventana,
+      interfaz QT GUI y nombre del programa que arma
+      GRC al apretar F6 (hackrf_rx_archivo.py, en
+      esta misma carpeta).
+    copyright: ''
+    description: 'VERSIÓN SIMULADA de grc_hackrf/hackrf_rx_archivo.grc (la genera hackrf_simulada/generar_grc_simulados.py): en lugar de una HackRF usa emulador_hackrf.py. Recibe con un HackRF los paquetes de hackrf_tx_archivo.grc (FLL, sincronismo, Costas, CRC-32) y guarda los correctos en paquetes_recibidos.bin y datos_recibidos.bin; solo bloques estándar de GNU Radio'
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: hackrf_rx_archivo_sim
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: '[SIMULADA] HackRF RX: recepción de un archivo (4-QAM, bloques estándar)'
+    window_size: (1850, 1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 336.0]
+    rotation: 0
+    state: enabled
+blocks:
+- name: N
+  id: variable
+  parameters:
+    comment: |-
+      Bytes del archivo en cada paquete. Tiene que
+      ser el mismo número que en el transmisor.
+    value: '200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 696.0]
+    rotation: 0
+    state: enabled
+- name: amp_rx
+  id: variable_qtgui_check_box
+  parameters:
+    comment: |-
+      Casilla de la ventana: prende el amplificador
+      extra del RX (+11 dB). Empezar con la casilla
+      apagada.
+    'false': 'False'
+    gui_hint: 0,1,1,1
+    label: Amplificador RX (+11 dB)
+    'true': 'True'
+    type: bool
+    value: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1672, 320.0]
+    rotation: 0
+    state: enabled
+- name: ber_est
+  id: variable
+  parameters:
+    comment: |-
+      BER teórico de 4-QAM con codificación
+      diferencial: 2 p (1 - p) (cada error del canal
+      arruina 2 bits).
+    value: 2 * p_est * (1 - p_est)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 1392.0]
+    rotation: 0
+    state: enabled
+- name: cfo_hz
+  id: variable
+  parameters:
+    comment: |-
+      Desvío de frecuencia de la señal recibida, en
+      Hz: suma lo que corrigen el FLL y Costas (los
+      dos corrigen con el signo opuesto al desvío).
+    value: -(w_fll * samp_rate_rx + w_costas * samp_rate_rx / sps) / (2 * math.pi)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 1256.0]
+    rotation: 0
+    state: enabled
+- name: costas_bw
+  id: variable_qtgui_range
+  parameters:
+    comment: |-
+      Control de la ventana: ancho de banda del lazo
+      de Costas (corrige la fase que le queda a la
+      señal).
+    gui_hint: 1,1,1,1
+    label: BW lazo de Costas
+    min_len: '100'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0.001'
+    step: '0.001'
+    stop: '0.1'
+    value: '0.01'
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1672, 528.0]
+    rotation: 0
+    state: enabled
+- name: decim
+  id: variable
+  parameters:
+    comment: |-
+      Diezmado: después de filtrar el canal se queda
+      1 de cada 2 muestras (2 M -> 1 M muestras/s).
+    value: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 552.0]
+    rotation: 0
+    state: enabled
+- name: dispositivo
+  id: variable
+  parameters:
+    comment: |-
+      Qué HackRF usar: "serial=..." (el número lo
+      muestra hackrf_info). Vacío = la primera que
+      encuentre.
+    value: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 360.0]
+    rotation: 0
+    state: enabled
+- name: eb_n0_db
+  id: variable
+  parameters:
+    comment: |-
+      Eb/N0 = Es/N0 - 3 dB (cada símbolo lleva 2
+      bits).
+    value: es_n0_db - 10 * math.log10(2)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 1256.0]
+    rotation: 0
+    state: enabled
+- name: es_n0_db
+  id: variable_function_probe
+  parameters:
+    block_id: estimador_snr
+    comment: |-
+      Lee 2 veces por segundo el Es/N0 (en dB) que
+      calcula el bloque "estimador_snr".
+    function_args: ''
+    function_name: snr
+    poll_rate: '2'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 1080.0]
+    rotation: 0
+    state: enabled
+- name: excess_bw
+  id: variable
+  parameters:
+    comment: |-
+      Roll-off del filtro RRC (0,35), igual que en
+      el transmisor. Lo usan el FLL y el filtro
+      adaptado.
+    value: '0.35'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1112, 552.0]
+    rotation: 0
+    state: enabled
+- name: f_offset
+  id: variable
+  parameters:
+    comment: |-
+      Corrimiento digital de 400 kHz (igual que en
+      el transmisor): la HackRF se sintoniza 400 kHz
+      más abajo, así que la señal llega en +400 kHz.
+    value: 400e3
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 696.0]
+    rotation: 0
+    state: enabled
+- name: fll_bw
+  id: variable_qtgui_range
+  parameters:
+    comment: |-
+      Control de la ventana: ancho de banda del lazo
+      del FLL. Más grande = engancha más rápido pero
+      con más ruido.
+    gui_hint: 1,0,1,1
+    label: BW lazo FLL
+    min_len: '100'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0.001'
+    step: '0.001'
+    stop: '0.1'
+    value: '0.005'
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1400, 528.0]
+    rotation: 0
+    state: enabled
+- name: freq_mhz
+  id: variable_qtgui_entry
+  parameters:
+    comment: |-
+      Casilla de la ventana: frecuencia de la
+      portadora en MHz (la misma que en el
+      transmisor). Se aplica al apretar Enter.
+    entry_signal: editingFinished
+    gui_hint: 0,0,1,1
+    label: Frecuencia [MHz]
+    type: real
+    value: '915'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1400, 336.0]
+    rotation: 0
+    state: enabled
+- name: items_detectados
+  id: variable_function_probe
+  parameters:
+    block_id: detector_trama
+    comment: |-
+      Lee 2 veces por segundo cuántos bits entregó
+      el detector de tramas (nitems_written del
+      bloque "detector_trama").
+    function_args: '0'
+    function_name: nitems_written
+    poll_rate: '2'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 1080.0]
+    rotation: 0
+    state: enabled
+- name: items_ok
+  id: variable_function_probe
+  parameters:
+    block_id: crc
+    comment: |-
+      Lee 2 veces por segundo cuántos bytes ya
+      salieron del CRC (función nitems_written del
+      bloque "crc").
+    function_args: '0'
+    function_name: nitems_written
+    poll_rate: '2'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1080.0]
+    rotation: 0
+    state: enabled
+- name: lbl_ber
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana el BER que da la teoría
+      para ese Eb/N0.
+    formatter: 'lambda x: ''%.1e'' % x if x == x else ''-'''
+    gui_hint: 2,3,1,1
+    label: 'BER teórico (Eb/N0 est.): '
+    type: real
+    value: ber_est
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2472, 728.0]
+    rotation: 0
+    state: enabled
+- name: lbl_cfo
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana el desvío de frecuencia
+      de la señal recibida, en Hz.
+    formatter: 'lambda x: ''%.0f Hz'' % x'
+    gui_hint: 1,3,1,1
+    label: 'Desvío de frecuencia: '
+    type: real
+    value: cfo_hz
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1672, 728.0]
+    rotation: 0
+    state: enabled
+- name: lbl_detectadas
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana cuántas tramas se
+      detectaron (preámbulo encontrado), estén bien
+      o mal.
+    formatter: None
+    gui_hint: 0,4,1,1
+    label: 'Tramas detectadas: '
+    type: int
+    value: tramas_detectadas
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2200, 552.0]
+    rotation: 0
+    state: enabled
+- name: lbl_ebn0
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana el Eb/N0 que se estima
+      con los símbolos recibidos.
+    formatter: 'lambda x: ''%.1f dB'' % x if x == x else ''sin señal'''
+    gui_hint: 2,2,1,1
+    label: 'Eb/N0 estimado: '
+    type: real
+    value: eb_n0_db
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2200, 728.0]
+    rotation: 0
+    state: enabled
+- name: lbl_mal
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana cuántas tramas se
+      detectaron pero el CRC descartó.
+    formatter: None
+    gui_hint: 2,1,1,1
+    label: 'Descartadas por CRC: '
+    type: int
+    value: max(tramas_detectadas - paquetes_ok, 0)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1400, 728.0]
+    rotation: 0
+    state: enabled
+- name: lbl_ok
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana cuántos paquetes pasaron
+      el CRC (llegaron sin errores).
+    formatter: None
+    gui_hint: 2,0,1,1
+    label: 'Con CRC correcto: '
+    type: int
+    value: paquetes_ok
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2472, 552.0]
+    rotation: 0
+    state: enabled
+- name: lbl_per
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana el PER (fracción de
+      paquetes perdidos) que da la teoría para ese
+      Eb/N0.
+    formatter: 'lambda x: ''%.1e'' % x if x == x else ''-'''
+    gui_hint: 2,4,1,1
+    label: 'PER teórico (Eb/N0 est.): '
+    type: real
+    value: per_est
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1400, 888.0]
+    rotation: 0
+    state: enabled
+- name: lbl_ppm
+  id: variable_qtgui_label
+  parameters:
+    comment: |-
+      Muestra en la ventana el mismo desvío en ppm
+      (Hz por cada MHz de portadora): cuánto
+      difieren los relojes de las dos HackRF.
+    formatter: 'lambda x: ''%.1f'' % x'
+    gui_hint: 1,4,1,1
+    label: 'Desvío [ppm]: '
+    type: real
+    value: cfo_hz / freq_mhz
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1936, 728.0]
+    rotation: 0
+    state: enabled
+- name: lna
+  id: variable_qtgui_range
+  parameters:
+    comment: |-
+      Control de la ventana: ganancia del LNA
+      (primer amplificador del RX), de 0 a 40 dB en
+      pasos de 8.
+    gui_hint: 0,2,1,1
+    label: Ganancia LNA [dB]
+    min_len: '120'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '8'
+    stop: '40'
+    value: '16'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1936, 312.0]
+    rotation: 0
+    state: enabled
+- name: p_est
+  id: variable
+  parameters:
+    comment: |-
+      Probabilidad de que un símbolo se decida mal
+      en un eje: p = Q(raíz(2 Eb/N0)).
+    value: 0.5 * math.erfc(math.sqrt(10 ** (eb_n0_db / 10)))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1392.0]
+    rotation: 0
+    state: enabled
+- name: paquetes_ok
+  id: variable
+  parameters:
+    comment: |-
+      Paquetes con CRC correcto = bytes que salieron
+      del CRC / (N + 2).
+    value: int(items_ok) // (N + 2)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1256.0]
+    rotation: 0
+    state: enabled
+- name: per_est
+  id: variable
+  parameters:
+    comment: |-
+      PER teórico: probabilidad de que una trama de
+      8 × (N + 18) bits tenga algún error = 1 - (1 -
+      p)^bits.
+    value: 1 - (1 - p_est) ** (8 * (N + 18))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 1392.0]
+    rotation: 0
+    state: enabled
+- name: qpsk
+  id: variable_constellation_rect
+  parameters:
+    comment: |-
+      Constelación 4-QAM: 4 puntos (±0,707 ± j0,707)
+      con código Gray (Symbol Map 0, 1, 3, 2), la
+      misma del transmisor. La usa el decisor.
+    const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
+    imag_sect: '2'
+    precision: '8'
+    real_sect: '2'
+    rot_sym: '4'
+    soft_dec_lut: None
+    sym_map: '[0, 1, 3, 2]'
+    w_imag_sect: '1'
+    w_real_sect: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 312.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: |-
+      Muestreo de la HackRF: 2 M muestras por
+      segundo (igual que en el transmisor).
+    value: 2e6
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 552.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate_rx
+  id: variable
+  parameters:
+    comment: |-
+      Muestreo después del diezmado: 1 M muestras/s.
+      Lo usan los bloques del receptor.
+    value: samp_rate / decim
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 552.0]
+    rotation: 0
+    state: enabled
+- name: sps
+  id: variable
+  parameters:
+    comment: |-
+      Muestras por símbolo en el receptor: 4 (1 M /
+      4 = 250 000 símbolos/s, como en el
+      transmisor).
+    value: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [840, 552.0]
+    rotation: 0
+    state: enabled
+- name: sync_bw
+  id: variable_qtgui_range
+  parameters:
+    comment: |-
+      Control de la ventana: ancho de banda del lazo
+      del sincronismo de símbolo.
+    gui_hint: 1,2,1,1
+    label: BW sinc. de símbolo
+    min_len: '100'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0.001'
+    step: '0.001'
+    stop: '0.1'
+    value: '0.01'
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1936, 528.0]
+    rotation: 0
+    state: enabled
+- name: taps_canal
+  id: variable
+  parameters:
+    comment: |-
+      Coeficientes del filtro pasabajos del canal:
+      corte en 300 kHz y transición de 100 kHz. Deja
+      pasar la señal (±170 kHz, con hasta 40 kHz de
+      desvío) y quita el pico del centro y lo demás.
+    value: firdes.low_pass(1, samp_rate, 300e3, 100e3)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1112, 360.0]
+    rotation: 0
+    state: enabled
+- name: tramas_detectadas
+  id: variable
+  parameters:
+    comment: |-
+      Tramas detectadas = bits que entregó el
+      detector / bits de cada trama (8 × (N + 6)).
+    value: int(items_detectados) // (8 * (N + 6))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 1256.0]
+    rotation: 0
+    state: enabled
+- name: umbral
+  id: variable
+  parameters:
+    comment: |-
+      Cuántos bits del preámbulo (de 64) pueden
+      llegar mal y aun así se acepta la trama.
+    value: '12'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [560, 696.0]
+    rotation: 0
+    state: enabled
+- name: vga_rx
+  id: variable_qtgui_range
+  parameters:
+    comment: |-
+      Control de la ventana: ganancia del VGA
+      (amplificador variable del RX), de 0 a 62 dB
+      en pasos de 2.
+    gui_hint: 0,3,1,1
+    label: Ganancia VGA [dB]
+    min_len: '120'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '2'
+    stop: '62'
+    value: '20'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2200, 312.0]
+    rotation: 0
+    state: enabled
+- name: w_costas
+  id: variable_function_probe
+  parameters:
+    block_id: costas_sonda
+    comment: |-
+      Lee 2 veces por segundo la corrección promedio
+      de Costas (bloque "costas_sonda"), en radianes
+      por símbolo.
+    function_args: ''
+    function_name: level
+    poll_rate: '2'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1080, 1080.0]
+    rotation: 0
+    state: enabled
+- name: w_fll
+  id: variable_function_probe
+  parameters:
+    block_id: fll_sonda
+    comment: |-
+      Lee 2 veces por segundo la corrección promedio
+      del FLL (bloque "fll_sonda"), en radianes por
+      muestra.
+    function_args: ''
+    function_name: level
+    poll_rate: '2'
+    value: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [808, 1080.0]
+    rotation: 0
+    state: enabled
+- name: a_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Separa cada número en sus 2 bits (primero el
+      más significativo).
+      Entra: bytes con 2 bits útiles (0 a 3), 250
+        k/s.
+      Sale: bits sueltos (1 bit por byte: 0 o 1),
+        500 k/s.
+    k: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3872, 2888.0]
+    rotation: 0
+    state: enabled
+- name: a_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    align_output: 'True'
+    comment: |-
+      Junta los bits de a 8 para volver a formar
+      bytes, respetando dónde empieza cada paquete
+      (packet_len).
+      Entra: bits sueltos (1 por byte).
+      Sale: bytes: N + 6 por paquete (packet_len).
+    endianness: gr.GR_MSB_FIRST
+    k: '1'
+    l: '8'
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 3416.0]
+    rotation: 0
+    state: enabled
+- name: acelerador
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      (Deshabilitado) Frena la lectura de la
+      grabación a 2 M muestras/s, la velocidad real
+      de la HackRF.
+      Entra: complejos.
+      Sale: los mismos complejos, a 2 M muestras/s.
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 2616.0]
+    rotation: 0
+    state: disabled
+- name: agc
+  id: analog_agc2_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    attack_rate: 1e-2
+    comment: |-
+      Control automático de
+      ganancia: sube o baja la
+      ganancia para que la señal
+      tenga nivel 1, llegue fuerte
+      o débil.
+      Entra: complejos a 1 M
+        muestras/s.
+      Sale: complejos a 1 M
+        muestras/s, con nivel 1.
+    decay_rate: 1e-3
+    gain: '1.0'
+    max_gain: '65536'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    reference: '1.0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1680, 2856.0]
+    rotation: 0
+    state: enabled
+- name: alto_f
+  id: blocks_uchar_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Pasa el byte alto (0 a 255) a número real,
+      para hacer cuentas.
+      Entra: bytes.
+      Sale: reales.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2216, 3888.0]
+    rotation: 0
+    state: enabled
+- name: archivo_datos
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: |-
+      Guarda solo los datos de los paquetes
+      correctos en datos_recibidos.bin, en el orden
+      en que llegaron.
+      Entra: bytes de datos.
+      Sale: nada (escribe el archivo).
+    file: '"datos_recibidos.bin"'
+    type: byte
+    unbuffered: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1944, 3672.0]
+    rotation: 0
+    state: enabled
+- name: archivo_paquetes
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: |-
+      Guarda los paquetes correctos, uno tras otro,
+      en paquetes_recibidos.bin (en la carpeta de
+      este .grc). De ahí arma el archivo
+      reconstruir_archivo.py.
+      Entra: bytes: [número | datos].
+      Sale: nada (escribe el archivo).
+    file: '"paquetes_recibidos.bin"'
+    type: byte
+    unbuffered: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1672, 3408.0]
+    rotation: 0
+    state: enabled
+- name: bajo_f
+  id: blocks_uchar_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Pasa el byte bajo (0 a 255) a número real.
+      Entra: bytes.
+      Sale: reales.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2216, 4136.0]
+    rotation: 0
+    state: enabled
+- name: costas
+  id: digital_costas_loop_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Lazo de Costas de orden 4: corrige
+      la fase y el desvío de frecuencia
+      que quedan, para que la
+      constelación quede quieta en los 4
+      puntos.
+      Entra: complejos, 1 muestra por
+        símbolo.
+      Sale: out0 = símbolos corregidos
+        (complejos); out1 = frecuencia,
+        out2 = fase, out3 = error
+        (reales).
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    order: '4'
+    use_snr: 'False'
+    w: costas_bw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2808, 2848.0]
+    rotation: 0
+    state: enabled
+- name: costas_promedio
+  id: blocks_moving_average_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Promedia la frecuencia de Costas en 25 000
+      símbolos (0,1 s).
+      Entra: reales (rad/símbolo).
+      Sale: reales: el promedio.
+    length: '25000'
+    max_iter: '4000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: 1.0 / 25000
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3040, 2152.0]
+    rotation: 0
+    state: enabled
+- name: costas_sonda
+  id: blocks_probe_signal_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Guarda el último valor que le llega, para que
+      la variable w_costas lo pueda leer.
+      Entra: reales (promedio de Costas).
+      Sale: nada (se lee con un Function Probe).
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3328, 2176.0]
+    rotation: 0
+    state: enabled
+- name: crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    check: 'True'
+    comment: |-
+      Vuelve a calcular el CRC-32 de
+      cada paquete: si coincide, lo
+      deja pasar sin los 4 bytes del
+      CRC; si no, lo descarta (tenía
+      errores).
+      Entra: bytes: paquete + CRC (N +
+        6).
+      Sale: bytes: paquetes correctos
+        [número | datos] (N + 2).
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1448, 3408.0]
+    rotation: 0
+    state: enabled
+- name: dec_diferencial
+  id: digital_diff_decoder_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
+    comment: |-
+      Decodificación diferencial: resta el símbolo
+      anterior (módulo 4), o sea, mide el cambio de
+      fase. Por eso no importa si Costas quedó
+      girado 90°, 180° o 270°.
+      Entra: símbolos 0 a 3 (bytes).
+      Sale: símbolos 0 a 3 (el cambio de fase).
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    modulus: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3328, 2880.0]
+    rotation: 0
+    state: enabled
+- name: decisor
+  id: digital_constellation_decoder_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Decide a cuál de los 4 puntos de la
+      constelación está más cerca cada símbolo y
+      entrega su número.
+      Entra: complejos, 1 por símbolo (250 k/s).
+      Sale: bytes con valores 0 a 3 (un símbolo cada
+        uno).
+    constellation: qpsk
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3040, 2888.0]
+    rotation: 0
+    state: enabled
+- name: detector_trama
+  id: digital_correlate_access_code_xx_ts
+  parameters:
+    access_code: digital.packet_utils.default_access_code
+    affinity: ''
+    alias: ''
+    comment: |-
+      Busca en los bits el preámbulo de 64 bits
+      (acepta hasta "umbral" bits mal), lee la
+      longitud (2 copias que tienen que coincidir) y
+      entrega solo el contenido de cada trama,
+      marcado con packet_len.
+      Entra: bits sueltos (1 por byte).
+      Sale: bits sueltos del paquete + CRC: 8 × (N +
+        6) por trama.
+      (En Advanced, Min Output Buffer = 600000:
+      lugar para la trama más larga, así una
+      longitud dañada no traba el flujo.)
+    maxoutbuf: '0'
+    minoutbuf: '600000'
+    tagname: '"packet_len"'
+    threshold: umbral
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [888, 3408.0]
+    rotation: 0
+    state: enabled
+- name: entrada
+  id: blocks_copy
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Solo copia: es el punto de
+      unión donde se conecta la
+      HackRF o, si se habilita,
+      la grabación.
+      Entra: complejos a 2 M
+        muestras/s.
+      Sale: los mismos complejos
+        (al receptor y a los
+        gráficos).
+    enabled: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    showports: 'False'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 2888.0]
+    rotation: 0
+    state: enabled
+- name: estimador_snr
+  id: digital_probe_mpsk_snr_est_c
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: '0.001'
+    comment: |-
+      Estima el Es/N0 con los símbolos recibidos
+      (método M2M4: usa la potencia media y la
+      cuarta potencia). Lo lee la variable es_n0_db.
+      Entra: complejos, 1 por símbolo.
+      Sale: mensajes (no se usan).
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    msg_nsamples: '10000'
+    type: '2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3040, 2376.0]
+    rotation: 0
+    state: enabled
+- name: filtro_adaptado
+  id: filter_fft_rrc_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: excess_bw
+    comment: |-
+      Filtro adaptado RRC (igual al del
+      transmisor): junto con el del TX
+      da un pulso sin interferencia
+      entre símbolos y deja afuera la
+      mayor parte del ruido.
+      Entra: complejos a 1 M muestras/s
+        (4 por símbolo).
+      Sale: complejos a 1 M muestras/s,
+        filtrados.
+    decim: '1'
+    gain: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ntaps: 11 * sps
+    nthreads: '1'
+    samp_rate: samp_rate_rx
+    sym_rate: samp_rate_rx / sps
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2168, 2840.0]
+    rotation: 0
+    state: enabled
+- name: fll
+  id: digital_fll_band_edge_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      FLL de borde de banda: estima el
+      desvío de frecuencia mirando los
+      bordes del espectro y lo corrige
+      (gira la señal al revés).
+      Entra: complejos a 1 M
+        muestras/s.
+      Sale: out0 = señal corregida
+        (complejos); out1 = frecuencia
+        corregida, out2 = fase, out3 =
+        error (reales).
+    filter_size: '44'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    rolloff: excess_bw
+    samps_per_sym: sps
+    type: cc
+    w: fll_bw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1936, 2848.0]
+    rotation: 0
+    state: enabled
+- name: fll_hz
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Pasa la frecuencia del FLL de
+      radianes por muestra a Hz, con el
+      signo cambiado: da el desvío de la
+      señal.
+      Entra: reales (rad/muestra) a 1
+        M/s.
+      Sale: reales (Hz) a 1 M/s.
+    const: -samp_rate_rx / (2 * math.pi)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2168, 2624.0]
+    rotation: 0
+    state: enabled
+- name: fll_null_2
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: |-
+      Descarta la fase del FLL. Hace
+      falta conectarla: el FLL solo
+      calcula sus salidas extra si están
+      las 4 conectadas.
+      Entra: reales.
+      Sale: nada.
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2168, 2184.0]
+    rotation: 0
+    state: enabled
+- name: fll_null_3
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: |-
+      Descarta el error del FLL (misma
+      razón: tienen que estar conectadas
+      las 4 salidas).
+      Entra: reales.
+      Sale: nada.
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2168, 1992.0]
+    rotation: 0
+    state: enabled
+- name: fll_promedio
+  id: blocks_moving_average_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Promedia la frecuencia del FLL en
+      100 000 muestras (0,1 s) para
+      tener un valor estable.
+      Entra: reales (rad/muestra).
+      Sale: reales: el promedio.
+    length: '100000'
+    max_iter: '4000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: 1.0 / 100000
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2168, 2376.0]
+    rotation: 0
+    state: enabled
+- name: fll_sonda
+  id: blocks_probe_signal_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Guarda el último valor que le llega, para que
+      la variable w_fll lo pueda leer.
+      Entra: reales (promedio del FLL).
+      Sale: nada (se lee con un Function Probe).
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2408, 2400.0]
+    rotation: 0
+    state: enabled
+- name: g_agc
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: |-
+      Gráfico (pestaña 1): I y Q
+      después del AGC (el nivel tiene
+      que quedar parejo).
+      Entra: complejos a 1 M
+        muestras/s.
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 1,1,1,2'
+    label1: I
+    label10: ''
+    label2: Q
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Después del AGC (nivel normalizado)"'
+    nconnections: '1'
+    size: '400'
+    srate: samp_rate_rx
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitud
+    ymax: '2'
+    ymin: '-2'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1936, 2600.0]
+    rotation: 0
+    state: enabled
+- name: g_cascada
+  id: qtgui_waterfall_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '0'
+    color10: '0'
+    color2: '0'
+    color3: '0'
+    color4: '0'
+    color5: '0'
+    color6: '0'
+    color7: '0'
+    color8: '0'
+    color9: '0'
+    comment: |-
+      Gráfico (pestaña 1): cascada, el
+      espectro a lo largo del tiempo
+      (cada línea es un instante; el
+      color, la potencia).
+      Entra: complejos a 2 M muestras/s.
+      Sale: nada (solo dibuja).
+    fc: '0'
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'False'
+    gui_hint: 'pestanas@0: 0,1,1,1'
+    int_max: '0'
+    int_min: '-120'
+    label1: ''
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Cascada (espectro en el tiempo)"'
+    nconnections: '1'
+    showports: 'False'
+    type: complex
+    update_time: '0.10'
+    wintype: window.WIN_BLACKMAN_hARRIS
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 2376.0]
+    rotation: 0
+    state: enabled
+- name: g_const
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '0.6'
+    alpha10: '0.6'
+    alpha2: '0.6'
+    alpha3: '0.6'
+    alpha4: '0.6'
+    alpha5: '0.6'
+    alpha6: '0.6'
+    alpha7: '0.6'
+    alpha8: '0.6'
+    alpha9: '0.6'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: |-
+      Gráfico (pestaña 2): constelación antes (azul)
+      y después (rojo) de Costas. Después tienen que
+      verse 4 grupos de puntos.
+      Entra: in0 = antes, in1 = después (complejos,
+        1 por símbolo).
+      Sale: nada (solo dibuja).
+    grid: 'True'
+    gui_hint: 'pestanas@1: 0,2,1,1'
+    label1: Antes
+    label10: ''
+    label2: Después
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '"Constelación antes y después de Costas"'
+    nconnections: '2'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '2'
+    xmin: '-2'
+    ymax: '2'
+    ymin: '-2'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3048, 2608.0]
+    rotation: 0
+    state: enabled
+- name: g_crudo
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: |-
+      Gráfico (pestaña 1): I y Q tal
+      como llegan de la HackRF. Si tocan
+      ±1, el ADC satura: bajar las
+      ganancias.
+      Entra: complejos a 2 M muestras/s.
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 0,2,1,1'
+    label1: I
+    label10: ''
+    label2: Q
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Señal cruda del HackRF (si toca ±1, bajar ganancias)"'
+    nconnections: '1'
+    size: '1000'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitud
+    ymax: '1.1'
+    ymin: '-1.1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 2152.0]
+    rotation: 0
+    state: enabled
+- name: g_espectro_banda
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.2'
+    axislabels: 'True'
+    bw: samp_rate_rx
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: |-
+      Gráfico (pestaña 1): espectro después de
+      trasladar y filtrar: la señal tiene que quedar
+      centrada en 0.
+      Entra: complejos a 1 M muestras/s.
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    fc: '0'
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 1,0,1,1'
+    label: '"Potencia relativa"'
+    label1: Banda base
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Espectro trasladado y filtrado (1 M muestras/s)"'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-120'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1680, 2376.0]
+    rotation: 0
+    state: enabled
+- name: g_espectro_crudo
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.2'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: |-
+      Gráfico (pestaña 1): espectro de
+      lo que entrega la HackRF. La señal
+      está en +400 kHz y el pico del
+      centro (0) es la fuga del
+      oscilador de la placa.
+      Entra: complejos a 2 M muestras/s.
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    fc: '0'
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 0,0,1,1'
+    label: '"Potencia relativa"'
+    label1: RX
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Espectro del HackRF (señal en +400 kHz; pico del oscilador en 0)"'
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '0'
+    ymin: '-120'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1416, 2600.0]
+    rotation: 0
+    state: enabled
+- name: g_fll
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: |-
+      Gráfico (pestaña 2): desvío de frecuencia que
+      estima el FLL, en Hz. Al engancharse se queda
+      quieto en un valor.
+      Entra: reales (Hz).
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@1: 0,0,1,1'
+    label1: FLL
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Desvío de frecuencia que estima el FLL [Hz]"'
+    nconnections: '1'
+    size: '2000'
+    srate: samp_rate_rx
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Hz
+    ymax: '60000.0'
+    ymin: '-60000.0'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2408, 2600.0]
+    rotation: 0
+    state: enabled
+- name: g_numero
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'True'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: |-
+      Gráfico (pestaña 3): número de cada paquete
+      que llegó bien. Se ve una rampa por pasada; un
+      salto = paquetes perdidos.
+      Entra: reales.
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@2: 0,0,1,3'
+    label1: Paquete
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '0'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Número de cada paquete recibido con CRC correcto (los saltos son paquetes perdidos)"'
+    nconnections: '1'
+    size: '1000'
+    srate: samp_rate_rx / sps / (8 * (N + 18) / 2)
+    stemplot: 'False'
+    style1: '0'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Número de paquete
+    ymax: '300'
+    ymin: '-5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2912, 4104.0]
+    rotation: 0
+    state: enabled
+- name: g_ojo
+  id: qtgui_eye_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '0.5'
+    alpha10: '0.5'
+    alpha2: '0.5'
+    alpha3: '0.5'
+    alpha4: '0.5'
+    alpha5: '0.5'
+    alpha6: '0.5'
+    alpha7: '0.5'
+    alpha8: '0.5'
+    alpha9: '0.5'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: blue
+    color2: blue
+    color3: blue
+    color4: blue
+    color5: blue
+    color6: blue
+    color7: blue
+    color8: blue
+    color9: blue
+    comment: |-
+      Gráfico (pestaña 2): diagrama de ojo de I
+      (antes del sincronismo y de Costas): muchas
+      trazas superpuestas; el "ojo" abierto es el
+      mejor instante para muestrear.
+      Entra: reales a 4 M/s.
+      Sale: nada (solo dibuja).
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@1: 0,1,1,1'
+    label1: Ojo de I (antes de Costas)
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    nconnections: '1'
+    samp_per_symbol: 4*sps
+    size: '1024'
+    srate: 4 * samp_rate_rx
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: '"Amplitud"'
+    ymax: '2'
+    ymin: '-2'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3040, 1752.0]
+    rotation: 0
+    state: enabled
+- name: grabar_iq
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: |-
+      (Deshabilitado) Graba en grabacion_iq.cf32
+      todo lo que entrega la HackRF (16 MB por
+      segundo), para analizarlo después.
+      Entra: complejos a 2 M muestras/s.
+      Sale: nada (escribe el archivo).
+    file: '"grabacion_iq.cf32"'
+    type: complex
+    unbuffered: 'False'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1160, 1968.0]
+    rotation: 0
+    state: disabled
+- name: imports
+  id: import
+  parameters:
+    alias: ''
+    comment: |-
+      Módulos de Python que usan las variables: math
+      (cuentas) y firdes (para diseñar el filtro del
+      canal).
+    imports: |-
+      import math
+      from gnuradio.filter import firdes
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 368.0]
+    rotation: 0
+    state: enabled
+- name: leer_grabacion
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: |-
+      (Deshabilitado) Lee una grabación hecha con
+      "grabar_iq", para probar el receptor sin
+      HackRF.
+      Entra: nada (lee el archivo
+        grabacion_iq.cf32).
+      Sale: complejos, tan rápido como puede.
+    file: '"grabacion_iq.cf32"'
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'False'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 2368.0]
+    rotation: 0
+    state: disabled
+- name: mapa_gray
+  id: digital_map_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Deshace el código Gray: cambia cada símbolo
+      por los 2 bits que mandó el transmisor (0->0,
+      1->1, 2->3, 3->2).
+      Entra: símbolos 0 a 3 (bytes).
+      Sale: números 0 a 3 = 2 bits de datos (bytes).
+    map: '[0, 1, 3, 2]'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3592, 2888.0]
+    rotation: 0
+    state: enabled
+- name: nota_entrada
+  id: note
+  parameters:
+    alias: ''
+    comment: |-
+      ENTRADA
+      La HackRF se sintoniza 400 kHz por debajo: la
+      señal aparece en +400 kHz.
+      Para grabar la señal: habilitar "grabar_iq".
+      Para analizar una grabación sin HackRF:
+      deshabilitar "hackrf_rx" y habilitar
+      "leer_grabacion" y "acelerador".
+    note: 'ENTRADA: HackRF sintonizado 400 kHz por debajo (la señal aparece en +400 kHz). Para grabar la señal, habilitar ''grabar_iq''; para analizar una grabación sin HackRF, deshabilitar ''hackrf_rx'' y habilitar ''leer_grabacion'' y ''acelerador''.'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 1576.0]
+    rotation: 0
+    state: enabled
+- name: nota_paquetes
+  id: note
+  parameters:
+    alias: ''
+    comment: |-
+      PAQUETES
+      detector de tramas (preámbulo + longitud) ->
+      bytes -> CRC-32 (descarta los paquetes con
+      errores).
+      paquetes_recibidos.bin = [número | datos] de
+      cada paquete correcto (lo usa
+      reconstruir_archivo.py).
+      datos_recibidos.bin = solo los datos, en el
+      orden en que llegaron.
+    note: 'PAQUETES: detector de tramas (preámbulo + longitud) -> bytes -> CRC-32 (descarta las erróneas). paquetes_recibidos.bin = [número | datos] de cada paquete correcto (lo usa reconstruir_archivo.py); datos_recibidos.bin = solo los datos, en el orden en que llegaron.'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 3200.0]
+    rotation: 0
+    state: enabled
+- name: nota_rx
+  id: note
+  parameters:
+    alias: ''
+    comment: |-
+      RECEPTOR
+      trasladar -400 kHz y filtrar (1 M muestras/s)
+      -> AGC (nivel 1) -> FLL (corrige el desvío
+      grueso entre los osciladores, de kHz) ->
+      filtro adaptado RRC -> sincronismo de símbolo
+      -> Costas -> decisión -> decodificación
+      diferencial -> bits
+    note: 'RECEPTOR: trasladar -400 kHz y filtrar (1 M muestras/s) -> AGC (nivel 1) -> FLL band-edge (corrige el desvío grueso entre osciladores, kHz) -> filtro adaptado RRC -> sincronismo de símbolo -> Costas -> decisión -> decodificación diferencial -> bits'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1408, 1576.0]
+    rotation: 0
+    state: enabled
+- name: numero_paquete
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Suma: número de paquete = alto × 256 + bajo.
+      Entra: in0 = alto × 256, in1 = bajo (reales).
+      Sale: reales: el número de cada paquete.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2632, 4120.0]
+    rotation: 0
+    state: enabled
+- name: ojo_interp
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Agrega 3 muestras entre cada par (interpola ×
+      4: 16 por símbolo) solo para que el diagrama
+      de ojo se vea suave.
+      Entra: complejos a 1 M muestras/s.
+      Sale: complejos a 4 M muestras/s.
+    decim: '1'
+    fbw: '0'
+    interp: '4'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: '[]'
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2408, 1752.0]
+    rotation: 0
+    state: enabled
+- name: ojo_re
+  id: blocks_complex_to_real
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Se queda con la parte real (I) de la señal,
+      para el diagrama de ojo.
+      Entra: complejos.
+      Sale: reales (I).
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2792, 1784.0]
+    rotation: 0
+    state: enabled
+- name: pestanas
+  id: qtgui_tab_widget
+  parameters:
+    alias: ''
+    comment: |-
+      Las 3 pestañas de la ventana: 1. Señal del
+      HackRF, 2. Sincronismo, 3. Paquetes recibidos.
+      Cada gráfico dice en su "GUI Hint" en qué
+      pestaña va.
+    gui_hint: 3,0,1,5
+    label0: 1. Señal del HackRF
+    label1: 2. Sincronismo (frecuencia, tiempo y fase)
+    label10: Tab 10
+    label11: Tab 11
+    label12: Tab 12
+    label13: Tab 13
+    label14: Tab 14
+    label15: Tab 15
+    label16: Tab 16
+    label17: Tab 17
+    label18: Tab 18
+    label19: Tab 19
+    label2: 3. Paquetes recibidos
+    label3: Tab 3
+    label4: Tab 4
+    label5: Tab 5
+    label6: Tab 6
+    label7: Tab 7
+    label8: Tab 8
+    label9: Tab 9
+    num_tabs: '3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2472, 320.0]
+    rotation: 0
+    state: enabled
+- name: por_256
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Multiplica el byte
+      alto por 256.
+      Entra: reales.
+      Sale: reales.
+    const: '256'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2464, 3880.0]
+    rotation: 0
+    state: enabled
+- name: separar_bytes
+  id: blocks_deinterleave
+  parameters:
+    affinity: ''
+    alias: ''
+    blocksize: '1'
+    comment: |-
+      Reparte los bytes uno
+      a cada salida: el byte
+      alto del número va a
+      out0 y el bajo a out1.
+      Entra: bytes (alto,
+        bajo, alto, bajo,
+        ...).
+      Sale: out0 = bytes
+        altos, out1 = bytes
+        bajos.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_streams: '2'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1944, 3872.0]
+    rotation: 0
+    state: enabled
+- name: sinc_null_1
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: |-
+      Descarta el error del sincronismo
+      de símbolo (no se usa).
+      Entra: reales.
+      Sale: nada.
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2792, 2408.0]
+    rotation: 0
+    state: enabled
+- name: sinc_null_2
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: |-
+      Descarta el período instantáneo
+      del reloj de símbolo (no se usa).
+      Entra: reales.
+      Sale: nada.
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2792, 2184.0]
+    rotation: 0
+    state: enabled
+- name: sinc_null_3
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: |-
+      Descarta el período promedio del
+      reloj de símbolo (no se usa).
+      Entra: reales.
+      Sale: nada.
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2792, 1992.0]
+    rotation: 0
+    state: enabled
+- name: sinc_simbolo
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      Sincronismo de símbolo: encuentra el
+      mejor instante para muestrear cada
+      símbolo (el centro del ojo) y entrega
+      una muestra por símbolo.
+      Entra: complejos, 4 muestras por
+        símbolo (1 M/s).
+      Sale: out0 = complejos, 1 muestra por
+        símbolo (250 k/s); out1 a out3 =
+        error y período del reloj (reales).
+    constellation: digital.constellation_bpsk().base()
+    damping: '1.0'
+    loop_bw: sync_bw
+    max_dev: '1.5'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nfilters: '128'
+    osps: '1'
+    pfb_mf_taps: '[]'
+    resamp_type: digital.IR_MMSE_8TAP
+    sps: sps
+    ted_gain: '1.0'
+    ted_type: digital.TED_SIGNAL_TIMES_SLOPE_ML
+    type: cc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2408, 2832.0]
+    rotation: 0
+    state: enabled
+- name: solo_datos
+  id: blocks_keep_m_in_n
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      De cada paquete de N + 2 bytes se queda con
+      los N bytes de datos (saltea los 2 del
+      número).
+      Entra: bytes: [número | datos].
+      Sale: bytes: solo los datos.
+    m: N
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: N + 2
+    offset: '2'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1672, 3672.0]
+    rotation: 0
+    state: enabled
+- name: solo_numero
+  id: blocks_keep_m_in_n
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      De cada paquete se queda con los 2 primeros
+      bytes: el número de paquete.
+      Entra: bytes: [número | datos].
+      Sale: bytes: 2 por paquete.
+    m: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: N + 2
+    offset: '0'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1672, 3864.0]
+    rotation: 0
+    state: enabled
+- name: trasladar
+  id: freq_xlating_fir_filter_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    center_freq: f_offset
+    comment: |-
+      Baja la señal de +400 kHz a 0 Hz,
+      la filtra con "taps_canal" (deja
+      solo la señal) y se queda con 1 de
+      cada 2 muestras.
+      Entra: complejos a 2 M muestras/s,
+        señal en +400 kHz.
+      Sale: complejos a 1 M muestras/s,
+        señal centrada en 0 Hz.
+    decim: decim
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samp_rate: samp_rate
+    taps: taps_canal
+    type: ccf
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1432, 2864.0]
+    rotation: 0
+    state: enabled
+- name: nota_simulada
+  id: note
+  parameters:
+    alias: ''
+    comment: |-
+      VERSIÓN SIMULADA, generada por
+      generar_grc_simulados.py a partir de
+      ../grc_hackrf/hackrf_rx_archivo.grc.
+      Es igual al original, salvo los bloques que
+      dicen "HackRF SIMULADA": en lugar de la placa
+      usa el emulador (python
+      hackrf_simulada/emulador_hackrf.py, corriendo
+      antes de apretar F6).
+      No editar este archivo: cambiar el original y
+      volver a generar.
+    note: 'VERSIÓN SIMULADA, generada por generar_grc_simulados.py a partir de ../grc_hackrf/hackrf_rx_archivo.grc. Es igual al original, salvo los bloques que dicen "HackRF SIMULADA": en lugar de la placa usa el emulador (python hackrf_simulada/emulador_hackrf.py, corriendo antes de apretar F6). No editar este archivo: cambiar el original y volver a generar.'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+- name: ajustes_hackrf
+  id: variable
+  parameters:
+    comment: |-
+      HackRF SIMULADA: texto con lo que el bloque
+      Soapy le pediría a la placa (frecuencia,
+      muestreo y ganancias). Cambia cuando se mueve
+      un control de la ventana.
+    value: ("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(freq_mhz * 1e6 - f_offset), float(samp_rate), float(lna), float(vga_rx), bool(amp_rx))).encode()
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [296, 16]
+    rotation: 0
+    state: enabled
+- name: ajustes_periodicos
+  id: blocks_message_strobe
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      HackRF SIMULADA: repite el texto de los
+      ajustes cada 200 ms, como un mensaje (si
+      cambia un control, cambia el mensaje).
+      Entra: nada (es una fuente de mensajes).
+      Sale: mensajes (PDU) con el texto de los
+        ajustes.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    msg: pmt.cons(pmt.PMT_NIL, pmt.init_u8vector(len(ajustes_hackrf), list(ajustes_hackrf)))
+    period: '200'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [584, 16]
+    rotation: 0
+    state: enabled
+- name: ajustes_red
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      HackRF SIMULADA: manda cada mensaje por UDP al
+      emulador (127.0.0.1:5552), que así usa la
+      frecuencia y las ganancias elegidas.
+      Entra: mensajes (PDU).
+      Sale: nada (van por la red, sin salir de la
+        PC).
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: UDP_CLIENT
+    host: 127.0.0.1
+    port: '5552'
+    mtu: '10000'
+    tcp_no_delay: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 16]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx_red
+  id: network_socket_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      HackRF SIMULADA: recibe del emulador paquetes
+      UDP (puerto 5551) con 4096 muestras I/Q de 8
+      bits, como las que manda una HackRF por USB.
+      Entra: nada (los paquetes llegan por la red).
+      Sale: mensajes (PDU) de 8192 bytes.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: UDP_SERVER
+    host: 127.0.0.1
+    port: '5551'
+    mtu: '10000'
+    tcp_no_delay: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [32, 2856]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx_bytes
+  id: pdu_pdu_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      HackRF SIMULADA: pasa cada mensaje a un flujo
+      de bytes y marca dónde empieza cada paquete de
+      red (etiqueta trozo_udp).
+      Entra: mensajes (PDU).
+      Sale: bytes (I, Q, I, Q, ...) con etiquetas.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    tag: trozo_udp
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [320, 2880]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx_iq
+  id: blocks_interleaved_char_to_complex
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      HackRF SIMULADA: junta cada par de bytes (I,
+      Q) en un complejo y lo divide por 128 (queda
+      entre -1 y 1), como hace el driver de la
+      HackRF.
+      Entra: bytes con signo, de a pares (I, Q).
+      Sale: complejos a 2 M muestras/s (samp_rate).
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vector_input: 'False'
+    scale_factor: '128'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [608, 2880]
+    rotation: 0
+    state: enabled
+- name: hackrf_rx
+  id: blocks_tag_gate
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: |-
+      HackRF SIMULADA: borra las etiquetas de cada
+      paquete de red (el receptor no las necesita).
+      Entra: complejos.
+      Sale: los mismos complejos, sin etiquetas.
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+    propagate_tags: 'False'
+    single_key: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [896, 2880]
+    rotation: 0
+    state: enabled
+connections:
+- [a_bits, '0', detector_trama, '0']
+- [a_bytes, '0', crc, '0']
+- [acelerador, '0', entrada, '0']
+- [agc, '0', fll, '0']
+- [agc, '0', g_agc, '0']
+- [alto_f, '0', por_256, '0']
+- [bajo_f, '0', numero_paquete, '1']
+- [costas, '0', decisor, '0']
+- [costas, '0', estimador_snr, '0']
+- [costas, '0', g_const, '1']
+- [costas, '1', costas_promedio, '0']
+- [costas_promedio, '0', costas_sonda, '0']
+- [crc, '0', archivo_paquetes, '0']
+- [crc, '0', solo_datos, '0']
+- [crc, '0', solo_numero, '0']
+- [dec_diferencial, '0', mapa_gray, '0']
+- [decisor, '0', dec_diferencial, '0']
+- [detector_trama, '0', a_bytes, '0']
+- [entrada, '0', g_cascada, '0']
+- [entrada, '0', g_crudo, '0']
+- [entrada, '0', g_espectro_crudo, '0']
+- [entrada, '0', trasladar, '0']
+- [filtro_adaptado, '0', ojo_interp, '0']
+- [filtro_adaptado, '0', sinc_simbolo, '0']
+- [fll, '0', filtro_adaptado, '0']
+- [fll, '1', fll_hz, '0']
+- [fll, '1', fll_promedio, '0']
+- [fll, '2', fll_null_2, '0']
+- [fll, '3', fll_null_3, '0']
+- [fll_hz, '0', g_fll, '0']
+- [fll_promedio, '0', fll_sonda, '0']
+- [hackrf_rx, '0', entrada, '0']
+- [hackrf_rx, '0', grabar_iq, '0']
+- [leer_grabacion, '0', acelerador, '0']
+- [mapa_gray, '0', a_bits, '0']
+- [numero_paquete, '0', g_numero, '0']
+- [ojo_interp, '0', ojo_re, '0']
+- [ojo_re, '0', g_ojo, '0']
+- [por_256, '0', numero_paquete, '0']
+- [separar_bytes, '0', alto_f, '0']
+- [separar_bytes, '1', bajo_f, '0']
+- [sinc_simbolo, '0', costas, '0']
+- [sinc_simbolo, '0', g_const, '0']
+- [sinc_simbolo, '1', sinc_null_1, '0']
+- [sinc_simbolo, '2', sinc_null_2, '0']
+- [sinc_simbolo, '3', sinc_null_3, '0']
+- [solo_datos, '0', archivo_datos, '0']
+- [solo_numero, '0', separar_bytes, '0']
+- [trasladar, '0', agc, '0']
+- [trasladar, '0', g_espectro_banda, '0']
+- [ajustes_periodicos, strobe, ajustes_red, pdus]
+- [hackrf_rx_red, pdus, hackrf_rx_bytes, pdus]
+- [hackrf_rx_bytes, '0', hackrf_rx_iq, '0']
+- [hackrf_rx_iq, '0', hackrf_rx, '0']
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0

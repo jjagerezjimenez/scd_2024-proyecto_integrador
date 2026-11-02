@@ -6,7 +6,8 @@ Es el mismo procedimiento del laboratorio, automatizado. En cada caso:
   1. arranca el emulador (otro proceso, como el que se deja corriendo en el radioconda Prompt),
   2. arranca el RX simulado, espera 1 s (el AGC se acomoda al ruido) y arranca el TX simulado con un archivo,
   3. cuando el TX termina, para los dos y reconstruye el archivo con reconstruir_archivo.py (huella SHA-256).
-Antes verifica que los .grc simulados estén al día con los de grc_hackrf/ y los compila con grcc.
+Antes genera los .grc simulados desde grc_hackrf/ (en build/) y los compila con grcc; si los de hackrf_simulada/
+no son iguales (se cambiaron en GRC, o cambió grc_hackrf/ y no se regeneraron), avisa.
 Los archivos de cada caso quedan en build/hackrf_simulada/ (no se tocan grc_hackrf/ ni resultados/).
 """
 import json
@@ -131,11 +132,15 @@ def grc_al_dia():
 
 
 def compilar():
+    """Genera los .grc simulados desde grc_hackrf/ en build/ y los compila: se prueba siempre lo que está en
+    grc_hackrf/, aunque los de hackrf_simulada/ se hayan cambiado en GRC (por ejemplo, otro archivo)."""
     os.makedirs(BUILD, exist_ok=True)
     grcc = shutil.which("grcc") or os.path.join(os.path.dirname(sys.executable), "Scripts", "grcc.exe")
     for nombre in gen.NOMBRES:
-        r = subprocess.run([grcc, "-o", BUILD, os.path.join(AQUI, nombre + "_sim.grc")], capture_output=True,
-                           text=True)
+        ruta = os.path.join(BUILD, nombre + "_sim.grc")
+        with open(ruta, "w", encoding="utf-8", newline="\n") as f:
+            f.write(gen.generar(nombre)[1])
+        r = subprocess.run([grcc, "-o", BUILD, ruta], capture_output=True, text=True)
         if r.returncode != 0:
             sys.exit("grcc falló con %s_sim.grc:\n%s" % (nombre, r.stdout + r.stderr))
 
@@ -216,11 +221,14 @@ def verificar(i, caso, r, salida_emulador):
 def main(solo=None):
     viejos = grc_al_dia()
     if viejos:
-        sys.exit("Los .grc simulados no están al día con grc_hackrf/ (%s).\nCorrer primero:"
-                 " python hackrf_simulada/generar_grc_simulados.py" % ", ".join(viejos))
-    print("  OK    los .grc simulados están al día con grc_hackrf/")
+        print("  AVISO %s no es igual al que se genera desde grc_hackrf/. Es normal si se cambió en GRC (por\n"
+              "        ejemplo, otro archivo o repeticiones). Si se cambió algo en grc_hackrf/, volver a generarlo:\n"
+              "        python hackrf_simulada/generar_grc_simulados.py (deja los valores por defecto)."
+              % " y ".join(viejos))
+    else:
+        print("  OK    los .grc simulados están al día con grc_hackrf/")
     compilar()
-    print("  OK    compilan con grcc")
+    print("  OK    se generan desde grc_hackrf/ y compilan con grcc")
     fallas = 0
     for i, caso in enumerate(CASOS):
         if solo and i + 1 not in solo:

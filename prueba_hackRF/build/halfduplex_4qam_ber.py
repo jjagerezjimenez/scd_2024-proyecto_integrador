@@ -33,21 +33,21 @@ import threading
 
 class halfduplex_4qam_ber(gr.top_block):
 
-    def __init__(self, ebn0_db=6.0, fase_deg=0.0, cfo_hz=0.0, costas_bw=0.005, sync_bw=0.01, muestras=4000000, semilla=1, descartar=100000):
+    def __init__(self, cfo_hz=0.0, costas_bw=0.005, descartar=100000, ebn0_db=6.0, fase_deg=0.0, muestras=4000000, semilla=1, sync_bw=0.01):
         gr.top_block.__init__(self, "Medición de BER del enlace half-duplex 4-QAM (sin interfaz)", catch_exceptions=True)
         self.flowgraph_started = threading.Event()
 
         ##################################################
         # Parameters
         ##################################################
-        self.ebn0_db = ebn0_db
-        self.fase_deg = fase_deg
         self.cfo_hz = cfo_hz
         self.costas_bw = costas_bw
-        self.sync_bw = sync_bw
+        self.descartar = descartar
+        self.ebn0_db = ebn0_db
+        self.fase_deg = fase_deg
         self.muestras = muestras
         self.semilla = semilla
-        self.descartar = descartar
+        self.sync_bw = sync_bw
 
         ##################################################
         # Variables
@@ -297,6 +297,28 @@ class halfduplex_4qam_ber(gr.top_block):
         self.connect((self.txB_trama, 0), (self.txB_modulador, 0))
 
 
+    def get_cfo_hz(self):
+        return self.cfo_hz
+
+    def set_cfo_hz(self, cfo_hz):
+        self.cfo_hz = cfo_hz
+        self.osc_rxA.set_phase_inc((-2 * math.pi * self.cfo_hz / self.samp_rate))
+        self.osc_rxB.set_phase_inc((2 * math.pi * self.cfo_hz / self.samp_rate))
+
+    def get_costas_bw(self):
+        return self.costas_bw
+
+    def set_costas_bw(self, costas_bw):
+        self.costas_bw = costas_bw
+        self.rxA_costas.set_loop_bandwidth(self.costas_bw)
+        self.rxB_costas.set_loop_bandwidth(self.costas_bw)
+
+    def get_descartar(self):
+        return self.descartar
+
+    def set_descartar(self, descartar):
+        self.descartar = descartar
+
     def get_ebn0_db(self):
         return self.ebn0_db
 
@@ -311,30 +333,6 @@ class halfduplex_4qam_ber(gr.top_block):
         self.fase_deg = fase_deg
         self.fase.set_k(cmath.exp(1j * math.radians(self.fase_deg)))
 
-    def get_cfo_hz(self):
-        return self.cfo_hz
-
-    def set_cfo_hz(self, cfo_hz):
-        self.cfo_hz = cfo_hz
-        self.osc_rxB.set_phase_inc((2 * math.pi * self.cfo_hz / self.samp_rate))
-        self.osc_rxA.set_phase_inc((-2 * math.pi * self.cfo_hz / self.samp_rate))
-
-    def get_costas_bw(self):
-        return self.costas_bw
-
-    def set_costas_bw(self, costas_bw):
-        self.costas_bw = costas_bw
-        self.rxA_costas.set_loop_bandwidth(self.costas_bw)
-        self.rxB_costas.set_loop_bandwidth(self.costas_bw)
-
-    def get_sync_bw(self):
-        return self.sync_bw
-
-    def set_sync_bw(self, sync_bw):
-        self.sync_bw = sync_bw
-        self.rxA_sinc_simbolo.set_loop_bandwidth(self.sync_bw)
-        self.rxB_sinc_simbolo.set_loop_bandwidth(self.sync_bw)
-
     def get_muestras(self):
         return self.muestras
 
@@ -348,11 +346,13 @@ class halfduplex_4qam_ber(gr.top_block):
     def set_semilla(self, semilla):
         self.semilla = semilla
 
-    def get_descartar(self):
-        return self.descartar
+    def get_sync_bw(self):
+        return self.sync_bw
 
-    def set_descartar(self, descartar):
-        self.descartar = descartar
+    def set_sync_bw(self, sync_bw):
+        self.sync_bw = sync_bw
+        self.rxA_sinc_simbolo.set_loop_bandwidth(self.sync_bw)
+        self.rxB_sinc_simbolo.set_loop_bandwidth(self.sync_bw)
 
     def get_mensaje_B(self):
         return self.mensaje_B
@@ -383,8 +383,8 @@ class halfduplex_4qam_ber(gr.top_block):
     def set_payload_B(self, payload_B):
         self.payload_B = payload_B
         self.set_L_B(len(self.payload_B))
-        self.txB_fuente.set_data(self.payload_B, [])
         self.rxA_ref_fuente.set_data(self.payload_B, [])
+        self.txB_fuente.set_data(self.payload_B, [])
 
     def get_payload_A(self):
         return self.payload_A
@@ -392,8 +392,8 @@ class halfduplex_4qam_ber(gr.top_block):
     def set_payload_A(self, payload_A):
         self.payload_A = payload_A
         self.set_L_A(len(self.payload_A))
-        self.txA_fuente.set_data(self.payload_A, [])
         self.rxB_ref_fuente.set_data(self.payload_A, [])
+        self.txA_fuente.set_data(self.payload_A, [])
 
     def get_umbral(self):
         return self.umbral
@@ -408,8 +408,8 @@ class halfduplex_4qam_ber(gr.top_block):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.osc_rxB.set_phase_inc((2 * math.pi * self.cfo_hz / self.samp_rate))
         self.osc_rxA.set_phase_inc((-2 * math.pi * self.cfo_hz / self.samp_rate))
+        self.osc_rxB.set_phase_inc((2 * math.pi * self.cfo_hz / self.samp_rate))
         self.rxA_filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
         self.rxB_filtro_adaptado.set_taps(firdes.root_raised_cosine(1, self.samp_rate, (self.samp_rate/self.sps), self.excess_bw, (11*self.sps)))
 
@@ -445,10 +445,10 @@ class halfduplex_4qam_ber(gr.top_block):
 
     def set_formato_trama(self, formato_trama):
         self.formato_trama = formato_trama
-        self.txA_encabezado.set_header_format(self.formato_trama)
-        self.txB_encabezado.set_header_format(self.formato_trama)
         self.rxA_ref_encabezado.set_header_format(self.formato_trama)
         self.rxB_ref_encabezado.set_header_format(self.formato_trama)
+        self.txA_encabezado.set_header_format(self.formato_trama)
+        self.txB_encabezado.set_header_format(self.formato_trama)
 
     def get_excess_bw(self):
         return self.excess_bw
@@ -463,20 +463,20 @@ class halfduplex_4qam_ber(gr.top_block):
 
     def set_L_B(self, L_B):
         self.L_B = L_B
-        self.txB_a_paquetes.set_packet_len(self.L_B)
-        self.txB_a_paquetes.set_packet_len_pmt(self.L_B)
         self.rxA_ref_a_paquetes.set_packet_len(self.L_B)
         self.rxA_ref_a_paquetes.set_packet_len_pmt(self.L_B)
+        self.txB_a_paquetes.set_packet_len(self.L_B)
+        self.txB_a_paquetes.set_packet_len_pmt(self.L_B)
 
     def get_L_A(self):
         return self.L_A
 
     def set_L_A(self, L_A):
         self.L_A = L_A
-        self.txA_a_paquetes.set_packet_len(self.L_A)
-        self.txA_a_paquetes.set_packet_len_pmt(self.L_A)
         self.rxB_ref_a_paquetes.set_packet_len(self.L_A)
         self.rxB_ref_a_paquetes.set_packet_len_pmt(self.L_A)
+        self.txA_a_paquetes.set_packet_len(self.L_A)
+        self.txA_a_paquetes.set_packet_len_pmt(self.L_A)
 
 
 
@@ -484,20 +484,20 @@ def argument_parser():
     description = 'El mismo enlace half-duplex de halfduplex_4qam.grc, sin gráficos, para medir BER por línea de comandos'
     parser = ArgumentParser(description=description)
     parser.add_argument(
-        "--ebn0-db", dest="ebn0_db", type=eng_float, default=eng_notation.num_to_str(float(6.0)),
-        help="Set Eb/N0 [dB] [default=%(default)r]")
-    parser.add_argument(
-        "--fase-deg", dest="fase_deg", type=eng_float, default=eng_notation.num_to_str(float(0.0)),
-        help="Set Fase del canal [grados] [default=%(default)r]")
-    parser.add_argument(
         "--cfo-hz", dest="cfo_hz", type=eng_float, default=eng_notation.num_to_str(float(0.0)),
         help="Set Desvio entre osciladores A-B [Hz] [default=%(default)r]")
     parser.add_argument(
         "--costas-bw", dest="costas_bw", type=eng_float, default=eng_notation.num_to_str(float(0.005)),
         help="Set BW del lazo de Costas (0 = sin corregir fase) [default=%(default)r]")
     parser.add_argument(
-        "--sync-bw", dest="sync_bw", type=eng_float, default=eng_notation.num_to_str(float(0.01)),
-        help="Set BW del sincronismo de simbolo [default=%(default)r]")
+        "--descartar", dest="descartar", type=intx, default=100000,
+        help="Set Bits descartados al inicio (enganche de los lazos) [default=%(default)r]")
+    parser.add_argument(
+        "--ebn0-db", dest="ebn0_db", type=eng_float, default=eng_notation.num_to_str(float(6.0)),
+        help="Set Eb/N0 [dB] [default=%(default)r]")
+    parser.add_argument(
+        "--fase-deg", dest="fase_deg", type=eng_float, default=eng_notation.num_to_str(float(0.0)),
+        help="Set Fase del canal [grados] [default=%(default)r]")
     parser.add_argument(
         "--muestras", dest="muestras", type=intx, default=4000000,
         help="Set Muestras del canal compartido [default=%(default)r]")
@@ -505,15 +505,15 @@ def argument_parser():
         "--semilla", dest="semilla", type=intx, default=1,
         help="Set Semilla del ruido [default=%(default)r]")
     parser.add_argument(
-        "--descartar", dest="descartar", type=intx, default=100000,
-        help="Set Bits descartados al inicio (enganche de los lazos) [default=%(default)r]")
+        "--sync-bw", dest="sync_bw", type=eng_float, default=eng_notation.num_to_str(float(0.01)),
+        help="Set BW del sincronismo de simbolo [default=%(default)r]")
     return parser
 
 
 def main(top_block_cls=halfduplex_4qam_ber, options=None):
     if options is None:
         options = argument_parser().parse_args()
-    tb = top_block_cls(ebn0_db=options.ebn0_db, fase_deg=options.fase_deg, cfo_hz=options.cfo_hz, costas_bw=options.costas_bw, sync_bw=options.sync_bw, muestras=options.muestras, semilla=options.semilla, descartar=options.descartar)
+    tb = top_block_cls(cfo_hz=options.cfo_hz, costas_bw=options.costas_bw, descartar=options.descartar, ebn0_db=options.ebn0_db, fase_deg=options.fase_deg, muestras=options.muestras, semilla=options.semilla, sync_bw=options.sync_bw)
 
     def sig_handler(sig=None, frame=None):
         tb.stop()

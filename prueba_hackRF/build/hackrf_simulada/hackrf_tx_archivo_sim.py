@@ -35,7 +35,7 @@ import time
 
 class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
-    def __init__(self, archivo='../grc_hackrf/archivo_a_enviar.txt', repeticiones=3):
+    def __init__(self, archivo='../grc_hackrf/archivo_a_enviar.txt', repeticiones=0):
         gr.top_block.__init__(self, "[SIMULADA] HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)", catch_exceptions=True)
         Qt.QWidget.__init__(self)
         self.setWindowTitle("[SIMULADA] HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)")
@@ -432,8 +432,8 @@ class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_archivo(self, archivo):
         self.archivo = archivo
-        self.set_encontrado(os.path.isfile(self.archivo))
         self.set_contenido(list(open(self.archivo, "rb").read()) if self.encontrado else list(("No se encontro el archivo " + self.archivo).encode()))
+        self.set_encontrado(os.path.isfile(self.archivo))
         self.set_nombre(os.path.basename(self.archivo) if self.encontrado else "ERROR_archivo_no_encontrado.txt")
 
     def get_repeticiones(self):
@@ -456,21 +456,21 @@ class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_contenido(self, contenido):
         self.contenido = contenido
-        self.set_huella(hashlib.sha256(bytes(self.contenido)).hexdigest())
-        self.set_n_datos((len(self.contenido) + self.N - 1) // self.N)
-        self.set_descripcion(list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(self.contenido), self.N, self.n_paq, self.huella)).encode()))
         self.set_datos(self.contenido + [0] * (self.n_datos * self.N - len(self.contenido)) + (self.descripcion + [0] * self.N)[:self.N])
+        self.set_descripcion(list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(self.contenido), self.N, self.n_paq, self.huella)).encode()))
+        self.set_huella(hashlib.sha256(bytes(self.contenido)).hexdigest())
         self.set_lbl_archivo("%s (%d bytes)" % (self.nombre, len(self.contenido)))
+        self.set_n_datos((len(self.contenido) + self.N - 1) // self.N)
 
     def get_N(self):
         return self.N
 
     def set_N(self, N):
         self.N = N
-        self.set_n_datos((len(self.contenido) + self.N - 1) // self.N)
-        self.set_descripcion(list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(self.contenido), self.N, self.n_paq, self.huella)).encode()))
-        self.set_datos(self.contenido + [0] * (self.n_datos * self.N - len(self.contenido)) + (self.descripcion + [0] * self.N)[:self.N])
         self.set_bytes_trama(self.N + 18)
+        self.set_datos(self.contenido + [0] * (self.n_datos * self.N - len(self.contenido)) + (self.descripcion + [0] * self.N)[:self.N])
+        self.set_descripcion(list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(self.contenido), self.N, self.n_paq, self.huella)).encode()))
+        self.set_n_datos((len(self.contenido) + self.N - 1) // self.N)
         self.datos_paquetes.set_packet_len(self.N)
         self.datos_paquetes.set_packet_len_pmt(self.N)
 
@@ -479,18 +479,18 @@ class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_n_datos(self, n_datos):
         self.n_datos = n_datos
-        self.set_n_paq(self.n_datos + 1)
         self.set_datos(self.contenido + [0] * (self.n_datos * self.N - len(self.contenido)) + (self.descripcion + [0] * self.N)[:self.N])
+        self.set_n_paq(self.n_datos + 1)
 
     def get_n_paq(self):
         return self.n_paq
 
     def set_n_paq(self, n_paq):
         self.n_paq = n_paq
-        self.set_descripcion(list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(self.contenido), self.N, self.n_paq, self.huella)).encode()))
-        self.set_secuencia([b for i in range(self.n_paq) for b in ((i // 256) % 256, i % 256)])
         self.set_bytes_pasada(self.W + self.n_paq * self.bytes_trama)
+        self.set_descripcion(list(b"ARCHIVO|" + nombre.encode()[:40] + ("|%d|%d|%d|%s|" % (len(self.contenido), self.N, self.n_paq, self.huella)).encode()))
         self.set_lbl_paquetes("%d (%.2f s cada pasada)" % (self.n_paq, self.duracion_pasada))
+        self.set_secuencia([b for i in range(self.n_paq) for b in ((i // 256) % 256, i % 256)])
 
     def get_bytes_trama(self):
         return self.bytes_trama
@@ -504,10 +504,10 @@ class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_W(self, W):
         self.W = W
-        self.set_relleno(list(random.Random(1).randbytes(self.W)))
         self.set_bytes_pasada(self.W + self.n_paq * self.bytes_trama)
-        self.set_total_bytes(self.repeticiones * self.bytes_pasada + self.W if self.repeticiones > 0 else 2**62)
         self.set_lbl_pasadas((min(self.enviados, self.total_bytes - self.W) / self.bytes_pasada))
+        self.set_relleno(list(random.Random(1).randbytes(self.W)))
+        self.set_total_bytes(self.repeticiones * self.bytes_pasada + self.W if self.repeticiones > 0 else 2**62)
 
     def get_sps(self):
         return self.sps
@@ -523,8 +523,8 @@ class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.set_duracion_pasada(self.bytes_pasada * 8 / 2 / (self.samp_rate / self.sps))
         self.desplazar.set_phase_inc((2 * math.pi * self.f_offset / self.samp_rate))
-        self.g_espectro.set_frequency_range(0, self.samp_rate)
         self.g_cascada.set_frequency_range(0, self.samp_rate)
+        self.g_espectro.set_frequency_range(0, self.samp_rate)
         self.g_senal.set_samp_rate(self.samp_rate)
         self.set_ajustes_hackrf(("equipo=tx frecuencia=%r muestreo=%r vga=%r amp=%d" % (float(self.freq_mhz * 1e6 - self.f_offset), float(self.samp_rate), float(self.vga_tx), bool(self.amp_tx))).encode())
 
@@ -548,9 +548,9 @@ class hackrf_tx_archivo_sim(gr.top_block, Qt.QWidget):
 
     def set_bytes_pasada(self, bytes_pasada):
         self.bytes_pasada = bytes_pasada
-        self.set_total_bytes(self.repeticiones * self.bytes_pasada + self.W if self.repeticiones > 0 else 2**62)
         self.set_duracion_pasada(self.bytes_pasada * 8 / 2 / (self.samp_rate / self.sps))
         self.set_lbl_pasadas((min(self.enviados, self.total_bytes - self.W) / self.bytes_pasada))
+        self.set_total_bytes(self.repeticiones * self.bytes_pasada + self.W if self.repeticiones > 0 else 2**62)
 
     def get_vga_tx(self):
         return self.vga_tx
@@ -709,7 +709,7 @@ def argument_parser():
         "--archivo", dest="archivo", type=str, default='../grc_hackrf/archivo_a_enviar.txt',
         help="Set Archivo a transmitir [default=%(default)r]")
     parser.add_argument(
-        "--repeticiones", dest="repeticiones", type=intx, default=3,
+        "--repeticiones", dest="repeticiones", type=intx, default=0,
         help="Set Veces que se envía el archivo (0 = sin fin) [default=%(default)r]")
     return parser
 

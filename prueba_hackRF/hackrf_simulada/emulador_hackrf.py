@@ -121,14 +121,17 @@ class EntradaTX:
     """Muestras que manda el .grc del TX por TCP. Se leen solo las que hacen falta: si el emulador no lee, el TX
     se frena (igual que con la placa, que pide muestras a 2 Ms/s)."""
 
-    def __init__(self):
+    def __init__(self, fs):
+        self.fs = fs
         self.conexion = None
         self.pendiente = bytearray()
+        self.recibidas = 0          # muestras que mandó el TX conectado ahora
 
     def nueva(self, conexion):
         self.cerrar()
         conexion.setblocking(False)
         self.conexion = conexion
+        self.recibidas = 0
         print("  >> se conectó el TX", flush=True)
 
     def cerrar(self, motivo=None):
@@ -152,7 +155,8 @@ class EntradaTX:
             except OSError:
                 trozo = b""
             if not trozo:
-                self.cerrar("el TX se desconectó (terminó de transmitir o se cerró su ventana)")
+                self.cerrar("el TX se desconectó: transmitió %.2f s de señal (terminó sus pasadas o se cerró su"
+                            " ventana; sus gráficos quedan quietos)" % (self.recibidas / self.fs))
                 break
             self.pendiente += trozo
             falta -= len(trozo)
@@ -160,6 +164,7 @@ class EntradaTX:
         x = np.zeros(m, np.complex64)
         x[:reales] = np.frombuffer(self.pendiente, np.complex64, count=reales)
         del self.pendiente[:8 * reales]
+        self.recibidas += reales
         return x, reales
 
 
@@ -339,7 +344,7 @@ def main(argv=None):
     args = opciones(argv)
     servidor_tx, sock_ajustes, salida_rx = abrir_sockets()
     enlace = Enlace(args)
-    entrada = EntradaTX()
+    entrada = EntradaTX(args.muestreo)
     ajustes = {k: dict(v) for k, v in AJUSTES_POR_DEFECTO.items()}
     visto = {"tx": -math.inf, "rx": -math.inf}
     print("Emulador de dos HackRF One listo (Ctrl+C para cortar)\n"
@@ -390,7 +395,7 @@ def main(argv=None):
                             pass                         # el RX se acaba de cerrar
             hechas += BLOQUE
             if ahora >= proximo_estado:
-                proximo_estado += args.cada
+                proximo_estado = ahora + args.cada       # después de una pausa, una sola línea (no varias)
                 if enlace.estado["bloques"]:
                     imprimir_estado(enlace, ahora, ajustes["tx"], ajustes["rx"], entrada.conexion is not None,
                                     tx_listo, rx_activo, saltadas)

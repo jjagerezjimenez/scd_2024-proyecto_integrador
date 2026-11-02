@@ -4,9 +4,12 @@ options:
     catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
-    comment: ''
+    comment: "Opciones del flowgraph: t\xEDtulo de la ventana,\ninterfaz QT GUI y\
+      \ nombre del programa que arma\nGRC al apretar F6 (enlace_4qam_tramas.py, en\n\
+      esta misma carpeta)."
     copyright: ''
-    description: Enlace 4-QAM con tramas (preámbulo + longitud + CRC-32) y medición de BER, solo bloques estándar de GNU Radio
+    description: "Enlace 4-QAM con tramas (pre\xE1mbulo + longitud + CRC-32) y medici\xF3\
+      n de BER, solo bloques est\xE1ndar de GNU Radio"
     gen_cmake: 'On'
     gen_linking: dynamic
     generate_options: qt_gui
@@ -22,424 +25,2802 @@ options:
     run_options: prompt
     sizing_mode: fixed
     thread_safe_setters: ''
-    title: Enlace 4-QAM con tramas y BER (bloques estándar)
+    title: "Enlace 4-QAM con tramas y BER (bloques est\xE1ndar)"
     window_size: (1800, 1000)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 8]
+    coordinate: [8, 32.0]
     rotation: 0
     state: enabled
+
 blocks:
-- name: imports
-  id: import
-  parameters:
-    alias: ''
-    comment: ''
-    imports: import math, cmath
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1120, 12]
-    rotation: 0
-    state: enabled
-- name: samp_rate
-  id: variable
-  parameters:
-    comment: Frecuencia de muestreo [muestras/s]
-    value: '500000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [184, 12]
-    rotation: 0
-    state: enabled
-- name: sps
-  id: variable
-  parameters:
-    comment: Muestras por símbolo
-    value: '4'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [296, 12]
-    rotation: 0
-    state: enabled
-- name: excess_bw
-  id: variable
-  parameters:
-    comment: Factor de roll-off del filtro RRC
-    value: '0.35'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [376, 12]
-    rotation: 0
-    state: enabled
-- name: mensaje
-  id: variable
-  parameters:
-    comment: Texto que viaja en el payload de cada trama
-    value: '"Sistemas de Comunicaciones Digitales - FACET UNT - enlace 4-QAM half-duplex en GNU Radio!!!!!!!!"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [184, 92]
-    rotation: 0
-    state: enabled
-- name: payload
-  id: variable
-  parameters:
-    comment: Payload como lista de bytes
-    value: list(mensaje.encode())
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 92]
-    rotation: 0
-    state: enabled
 - name: L
   id: variable
   parameters:
-    comment: Bytes de payload por trama
+    comment: 'Bytes de payload por trama (largo del
+
+      mensaje).'
     value: len(payload)
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [624, 92]
-    rotation: 0
-    state: enabled
-- name: bits_trama
-  id: variable
-  parameters:
-    comment: Preámbulo 64 b + longitud 2x16 b + payload + CRC-32
-    value: 8*(8 + 4 + L + 4)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [704, 92]
-    rotation: 0
-    state: enabled
-- name: qpsk
-  id: variable_constellation_rect
-  parameters:
-    comment: ''
-    const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
-    sym_map: '[0, 1, 3, 2]'
-    rot_sym: '4'
-    real_sect: '2'
-    imag_sect: '2'
-    w_real_sect: '1'
-    w_imag_sect: '1'
-    precision: '8'
-    soft_dec_lut: None
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 12]
-    rotation: 0
-    state: enabled
-- name: formato_trama
-  id: variable_header_format_default
-  parameters:
-    comment: ''
-    access_code: '0'
-    threshold: '0'
-    bps: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [848, 12]
-    rotation: 0
-    state: enabled
-- name: umbral
-  id: variable
-  parameters:
-    comment: Bits erróneos tolerados al buscar el preámbulo de 64 bits
-    value: '12'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [848, 92]
-    rotation: 0
-    state: enabled
-- name: ruido
-  id: variable
-  parameters:
-    comment: 'Desvío del ruido complejo: potencia de señal = 1 por muestra, Es/N0 = 2 Eb/N0'
-    value: math.sqrt(sps / (2 * 10**(ebn0_db / 10)))
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [184, 172]
-    rotation: 0
-    state: enabled
-- name: p_qpsk
-  id: variable
-  parameters:
-    comment: 'Q(raiz(2 Eb/N0)): 4-QAM coherente'
-    value: 0.5 * math.erfc(math.sqrt(10**(ebn0_db / 10)))
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 172]
-    rotation: 0
-    state: enabled
-- name: ber_teo
-  id: variable
-  parameters:
-    comment: '4-QAM con codificación diferencial: 2p(1-p)'
-    value: 2 * p_qpsk * (1 - p_qpsk)
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [704, 172]
-    rotation: 0
-    state: enabled
-- name: ventana
-  id: variable
-  parameters:
-    comment: Bits de la ventana del BER 'reciente'
-    value: '1000000'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [848, 172]
-    rotation: 0
-    state: enabled
-- name: ebn0_db
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    label: Eb/N0 [dB]
-    rangeType: float
-    value: '10'
-    start: '0'
-    stop: '15'
-    step: '0.5'
-    widget: counter_slider
-    orient: QtCore.Qt.Horizontal
-    min_len: '150'
-    gui_hint: 0,0,1,2
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1264, 12]
-    rotation: 0
-    state: enabled
-- name: fase_deg
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    label: Fase del canal [°]
-    rangeType: float
-    value: '0'
-    start: '-180'
-    stop: '180'
-    step: '1'
-    widget: counter_slider
-    orient: QtCore.Qt.Horizontal
-    min_len: '150'
-    gui_hint: 0,2,1,2
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1416, 12]
-    rotation: 0
-    state: enabled
-- name: cfo_hz
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    label: CFO [Hz]
-    rangeType: float
-    value: '0'
-    start: '-1000'
-    stop: '1000'
-    step: '10'
-    widget: counter_slider
-    orient: QtCore.Qt.Horizontal
-    min_len: '150'
-    gui_hint: 0,4,1,2
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1568, 12]
-    rotation: 0
-    state: enabled
-- name: costas_bw
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    label: BW lazo de Costas
-    rangeType: float
-    value: '0.005'
-    start: '0.001'
-    stop: '0.1'
-    step: '0.001'
-    widget: counter
-    orient: QtCore.Qt.Horizontal
-    min_len: '100'
-    gui_hint: 1,0,1,1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1264, 140]
-    rotation: 0
-    state: enabled
-- name: sync_bw
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    label: BW sinc. de símbolo
-    rangeType: float
-    value: '0.01'
-    start: '0.001'
-    stop: '0.1'
-    step: '0.001'
-    widget: counter
-    orient: QtCore.Qt.Horizontal
-    min_len: '100'
-    gui_hint: 1,1,1,1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1416, 140]
-    rotation: 0
-    state: enabled
-- name: lbl_teo
-  id: variable_qtgui_label
-  parameters:
-    comment: ''
-    label: 'BER teórico: '
-    type: real
-    value: ber_teo
-    formatter: 'lambda x: ''%.2e'' % x'
-    gui_hint: 1,2,1,1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1568, 140]
+    coordinate: [8, 400.0]
     rotation: 0
     state: enabled
 - name: ber_acum_log
   id: variable_function_probe
   parameters:
-    comment: ''
     block_id: sonda_ber_acum
-    function_name: level
+    comment: 'Lee 4 veces por segundo el log10 del BER
+
+      acumulado (bloque "sonda_ber_acum").'
     function_args: ''
+    function_name: level
     poll_rate: '4'
     value: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 12]
+    coordinate: [1896, 240.0]
     rotation: 0
     state: enabled
 - name: ber_rec
   id: variable_function_probe
   parameters:
-    comment: ''
     block_id: sonda_ber_ventana
-    function_name: level
+    comment: "Lee 4 veces por segundo el BER del \xFAltimo\nmill\xF3n de bits (bloque\
+      \ \"sonda_ber_ventana\")."
     function_args: ''
+    function_name: level
     poll_rate: '4'
     value: '0'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 92]
+    coordinate: [2424, 240.0]
+    rotation: 0
+    state: enabled
+- name: ber_teo
+  id: variable
+  parameters:
+    comment: "BER te\xF3rico de 4-QAM con codificaci\xF3n\ndiferencial: 2 p (1 - p).\
+      \ Un bit sale mal si\nexactamente uno de los dos s\xEDmbolos que se\ncomparan\
+      \ se decidi\xF3 mal."
+    value: 2 * p_qpsk * (1 - p_qpsk)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 400.0]
+    rotation: 0
+    state: enabled
+- name: bits_trama
+  id: variable
+  parameters:
+    comment: "Bits de cada trama: pre\xE1mbulo 64 + longitud 2\n\xD7 16 + payload\
+      \ + CRC-32."
+    value: 8*(8 + 4 + L + 4)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 400.0]
+    rotation: 0
+    state: enabled
+- name: cfo_hz
+  id: variable_qtgui_range
+  parameters:
+    comment: "Control de la ventana: desv\xEDo de frecuencia\ndel canal (CFO), en\
+      \ Hz. Lo corrige el lazo de\nCostas."
+    gui_hint: 0,4,1,2
+    label: CFO [Hz]
+    min_len: '150'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '-1000'
+    step: '10'
+    stop: '1000'
+    value: '0'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2152, 8.0]
+    rotation: 0
+    state: enabled
+- name: costas_bw
+  id: variable_qtgui_range
+  parameters:
+    comment: "Control de la ventana: ancho de banda del lazo\nde Costas. M\xE1s grande\
+      \ = corrige m\xE1s r\xE1pido,\npero con m\xE1s ruido."
+    gui_hint: 1,0,1,1
+    label: BW lazo de Costas
+    min_len: '100'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0.001'
+    step: '0.001'
+    stop: '0.1'
+    value: '0.005'
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2424, 8.0]
+    rotation: 0
+    state: enabled
+- name: ebn0_db
+  id: variable_qtgui_range
+  parameters:
+    comment: 'Control de la ventana: Eb/N0 del canal en dB
+
+      (0 a 15). Cambia el nivel del ruido (variable
+
+      "ruido").'
+    gui_hint: 0,0,1,2
+    label: Eb/N0 [dB]
+    min_len: '150'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0'
+    step: '0.5'
+    stop: '15'
+    value: '10'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1648, 8.0]
+    rotation: 0
+    state: enabled
+- name: excess_bw
+  id: variable
+  parameters:
+    comment: "Roll-off del filtro RRC (0,35): cu\xE1nto m\xE1s\nancho que el m\xED\
+      nimo es el espectro. La se\xF1al\nocupa 125 k \xD7 1,35 \u2248 170 kHz."
+    value: '0.35'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 264.0]
+    rotation: 0
+    state: enabled
+- name: fase_deg
+  id: variable_qtgui_range
+  parameters:
+    comment: 'Control de la ventana: fase que gira el canal,
+
+      en grados. La corrige el lazo de Costas.'
+    gui_hint: 0,2,1,2
+    label: "Fase del canal [\xB0]"
+    min_len: '150'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '-180'
+    step: '1'
+    stop: '180'
+    value: '0'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1896, 8.0]
+    rotation: 0
+    state: enabled
+- name: formato_trama
+  id: variable_header_format_default
+  parameters:
+    access_code: '0'
+    bps: '1'
+    comment: "Formato del encabezado de cada trama:\npre\xE1mbulo de 64 bits (Access\
+      \ Code 0 = el\npre\xE1mbulo est\xE1ndar de GNU Radio) + longitud\ndel payload\
+      \ en 16 bits, escrita 2 veces. Lo\nusan los Protocol Formatter."
+    threshold: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 40.0]
     rotation: 0
     state: enabled
 - name: lbl_acum
   id: variable_qtgui_label
   parameters:
-    comment: ''
+    comment: "Muestra en la ventana el BER medido desde que\narranc\xF3."
+    formatter: 'lambda x: ''%.2e'' % x'
+    gui_hint: 1,3,1,1
     label: 'BER medido (acum.): '
     type: real
     value: 10**ber_acum_log
-    formatter: 'lambda x: ''%.2e'' % x'
-    gui_hint: 1,3,1,1
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1720, 172]
-    rotation: 0
-    state: enabled
-- name: lbl_rec
-  id: variable_qtgui_label
-  parameters:
-    comment: ''
-    label: 'BER medido (último Mbit): '
-    type: real
-    value: ber_rec
-    formatter: 'lambda x: ''%.2e'' % x'
-    gui_hint: 1,4,1,1
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1872, 172]
+    coordinate: [2152, 248.0]
     rotation: 0
     state: enabled
 - name: lbl_ratio
   id: variable_qtgui_label
   parameters:
-    comment: ''
-    label: 'Medido (último Mbit) / teórico: '
-    type: real
-    value: ber_rec / ber_teo
+    comment: "Muestra en la ventana el cociente BER medido /\nBER te\xF3rico (cerca\
+      \ de 1 = el receptor anda\ncomo dice la teor\xEDa)."
     formatter: 'lambda x: ''%.2f'' % x'
     gui_hint: 1,5,1,1
+    label: "Medido (\xFAltimo Mbit) / te\xF3rico: "
+    type: real
+    value: ber_rec / ber_teo
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2024, 172]
+    coordinate: [2952, 248.0]
+    rotation: 0
+    state: enabled
+- name: lbl_rec
+  id: variable_qtgui_label
+  parameters:
+    comment: "Muestra en la ventana el BER del \xFAltimo mill\xF3n\nde bits."
+    formatter: 'lambda x: ''%.2e'' % x'
+    gui_hint: 1,4,1,1
+    label: "BER medido (\xFAltimo Mbit): "
+    type: real
+    value: ber_rec
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2688, 248.0]
+    rotation: 0
+    state: enabled
+- name: lbl_teo
+  id: variable_qtgui_label
+  parameters:
+    comment: "Muestra en la ventana el BER te\xF3rico para el\nEb/N0 elegido."
+    formatter: 'lambda x: ''%.2e'' % x'
+    gui_hint: 1,2,1,1
+    label: "BER te\xF3rico: "
+    type: real
+    value: ber_teo
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1648, 248.0]
+    rotation: 0
+    state: enabled
+- name: mensaje
+  id: variable
+  parameters:
+    comment: 'Texto que viaja en el payload de cada trama
+
+      (todas las tramas llevan el mismo mensaje).'
+    value: '"Sistemas de Comunicaciones Digitales - FACET UNT - enlace 4-QAM half-duplex
+      en GNU Radio!!!!!!!!"'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 264.0]
+    rotation: 0
+    state: enabled
+- name: p_qpsk
+  id: variable
+  parameters:
+    comment: "p = Q(ra\xEDz(2 Eb/N0)): probabilidad de decidir\nmal un eje de la 4-QAM."
+    value: 0.5 * math.erfc(math.sqrt(10**(ebn0_db / 10)))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 400.0]
+    rotation: 0
+    state: enabled
+- name: payload
+  id: variable
+  parameters:
+    comment: "El mensaje como lista de bytes (n\xFAmeros de 0 a\n255)."
+    value: list(mensaje.encode())
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 264.0]
+    rotation: 0
+    state: enabled
+- name: qpsk
+  id: variable_constellation_rect
+  parameters:
+    comment: "Constelaci\xF3n 4-QAM: 4 puntos (\xB10,707 \xB1 j0,707)\ncon c\xF3digo\
+      \ Gray (Symbol Map 0, 1, 3, 2: los\nvecinos difieren en un solo bit). La usan\
+      \ el\nmodulador y el decisor."
+    const_points: '[-0.707-0.707j, 0.707-0.707j, +0.707+0.707j, -0.707+0.707j]'
+    imag_sect: '2'
+    precision: '8'
+    real_sect: '2'
+    rot_sym: '4'
+    soft_dec_lut: None
+    sym_map: '[0, 1, 3, 2]'
+    w_imag_sect: '1'
+    w_real_sect: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 8.0]
+    rotation: 0
+    state: enabled
+- name: ruido
+  id: variable
+  parameters:
+    comment: "Amplitud del ruido que agrega el canal,\ncalculada para que haya el\
+      \ Eb/N0 elegido: la\nse\xF1al tiene potencia 1 y 4 muestras por\ns\xEDmbolo,\
+      \ y Es/N0 = 2 Eb/N0 (2 bits por\ns\xEDmbolo)."
+    value: math.sqrt(sps / (2 * 10**(ebn0_db / 10)))
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 400.0]
+    rotation: 0
+    state: enabled
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: "Muestreo: 500 000 muestras por segundo. Con 4\nmuestras por s\xEDmbolo\
+      \ son 125 000 s\xEDmbolos/s =\n250 kbit/s."
+    value: '500000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 264.0]
+    rotation: 0
+    state: enabled
+- name: sps
+  id: variable
+  parameters:
+    comment: "Muestras por s\xEDmbolo (4)."
+    value: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 264.0]
+    rotation: 0
+    state: enabled
+- name: sync_bw
+  id: variable_qtgui_range
+  parameters:
+    comment: "Control de la ventana: ancho de banda del lazo\ndel sincronismo de s\xED\
+      mbolo."
+    gui_hint: 1,1,1,1
+    label: "BW sinc. de s\xEDmbolo"
+    min_len: '100'
+    orient: QtCore.Qt.Horizontal
+    rangeType: float
+    start: '0.001'
+    step: '0.001'
+    stop: '0.1'
+    value: '0.01'
+    widget: counter
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2688, 8.0]
+    rotation: 0
+    state: enabled
+- name: umbral
+  id: variable
+  parameters:
+    comment: "Cu\xE1ntos bits del pre\xE1mbulo (de 64) pueden\nllegar mal y aun as\xED\
+      \ se acepta la trama."
+    value: '12'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 56.0]
+    rotation: 0
+    state: enabled
+- name: ventana
+  id: variable
+  parameters:
+    comment: "Cantidad de bits que se promedian para el BER\n\"reciente\" (1 mill\xF3\
+      n)."
+    value: '1000000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1360, 400.0]
+    rotation: 0
+    state: enabled
+- name: a_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Separa cada n\xFAmero en sus 2 bits (primero el\nm\xE1s significativo).\n\
+      Entra: bytes con 2 bits \xFAtiles (0 a 3), 125\n  k/s.\nSale: bits sueltos (1\
+      \ bit por byte: 0 o 1),\n  250 k/s."
+    k: '2'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1992, 2552.0]
+    rotation: 0
+    state: enabled
+- name: a_bytes
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    align_output: 'True'
+    comment: "Junta los bits de a 8 para volver a formar\nbytes, respetando d\xF3\
+      nde empieza cada trama\n(packet_len).\nEntra: bits sueltos (1 por byte).\nSale:\
+      \ bytes: L + 4 por trama (packet_len)."
+    endianness: gr.GR_MSB_FIRST
+    k: '1'
+    l: '8'
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 3768.0]
+    rotation: 0
+    state: enabled
+- name: a_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Corta el flujo en grupos de L bytes\n(uno por trama) y marca el comienzo\n\
+      de cada grupo con la etiqueta\npacket_len. As\xED los bloques\nsiguientes saben\
+      \ d\xF3nde empieza y\ntermina cada trama.\nEntra: bytes sin marcas.\nSale: los\
+      \ mismos bytes, en grupos de\n  L marcados con packet_len."
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packet_len: L
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 848.0]
+    rotation: 0
+    state: enabled
+- name: a_pdu
+  id: pdu_tagged_stream_to_pdu
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Convierte cada payload correcto (marcado con
+
+      packet_len) en un mensaje (PDU).
+
+      Entra: bytes con packet_len.
+
+      Sale: mensajes (PDU).'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tag: '"packet_len"'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1048, 3776.0]
+    rotation: 0
+    state: enabled
+- name: acelerador
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Frena el flujo a 500 k\nmuestras/s (samp_rate): as\xED la\nsimulaci\xF3\
+      n va a tiempo real y\nno usa toda la CPU.\nEntra: complejos.\nSale: los mismos\
+      \ complejos, a\n  500 k/s."
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: samp_rate
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1560, 848.0]
+    rotation: 0
+    state: enabled
+- name: alinear
+  id: blocks_tagged_stream_align
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Descarta los bits que llegan antes\nde la primera etiqueta\ninicio_trama:\
+      \ as\xED lo recibido\narranca justo despu\xE9s de un\npre\xE1mbulo, alineado\
+      \ con la copia\ndel transmisor.\nEntra: bits con etiquetas.\nSale: bits alineados."
+    lengthtagname: '"inicio_trama"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 4552.0]
+    rotation: 0
+    state: enabled
+- name: archivo_mensajes
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: 'Guarda esos mensajes en mensajes_recibidos.txt
+
+      (en la carpeta de este .grc).
+
+      Entra: bytes.
+
+      Sale: nada (escribe el archivo).'
+    file: '"mensajes_recibidos.txt"'
+    type: byte
+    unbuffered: 'True'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1336, 4072.0]
+    rotation: 0
+    state: enabled
+- name: ber_ventana
+  id: blocks_moving_average_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Promedia los errores en el \xFAltimo mill\xF3n de\nbits: da el BER reciente.\n\
+      Entra: reales (0 o 1).\nSale: reales: BER."
+    length: ventana
+    max_iter: '4000'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: 1.0/ventana
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2352, 4528.0]
+    rotation: 0
+    state: enabled
+- name: bits_tx_float
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Pasa cada bit a n\xFAmero real, para el gr\xE1fico.\nEntra: bytes (0\
+      \ o 1).\nSale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1560, 1104.0]
+    rotation: 0
+    state: enabled
+- name: bits_tx_unpack
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Separa cada byte de la trama en sus 8 bits,
+
+      para graficarlos.
+
+      Entra: bytes.
+
+      Sale: bits sueltos (0 o 1, 1 por byte).'
+    k: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1288, 1104.0]
+    rotation: 0
+    state: enabled
+- name: cfo
+  id: blocks_rotator_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Agrega el desv\xEDo de\nfrecuencia (CFO): la se\xF1al\ngira cada vez\
+      \ m\xE1s\n(multiplica por\ne^(j\xB72\u03C0\xB7CFO\xB7t)).\nEntra: complejos.\n\
+      Sale: complejos con CFO."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    phase_inc: 2 * math.pi * cfo_hz / samp_rate
+    tag_inc_update: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2656, 776.0]
+    rotation: 0
+    state: enabled
+- name: cfo_real
+  id: analog_sig_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: cfo_hz
+    comment: 'Genera un valor constante igual al CFO
+
+      elegido, para compararlo con lo que estima
+
+      Costas.
+
+      Entra: nada (es una fuente).
+
+      Sale: reales (Hz).'
+    freq: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate/sps
+    showports: 'False'
+    type: float
+    waveform: analog.GR_CONST_WAVE
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1128, 3040.0]
+    rotation: 0
+    state: enabled
+- name: comparar
+  id: blocks_xor_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Compara bit a bit lo recibido con lo\ntransmitido (XOR): sale 1 donde\
+      \ hay un error y\n0 donde coinciden.\nEntra: in0 = bits recibidos, in1 = bits\n\
+      \  transmitidos (1 por byte).\nSale: bytes: 1 = error, 0 = bien."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1816, 4544.0]
+    rotation: 0
+    state: enabled
+- name: consola
+  id: blocks_message_debug
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: '(Deshabilitado) Si se habilita, escribe cada
+
+      mensaje recibido en la consola de GRC.
+
+      Entra: mensajes (PDU).
+
+      Sale: nada.'
+    en_uvec: 'True'
+    log_level: info
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1368, 3736.0]
+    rotation: 0
+    state: disabled
+- name: costas
+  id: digital_costas_loop_cc
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Lazo de Costas de orden 4: corrige\nla fase y el desv\xEDo de frecuencia\n\
+      del canal, para que la\nconstelaci\xF3n quede quieta en los 4\npuntos.\nEntra:\
+      \ complejos, 1 muestra por\n  s\xEDmbolo.\nSale: out0 = s\xEDmbolos corregidos\n\
+      \  (complejos); out1 = frecuencia\n  que corrige (rad/s\xEDmbolo); out2\n  =\
+      \ fase y out3 = error (no se\n  usan)."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    order: '4'
+    use_snr: 'False'
+    w: costas_bw
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [920, 2512.0]
+    rotation: 0
+    state: enabled
+- name: costas_re
+  id: blocks_complex_to_real
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Se queda con la parte real (I) de los s\xEDmbolos\ncorregidos.\nEntra:\
+      \ complejos.\nSale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 3344.0]
+    rotation: 0
+    state: enabled
+- name: crc_rx
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    check: 'True'
+    comment: "Vuelve a calcular el CRC-32 de\ncada trama: si coincide, la deja\npasar\
+      \ sin los 4 bytes del CRC;\nsi no, la descarta (ten\xEDa\nerrores).\nEntra:\
+      \ bytes: payload + CRC (L +\n  4).\nSale: bytes: payloads correctos\n  (L bytes\
+      \ cada uno)."
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '70000'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 3760.0]
+    rotation: 0
+    state: enabled
+- name: crc_tx
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    check: 'False'
+    comment: 'Calcula el CRC-32 de cada payload y se lo
+
+      agrega al final (4 bytes). El receptor lo
+
+      vuelve a calcular para descartar las tramas
+
+      con errores.
+
+      Entra: bytes: payload de L bytes (packet_len).
+
+      Sale: bytes: payload + CRC = L + 4 bytes.'
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 840.0]
+    rotation: 0
+    state: enabled
+- name: dec_diferencial
+  id: digital_diff_decoder_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
+    comment: "Decodificaci\xF3n diferencial: resta el s\xEDmbolo\nanterior (m\xF3\
+      dulo 4), o sea, mide el cambio de\nfase. Por eso no importa si Costas qued\xF3\
+      \ngirado 90\xB0, 180\xB0 o 270\xB0.\nEntra: s\xEDmbolos 0 a 3 (bytes).\nSale:\
+      \ s\xEDmbolos 0 a 3 (el cambio de fase)."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    modulus: '4'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1432, 2544.0]
+    rotation: 0
+    state: enabled
+- name: decisor
+  id: digital_constellation_decoder_cb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Decide a cu\xE1l de los 4 puntos de la\nconstelaci\xF3n est\xE1 m\xE1\
+      s cerca cada s\xEDmbolo y\nentrega su n\xFAmero.\nEntra: complejos, 1 por s\xED\
+      mbolo (125 k/s).\nSale: bytes con valores 0 a 3 (un s\xEDmbolo cada\n  uno)."
+    constellation: qpsk
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 2552.0]
+    rotation: 0
+    state: enabled
+- name: detector_trama
+  id: digital_correlate_access_code_xx_ts
+  parameters:
+    access_code: digital.packet_utils.default_access_code
+    affinity: ''
+    alias: ''
+    comment: "Busca en los bits el pre\xE1mbulo de 64\nbits (acepta hasta \"umbral\"\
+      \ bits mal),\nlee la longitud (2 copias que tienen que\ncoincidir) y entrega\
+      \ solo el payload +\nCRC de cada trama, marcado con\npacket_len.\nEntra: bits\
+      \ sueltos (1 por byte).\nSale: bits sueltos: 8 \xD7 (L + 4) por\n  trama.\n\
+      (En Advanced, Min Output Buffer =\n600000: lugar para la trama m\xE1s larga,\n\
+      as\xED una longitud da\xF1ada no traba el\nflujo.)"
+    maxoutbuf: '0'
+    minoutbuf: '600000'
+    tagname: '"packet_len"'
+    threshold: umbral
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 3760.0]
+    rotation: 0
+    state: enabled
+- name: encabezado
+  id: digital_protocol_formatter_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Arma el encabezado de cada trama\ncon el formato \"formato_trama\":\n\
+      pre\xE1mbulo de 64 bits + longitud (2\nveces). Solo produce el\nencabezado,\
+      \ no copia el payload.\nEntra: bytes: payload + CRC\n  (packet_len).\nSale:\
+      \ bytes: encabezado de 12\n  bytes (packet_len = 12)."
+    format: formato_trama
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [816, 608.0]
+    rotation: 0
+    state: enabled
+- name: errores_float
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Pasa cada error (0 o\n1) a n\xFAmero real, para\npromediarlo y\ngraficarlo.\n\
+      Entra: bytes (0 o 1).\nSale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2088, 4552.0]
+    rotation: 0
+    state: enabled
+- name: fase
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Gira la constelaci\xF3n la\nfase elegida (multiplica\npor e^(j\xB7fase)).\n\
+      Entra: complejos.\nSale: complejos girados."
+    const: cmath.exp(1j * math.radians(fase_deg))
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2376, 784.0]
+    rotation: 0
+    state: enabled
+- name: filtro_adaptado
+  id: filter_fft_rrc_filter
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha: excess_bw
+    comment: "Filtro adaptado RRC (igual al del\ntransmisor): junto con el del TX\n\
+      da un pulso sin interferencia\nentre s\xEDmbolos y deja afuera la\nmayor parte\
+      \ del ruido.\nEntra: complejos, 4 muestras por\n  s\xEDmbolo (500 k/s).\nSale:\
+      \ complejos filtrados, 4\n  muestras por s\xEDmbolo."
+    decim: '1'
+    gain: '1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ntaps: 11*sps
+    nthreads: '1'
+    samp_rate: samp_rate
+    sym_rate: samp_rate/sps
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 2504.0]
+    rotation: 0
+    state: enabled
+- name: frec_hz
+  id: blocks_multiply_const_vxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Pasa la frecuencia de Costas\nde radianes por s\xEDmbolo a Hz.\nEntra:\
+      \ reales (rad/s\xEDmbolo).\nSale: reales (Hz)."
+    const: samp_rate / sps / (2 * math.pi)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 2864.0]
+    rotation: 0
+    state: enabled
+- name: fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Entrega una y otra vez el mensaje (lista
+
+      "payload").
+
+      Entra: nada (es una fuente).
+
+      Sale: bytes del mensaje.'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeat: 'True'
+    tags: '[]'
+    type: byte
+    vector: payload
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 840.0]
+    rotation: 0
+    state: enabled
+- name: g_ber_num
+  id: qtgui_number_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    autoscale: 'False'
+    avg: '0'
+    color1: ("black", "black")
+    color10: ("black", "black")
+    color2: ("black", "black")
+    color3: ("black", "black")
+    color4: ("black", "black")
+    color5: ("black", "black")
+    color6: ("black", "black")
+    color7: ("black", "black")
+    color8: ("black", "black")
+    color9: ("black", "black")
+    comment: "Muestra (pesta\xF1a 3) el log10 del BER acumulado\ncomo n\xFAmero y\
+      \ barra.\nEntra: reales.\nSale: nada (solo dibuja)."
+    factor1: '1'
+    factor10: '1'
+    factor2: '1'
+    factor3: '1'
+    factor4: '1'
+    factor5: '1'
+    factor6: '1'
+    factor7: '1'
+    factor8: '1'
+    factor9: '1'
+    graph_type: qtgui.NUM_GRAPH_HORIZ
+    gui_hint: 'pestanas@2: 1,1,1,1'
+    label1: Acumulado
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    max: '0'
+    min: '-7'
+    name: '"log10(BER) acumulado"'
+    nconnections: '1'
+    type: float
+    unit1: ''
+    unit10: ''
+    unit2: ''
+    unit3: ''
+    unit4: ''
+    unit5: ''
+    unit6: ''
+    unit7: ''
+    unit8: ''
+    unit9: ''
+    update_time: '0.20'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2632, 5272.0]
+    rotation: 0
+    state: enabled
+- name: g_ber_t
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 3): log10 del BER medido en\nel \xFAltimo mill\xF3\
+      n de bits (azul) y te\xF3rico\n(rojo).\nEntra: in0 = medido, in1 = te\xF3rico\
+      \ (reales).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@2: 1,0,1,1'
+    label1: "Medido (\xFAltimo Mbit)"
+    label10: ''
+    label2: "Te\xF3rico"
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: "\"log10(BER): medido vs te\xF3rico\""
+    nconnections: '2'
+    size: '500'
+    srate: samp_rate/sps*2/1000
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: log10(BER)
+    ymax: '0'
+    ymin: '-6'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3128, 4528.0]
+    rotation: 0
+    state: enabled
+- name: g_bits
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 3): bits recibidos, bits\ntransmitidos (corridos\
+      \ +1,5) y errores (1 =\nerror).\nEntra: in0 = RX, in1 = TX + 1,5, in2 = errores\n\
+      \  (reales).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@2: 0,0,1,1'
+    label1: RX
+    label10: ''
+    label2: TX (+1,5)
+    label3: Errores
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Bits RX vs TX (+1,5) y errores"'
+    nconnections: '3'
+    size: '200'
+    srate: samp_rate/sps*2
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Bit
+    ymax: '4'
+    ymin: '-1'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2360, 4752.0]
+    rotation: 0
+    state: enabled
+- name: g_bits_tx
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 1): los bits de una trama\ntransmitida (pre\xE1\
+      mbulo, longitud, payload,\nCRC). Arranca en cada etiqueta packet_len.\nEntra:\
+      \ reales (0 o 1).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 0,0,1,1'
+    label1: Bits transmitidos
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: "\"Trama TX: pre\xE1mbulo + longitud + datos\""
+    nconnections: '1'
+    size: '160'
+    srate: samp_rate/sps*2
+    stemplot: 'True'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_TAG
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '"packet_len"'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Bit
+    ymax: '1.5'
+    ymin: '-0.5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1816, 1080.0]
+    rotation: 0
+    state: enabled
+- name: g_canal_const
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '0.6'
+    alpha10: '0.6'
+    alpha2: '0.6'
+    alpha3: '0.6'
+    alpha4: '0.6'
+    alpha5: '0.6'
+    alpha6: '0.6'
+    alpha7: '0.6'
+    alpha8: '0.6'
+    alpha9: '0.6'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: "Gr\xE1fico (pesta\xF1a 1): constelaci\xF3n de las\nmuestras RX tal como\
+      \ llegan, sin sincronizar:\nuna nube.\nEntra: complejos.\nSale: nada (solo dibuja)."
+    grid: 'True'
+    gui_hint: 'pestanas@0: 1,2,1,1'
+    label1: RX
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: '"Muestras RX sin sincronizar"'
+    nconnections: '1'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '3'
+    xmin: '-3'
+    ymax: '3'
+    ymin: '-3'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2376, 1512.0]
+    rotation: 0
+    state: enabled
+- name: g_canal_esp
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.2'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: "Gr\xE1fico (pesta\xF1a 1): espectro TX (azul) y RX\n(rojo): el ruido\
+      \ llena toda la banda.\nEntra: in0 = TX, in1 = RX (complejos).\nSale: nada (solo\
+      \ dibuja)."
+    ctrlpanel: 'False'
+    fc: '0'
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 1,1,1,1'
+    label: '"Potencia relativa"'
+    label1: TX
+    label10: ''
+    label2: RX
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: '"Espectro TX vs RX"'
+    nconnections: '2'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '10'
+    ymin: '-100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2384, 1696.0]
+    rotation: 0
+    state: enabled
+- name: g_canal_t
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 1): componente I de la se\xF1al\nTX y de la RX,\
+      \ superpuestas: se ve el ruido\nque agrega el canal.\nEntra: in0 = TX, in1 =\
+      \ RX (reales).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 1,0,1,1'
+    label1: TX
+    label10: ''
+    label2: RX
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Componente I: TX vs RX"'
+    nconnections: '2'
+    size: '200'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitud
+    ymax: '2.5'
+    ymin: '-2.5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2648, 1144.0]
+    rotation: 0
+    state: enabled
+- name: g_frec
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 2): frecuencia que corrige\nCostas (azul) y CFO\
+      \ del canal (rojo): cuando\nCostas se engancha, coinciden.\nEntra: in0 = Costas,\
+      \ in1 = CFO (reales, Hz).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@1: 1,1,1,1'
+    label1: Costas
+    label10: ''
+    label2: CFO canal
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Frecuencia de Costas vs CFO [Hz]"'
+    nconnections: '2'
+    size: '2000'
+    srate: samp_rate/sps
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Hz
+    ymax: '1100'
+    ymin: '-1100'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1432, 2840.0]
+    rotation: 0
+    state: enabled
+- name: g_histograma
+  id: qtgui_histogram_sink_x
+  parameters:
+    accum: 'False'
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'True'
+    axislabels: 'True'
+    bins: '120'
+    color1: '"blue"'
+    color10: '"blue"'
+    color2: '"blue"'
+    color3: '"blue"'
+    color4: '"blue"'
+    color5: '"blue"'
+    color6: '"blue"'
+    color7: '"blue"'
+    color8: '"blue"'
+    color9: '"blue"'
+    comment: "Gr\xE1fico (pesta\xF1a 2): histograma de I despu\xE9s\nde Costas: dos\
+      \ monta\xF1as en \xB10,7 (m\xE1s angostas\ncon m\xE1s Eb/N0).\nEntra: reales.\n\
+      Sale: nada (solo dibuja)."
+    grid: 'True'
+    gui_hint: 'pestanas@1: 1,2,1,1'
+    label1: Componente I
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Histograma de I tras Costas"'
+    nconnections: '1'
+    size: '4000'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    type: float
+    update_time: '0.20'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '1.5'
+    xmin: '-1.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1432, 3288.0]
+    rotation: 0
+    state: enabled
+- name: g_mf_t
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 2): I y Q a la\nsalida del filtro adaptado.\n\
+      Entra: complejos (500 k/s).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@1: 0,0,1,1'
+    label1: I
+    label10: ''
+    label2: Q
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Salida del filtro adaptado"'
+    nconnections: '1'
+    size: '160'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitud
+    ymax: '1.25'
+    ymin: '-1.25'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 2288.0]
+    rotation: 0
+    state: enabled
+- name: g_ojo
+  id: qtgui_eye_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '0.5'
+    alpha10: '0.5'
+    alpha2: '0.5'
+    alpha3: '0.5'
+    alpha4: '0.5'
+    alpha5: '0.5'
+    alpha6: '0.5'
+    alpha7: '0.5'
+    alpha8: '0.5'
+    alpha9: '0.5'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: blue
+    color2: blue
+    color3: blue
+    color4: blue
+    color5: blue
+    color6: blue
+    color7: blue
+    color8: blue
+    color9: blue
+    comment: "Gr\xE1fico (pesta\xF1a 2): diagrama de ojo de I\n(antes del sincronismo\
+      \ y de Costas): muchas\ntrazas superpuestas; el \"ojo\" abierto es el\nmejor\
+      \ instante para muestrear.\nEntra: reales.\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@1: 0,1,1,1'
+    label1: Ojo de la componente I (antes de Costas)
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    nconnections: '1'
+    samp_per_symbol: 4*sps
+    size: '2048'
+    srate: 4*samp_rate
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: '"Amplitud"'
+    ymax: '1.5'
+    ymin: '-1.5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 2072.0]
+    rotation: 0
+    state: enabled
+- name: g_payload
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 3): bits que\nentrega el detector (payload +\n\
+      CRC de cada trama).\nEntra: reales.\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@2: 0,1,1,1'
+    label1: Payload + CRC
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: '"Payload del detector de tramas"'
+    nconnections: '1'
+    size: 2 * 8 * (L + 4)
+    srate: samp_rate/sps*2
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Bit
+    ymax: '1.5'
+    ymin: '-0.5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 4064.0]
+    rotation: 0
+    state: enabled
+- name: g_periodo
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 2): per\xEDodo de\ns\xEDmbolo que estima el sincronismo\n\
+      (instant\xE1neo y promedio): tiene\nque quedar en 4 muestras.\nEntra: in0 =\
+      \ instant\xE1neo, in1 =\n  promedio (reales).\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'False'
+    grid: 'True'
+    gui_hint: 'pestanas@1: 0,2,1,1'
+    label1: "Instant\xE1neo"
+    label10: ''
+    label2: Promedio
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: "\"Per\xEDodo de s\xEDmbolo estimado [muestras]\""
+    nconnections: '2'
+    size: '2000'
+    srate: samp_rate/sps
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: float
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Muestras
+    ymax: '4.5'
+    ymin: '3.5'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [912, 3056.0]
+    rotation: 0
+    state: enabled
+- name: g_sync_const
+  id: qtgui_const_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '0.6'
+    alpha10: '0.6'
+    alpha2: '0.6'
+    alpha3: '0.6'
+    alpha4: '0.6'
+    alpha5: '0.6'
+    alpha6: '0.6'
+    alpha7: '0.6'
+    alpha8: '0.6'
+    alpha9: '0.6'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: "Gr\xE1fico (pesta\xF1a 2): constelaci\xF3n antes (azul)\ny despu\xE9\
+      s (rojo) de Costas. Despu\xE9s tienen que\nverse 4 grupos de puntos quietos.\n\
+      Entra: in0 = antes, in1 = despu\xE9s (complejos,\n  1 por s\xEDmbolo).\nSale:\
+      \ nada (solo dibuja)."
+    grid: 'True'
+    gui_hint: 'pestanas@1: 1,0,1,1'
+    label1: Antes
+    label10: ''
+    label2: "Despu\xE9s"
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '0'
+    marker10: '0'
+    marker2: '0'
+    marker3: '0'
+    marker4: '0'
+    marker5: '0'
+    marker6: '0'
+    marker7: '0'
+    marker8: '0'
+    marker9: '0'
+    name: "\"Constelaci\xF3n antes y despu\xE9s de Costas\""
+    nconnections: '2'
+    size: '1024'
+    style1: '0'
+    style10: '0'
+    style2: '0'
+    style3: '0'
+    style4: '0'
+    style5: '0'
+    style6: '0'
+    style7: '0'
+    style8: '0'
+    style9: '0'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    xmax: '1.5'
+    xmin: '-1.5'
+    ymax: '1.5'
+    ymin: '-1.5'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1144, 2296.0]
+    rotation: 0
+    state: enabled
+- name: g_tx_esp
+  id: qtgui_freq_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    average: '0.2'
+    axislabels: 'True'
+    bw: samp_rate
+    color1: '"blue"'
+    color10: '"dark blue"'
+    color2: '"red"'
+    color3: '"green"'
+    color4: '"black"'
+    color5: '"cyan"'
+    color6: '"magenta"'
+    color7: '"yellow"'
+    color8: '"dark red"'
+    color9: '"dark green"'
+    comment: "Gr\xE1fico (pesta\xF1a 1): espectro de la se\xF1al\ntransmitida: ocupa\
+      \ unos \xB185 kHz.\nEntra: complejos.\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    fc: '0'
+    fftsize: '1024'
+    freqhalf: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 0,2,1,1'
+    label: '"Potencia relativa"'
+    label1: TX
+    label10: ''
+    label2: ''
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    name: "\"Espectro de la se\xF1al TX\""
+    nconnections: '1'
+    norm_window: 'False'
+    showports: 'False'
+    tr_chan: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_tag: '""'
+    type: complex
+    units: dB
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    wintype: window.WIN_BLACKMAN_hARRIS
+    ymax: '10'
+    ymin: '-100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 1472.0]
+    rotation: 0
+    state: enabled
+- name: g_tx_iq
+  id: qtgui_time_sink_x
+  parameters:
+    affinity: ''
+    alias: ''
+    alpha1: '1.0'
+    alpha10: '1.0'
+    alpha2: '1.0'
+    alpha3: '1.0'
+    alpha4: '1.0'
+    alpha5: '1.0'
+    alpha6: '1.0'
+    alpha7: '1.0'
+    alpha8: '1.0'
+    alpha9: '1.0'
+    autoscale: 'False'
+    axislabels: 'True'
+    color1: blue
+    color10: dark blue
+    color2: red
+    color3: green
+    color4: black
+    color5: cyan
+    color6: magenta
+    color7: yellow
+    color8: dark red
+    color9: dark green
+    comment: "Gr\xE1fico (pesta\xF1a 1): I (azul) y Q (rojo) de la\nse\xF1al transmitida.\n\
+      Entra: complejos.\nSale: nada (solo dibuja)."
+    ctrlpanel: 'False'
+    entags: 'True'
+    grid: 'True'
+    gui_hint: 'pestanas@0: 0,1,1,1'
+    label1: I
+    label10: ''
+    label2: Q
+    label3: ''
+    label4: ''
+    label5: ''
+    label6: ''
+    label7: ''
+    label8: ''
+    label9: ''
+    legend: 'True'
+    marker1: '-1'
+    marker10: '-1'
+    marker2: '-1'
+    marker3: '-1'
+    marker4: '-1'
+    marker5: '-1'
+    marker6: '-1'
+    marker7: '-1'
+    marker8: '-1'
+    marker9: '-1'
+    name: "\"Se\xF1al TX (salida del modulador)\""
+    nconnections: '1'
+    size: '200'
+    srate: samp_rate
+    stemplot: 'False'
+    style1: '1'
+    style10: '1'
+    style2: '1'
+    style3: '1'
+    style4: '1'
+    style5: '1'
+    style6: '1'
+    style7: '1'
+    style8: '1'
+    style9: '1'
+    tr_chan: '0'
+    tr_delay: '0'
+    tr_level: '0.0'
+    tr_mode: qtgui.TRIG_MODE_FREE
+    tr_slope: qtgui.TRIG_SLOPE_POS
+    tr_tag: '""'
+    type: complex
+    update_time: '0.10'
+    width1: '1'
+    width10: '1'
+    width2: '1'
+    width3: '1'
+    width4: '1'
+    width5: '1'
+    width6: '1'
+    width7: '1'
+    width8: '1'
+    width9: '1'
+    ylabel: Amplitud
+    ymax: '1.25'
+    ymin: '-1.25'
+    yunit: '""'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [280, 1280.0]
+    rotation: 0
+    state: enabled
+- name: imports
+  id: import
+  parameters:
+    alias: ''
+    comment: "M\xF3dulos de Python que usan las variables y los\nbloques: math y cmath\
+      \ (cuentas con n\xFAmeros\ncomplejos)."
+    imports: import math, cmath
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 64.0]
+    rotation: 0
+    state: enabled
+- name: log_ber
+  id: blocks_nlog10_ff
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Calcula el log10 del BER.
+
+      Entra: reales.
+
+      Sale: reales: log10(BER).'
+    k: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2912, 4552.0]
+    rotation: 0
+    state: enabled
+- name: log_teo
+  id: analog_sig_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: math.log10(ber_teo)
+    comment: "Genera un valor constante\nigual al log10 del BER\nte\xF3rico, para\
+      \ el gr\xE1fico.\nEntra: nada (es una fuente).\nSale: reales."
+    freq: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate/sps*2/1000
+    showports: 'False'
+    type: float
+    waveform: analog.GR_CONST_WAVE
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2904, 4296.0]
+    rotation: 0
+    state: enabled
+- name: mapa_gray
+  id: digital_map_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Deshace el c\xF3digo Gray: cambia cada s\xEDmbolo\npor los 2 bits que\
+      \ mand\xF3 el transmisor (0->0,\n1->1, 2->3, 3->2).\nEntra: s\xEDmbolos 0 a\
+      \ 3 (bytes).\nSale: n\xFAmeros 0 a 3 = 2 bits de datos (bytes)."
+    map: '[0, 1, 3, 2]'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1720, 2552.0]
+    rotation: 0
+    state: enabled
+- name: marca_preambulo
+  id: digital_correlate_access_code_tag_xx
+  parameters:
+    access_code: digital.packet_utils.default_access_code
+    affinity: ''
+    alias: ''
+    comment: "Busca el pre\xE1mbulo en los bits y pone una\netiqueta \"inicio_trama\"\
+      \ donde termina. No\nquita nada.\nEntra: bits sueltos (1 por byte).\nSale: los\
+      \ mismos bits, con etiquetas\n  inicio_trama."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    tagname: '"inicio_trama"'
+    threshold: umbral
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 4536.0]
+    rotation: 0
+    state: enabled
+- name: medidor_ber
+  id: fec_ber_bf
+  parameters:
+    affinity: ''
+    alias: ''
+    berlimit: '-7.0'
+    berminerrors: '100'
+    comment: "Cuenta los bits\ndistintos entre sus\ndos entradas desde\nel comienzo\
+      \ y\nentrega el log10 del\nBER acumulado (con 0\nerrores da\n-infinito).\nEntra:\
+      \ in0 = bytes\n  recibidos, in1 =\n  bytes\n  transmitidos.\nSale: reales:\n\
+      \  log10(BER\n  acumulado)."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    test_mode: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2360, 4968.0]
+    rotation: 0
+    state: enabled
+- name: mf_re
+  id: blocks_complex_to_real
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Se queda con la parte real (I), para el
+
+      diagrama de ojo.
+
+      Entra: complejos.
+
+      Sale: reales.'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [904, 2104.0]
+    rotation: 0
+    state: enabled
+- name: modulador
+  id: digital_constellation_modulator
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Modulador 4-QAM: toma los bytes de a 2 bits,\naplica la codificaci\xF3\
+      n diferencial (la\ninformaci\xF3n va en el cambio de fase entre\ns\xEDmbolos)\
+      \ y forma cada pulso con un filtro RRC\n(roll-off 0,35).\nEntra: bytes (8 bits\
+      \ cada uno).\nSale: complejos (I + jQ), 4 muestras por\n  s\xEDmbolo (500 k\
+      \ muestras/s)."
+    constellation: qpsk
+    differential: 'True'
+    excess_bw: excess_bw
+    log: 'False'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_symbol: sps
+    truncate: 'False'
+    verbose: 'False'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1288, 832.0]
+    rotation: 0
+    state: enabled
+- name: nota_ber
+  id: note
+  parameters:
+    alias: ''
+    comment: "BER\nse alinea lo recibido con el primer pre\xE1mbulo\n(Correlate Access\
+      \ Code - Tag + Tagged Stream\nAlign) y se compara bit a bit (XOR) con una\n\
+      copia del transmisor. Todas las tramas son\niguales y van una tras otra."
+    note: "BER: se alinea el flujo recibido con el primer pre\xE1mbulo (Tag + Tagged\
+      \ Stream Align) y se compara bit a bit (XOR) con una copia del transmisor. Todas\
+      \ las tramas son iguales y van una tras otra."
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 4336.0]
+    rotation: 0
+    state: enabled
+- name: nota_canal
+  id: note
+  parameters:
+    alias: ''
+    comment: "CANAL\nrotaci\xF3n de fase + desv\xEDo de frecuencia\n(Rotator) + ruido\
+      \ gaussiano (Noise Source). No\nse usa \"Channel Model\" porque repite solo\n\
+      16384 valores de ruido (da un BER falso a\nEb/N0 alto)."
+    note: "CANAL: rotaci\xF3n de fase + desv\xEDo de frecuencia (Rotator) + ruido\
+      \ gaussiano (Noise Source). No se usa 'Channel Model' porque reutiliza solo\
+      \ 16384 valores de ruido (BER falso a Eb/N0 alto)."
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2096, 608.0]
+    rotation: 0
+    state: enabled
+- name: nota_rx
+  id: note
+  parameters:
+    alias: ''
+    comment: "RECEPTOR\nfiltro adaptado RRC -> sincronismo de s\xEDmbolo\n-> lazo\
+      \ de Costas (fase y frecuencia) ->\ndecisi\xF3n 4-QAM -> decodificaci\xF3n diferencial\n\
+      -> bits"
+    note: "RECEPTOR: filtro adaptado RRC -> sincronismo de s\xEDmbolo -> lazo de Costas\
+      \ (fase y frecuencia) -> decisi\xF3n 4-QAM -> decodificaci\xF3n diferencial\
+      \ -> bits"
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1920.0]
+    rotation: 0
+    state: enabled
+- name: nota_tramas
+  id: note
+  parameters:
+    alias: ''
+    comment: "TRAMAS\nbusca el pre\xE1mbulo, lee la longitud (2 copias\niguales) y\
+      \ entrega el payload; el CRC-32\ndescarta las tramas con errores. \"Min Output\n\
+      Buffer\" grande en el detector: una longitud\nda\xF1ada no cuelga el flujo."
+    note: "TRAMAS: busca el pre\xE1mbulo, lee la longitud (2 copias iguales) y entrega\
+      \ el payload; el CRC-32 descarta las tramas con errores. 'Min Output Buffer'\
+      \ grande: una longitud da\xF1ada no cuelga el flujo."
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 3576.0]
+    rotation: 0
+    state: enabled
+- name: nota_tx
+  id: note
+  parameters:
+    alias: ''
+    comment: "TRANSMISOR\npayload (mensaje) -> CRC-32 -> encabezado\n[pre\xE1mbulo\
+      \ 64 bits | longitud | longitud] ->\nmodulador 4-QAM diferencial con filtro\
+      \ RRC"
+    note: "TRANSMISOR: payload (mensaje) -> CRC-32 -> encabezado [pre\xE1mbulo 64\
+      \ b | longitud | longitud] -> modulador 4-QAM diferencial con filtro RRC"
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 616.0]
+    rotation: 0
+    state: enabled
+- name: ojo_interp
+  id: rational_resampler_xxx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Agrega 3 muestras entre cada par (interpola \xD7\n4: 16 por s\xEDmbolo)\
+      \ solo para que el diagrama\nde ojo se vea suave.\nEntra: complejos (500 k/s).\n\
+      Sale: complejos (2 M/s)."
+    decim: '1'
+    fbw: '0'
+    interp: '4'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    taps: '[]'
+    type: ccc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 2072.0]
+    rotation: 0
+    state: enabled
+- name: payload_float
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Pasa cada bit a n\xFAmero real, para el gr\xE1fico.\nEntra: bits sueltos\
+      \ (bytes 0 o 1).\nSale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [552, 4088.0]
     rotation: 0
     state: enabled
 - name: pestanas
   id: qtgui_tab_widget
   parameters:
-    comment: ''
-    num_tabs: '3'
+    alias: ''
+    comment: "Las 3 pesta\xF1as de la ventana: 1. Transmisor y\ncanal, 2. Receptor\
+      \ (filtro adaptado y\nsincronismo), 3. Tramas, bits y BER. Cada\ngr\xE1fico\
+      \ dice en su \"GUI Hint\" en qu\xE9 pesta\xF1a\nva."
     gui_hint: 2,0,1,6
     label0: 1. Transmisor y canal
     label1: '2. Receptor: filtro adaptado y sincronismo'
-    label2: 3. Tramas, bits y BER
-    label3: Tab 3
-    label4: Tab 4
-    label5: Tab 5
-    label6: Tab 6
-    label7: Tab 7
-    label8: Tab 8
-    label9: Tab 9
     label10: Tab 10
     label11: Tab 11
     label12: Tab 12
@@ -450,2652 +2831,20 @@ blocks:
     label17: Tab 17
     label18: Tab 18
     label19: Tab 19
+    label2: 3. Tramas, bits y BER
+    label3: Tab 3
+    label4: Tab 4
+    label5: Tab 5
+    label6: Tab 6
+    label7: Tab 7
+    label8: Tab 8
+    label9: Tab 9
+    num_tabs: '3'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1872, 12]
-    rotation: 0
-    state: enabled
-- name: nota_tx
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: 'TRANSMISOR: payload (mensaje) -> CRC-32 -> encabezado [preámbulo 64 b | longitud | longitud] -> modulador 4-QAM diferencial con filtro RRC'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 260]
-    rotation: 0
-    state: enabled
-- name: fuente
-  id: blocks_vector_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    vector: payload
-    tags: '[]'
-    repeat: 'True'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 324]
-    rotation: 0
-    state: enabled
-- name: a_paquetes
-  id: blocks_stream_to_tagged_stream
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    vlen: '1'
-    packet_len: L
-    len_tag_key: '"packet_len"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 332]
-    rotation: 0
-    state: enabled
-- name: crc_tx
-  id: digital_crc32_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    check: 'False'
-    lengthtagname: '"packet_len"'
-    packed: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [400, 324]
-    rotation: 0
-    state: enabled
-- name: encabezado
-  id: digital_protocol_formatter_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    format: formato_trama
-    len_tag_key: '"packet_len"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [592, 260]
-    rotation: 0
-    state: enabled
-- name: trama
-  id: blocks_tagged_stream_mux
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    ninputs: '2'
-    lengthtagname: '"packet_len"'
-    vlen: '1'
-    tag_preserve_head_pos: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [816, 320]
-    rotation: 0
-    state: enabled
-- name: modulador
-  id: digital_constellation_modulator
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    constellation: qpsk
-    differential: 'True'
-    samples_per_symbol: sps
-    excess_bw: excess_bw
-    verbose: 'False'
-    log: 'False'
-    truncate: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1032, 308]
-    rotation: 0
-    state: enabled
-- name: acelerador
-  id: blocks_throttle2
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    samples_per_second: samp_rate
-    vlen: '1'
-    ignoretag: 'True'
-    limit: auto
-    maximum: '0.1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1280, 332]
-    rotation: 0
-    state: enabled
-- name: vs_tx
-  id: virtual_sink
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_tx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1480, 340]
-    rotation: 0
-    state: enabled
-- name: bits_tx_unpack
-  id: blocks_unpack_k_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    k: '8'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1032, 420]
-    rotation: 0
-    state: enabled
-- name: bits_tx_float
-  id: blocks_char_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-    scale: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1200, 420]
-    rotation: 0
-    state: enabled
-- name: g_bits_tx
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Trama TX: preámbulo + longitud + datos"'
-    gui_hint: 'pestanas@0: 0,0,1,1'
-    nconnections: '1'
-    size: '160'
-    srate: samp_rate/sps*2
-    ymin: '-0.5'
-    ymax: '1.5'
-    ylabel: Bit
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'False'
-    ctrlpanel: 'False'
-    entags: 'True'
-    stemplot: 'True'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_TAG
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '"packet_len"'
-    label1: Bits transmitidos
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: ''
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1360, 404]
-    rotation: 0
-    state: enabled
-- name: vsrc_tx_g
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_tx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 500]
-    rotation: 0
-    state: enabled
-- name: g_tx_iq
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    name: '"Señal TX (salida del modulador)"'
-    gui_hint: 'pestanas@0: 0,1,1,1'
-    nconnections: '1'
-    size: '200'
-    srate: samp_rate
-    ymin: '-1.25'
-    ymax: '1.25'
-    ylabel: Amplitud
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'True'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: I
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: Q
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [200, 476]
-    rotation: 0
-    state: enabled
-- name: g_tx_esp
-  id: qtgui_freq_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    name: '"Espectro de la señal TX"'
-    gui_hint: 'pestanas@0: 0,2,1,1'
-    nconnections: '1'
-    fftsize: '1024'
-    fc: '0'
-    bw: samp_rate
-    wintype: window.WIN_BLACKMAN_hARRIS
-    average: '0.2'
-    autoscale: 'False'
-    axislabels: 'True'
-    grid: 'True'
-    legend: 'False'
-    ctrlpanel: 'False'
-    freqhalf: 'True'
-    norm_window: 'False'
-    showports: 'False'
-    label: '"Potencia relativa"'
-    units: dB
-    ymin: '-100'
-    ymax: '10'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_level: '0.0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: TX
-    color1: '"blue"'
-    width1: '1'
-    alpha1: '1.0'
-    label2: ''
-    color2: '"red"'
-    width2: '1'
-    alpha2: '1.0'
-    label3: ''
-    color3: '"green"'
-    width3: '1'
-    alpha3: '1.0'
-    label4: ''
-    color4: '"black"'
-    width4: '1'
-    alpha4: '1.0'
-    label5: ''
-    color5: '"cyan"'
-    width5: '1'
-    alpha5: '1.0'
-    label6: ''
-    color6: '"magenta"'
-    width6: '1'
-    alpha6: '1.0'
-    label7: ''
-    color7: '"yellow"'
-    width7: '1'
-    alpha7: '1.0'
-    label8: ''
-    color8: '"dark red"'
-    width8: '1'
-    alpha8: '1.0'
-    label9: ''
-    color9: '"dark green"'
-    width9: '1'
-    alpha9: '1.0'
-    label10: ''
-    color10: '"dark blue"'
-    width10: '1'
-    alpha10: '1.0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [200, 572]
-    rotation: 0
-    state: enabled
-- name: nota_canal
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: 'CANAL: rotación de fase + desvío de frecuencia (Rotator) + ruido gaussiano (Noise Source). No se usa ''Channel Model'' porque reutiliza solo 16384 valores de ruido (BER falso a Eb/N0 alto).'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [520, 700]
-    rotation: 0
-    state: enabled
-- name: vsrc_tx_ch
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_tx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [520, 780]
-    rotation: 0
-    state: enabled
-- name: fase
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    const: cmath.exp(1j * math.radians(fase_deg))
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [720, 780]
-    rotation: 0
-    state: enabled
-- name: cfo
-  id: blocks_rotator_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    phase_inc: 2 * math.pi * cfo_hz / samp_rate
-    tag_inc_update: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 780]
-    rotation: 0
-    state: enabled
-- name: ruido_awgn
-  id: analog_noise_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    noise_type: analog.GR_GAUSSIAN
-    amp: ruido
-    seed: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [920, 860]
-    rotation: 0
-    state: enabled
-- name: suma_ruido
-  id: blocks_add_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    num_inputs: '2'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1152, 800]
-    rotation: 0
-    state: enabled
-- name: vs_rx
-  id: virtual_sink
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_rx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1320, 812]
-    rotation: 0
-    state: enabled
-- name: vsrc_rx_g
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_rx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1480, 700]
-    rotation: 0
-    state: enabled
-- name: vsrc_tx_g2
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_tx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1480, 780]
-    rotation: 0
-    state: enabled
-- name: g_canal_esp
-  id: qtgui_freq_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    name: '"Espectro TX vs RX"'
-    gui_hint: 'pestanas@0: 1,1,1,1'
-    nconnections: '2'
-    fftsize: '1024'
-    fc: '0'
-    bw: samp_rate
-    wintype: window.WIN_BLACKMAN_hARRIS
-    average: '0.2'
-    autoscale: 'False'
-    axislabels: 'True'
-    grid: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    freqhalf: 'True'
-    norm_window: 'False'
-    showports: 'False'
-    label: '"Potencia relativa"'
-    units: dB
-    ymin: '-100'
-    ymax: '10'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_level: '0.0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: TX
-    color1: '"blue"'
-    width1: '1'
-    alpha1: '1.0'
-    label2: RX
-    color2: '"red"'
-    width2: '1'
-    alpha2: '1.0'
-    label3: ''
-    color3: '"green"'
-    width3: '1'
-    alpha3: '1.0'
-    label4: ''
-    color4: '"black"'
-    width4: '1'
-    alpha4: '1.0'
-    label5: ''
-    color5: '"cyan"'
-    width5: '1'
-    alpha5: '1.0'
-    label6: ''
-    color6: '"magenta"'
-    width6: '1'
-    alpha6: '1.0'
-    label7: ''
-    color7: '"yellow"'
-    width7: '1'
-    alpha7: '1.0'
-    label8: ''
-    color8: '"dark red"'
-    width8: '1'
-    alpha8: '1.0'
-    label9: ''
-    color9: '"dark green"'
-    width9: '1'
-    alpha9: '1.0'
-    label10: ''
-    color10: '"dark blue"'
-    width10: '1'
-    alpha10: '1.0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 692]
-    rotation: 0
-    state: enabled
-- name: tx_re
-  id: blocks_complex_to_real
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1480, 860]
-    rotation: 0
-    state: enabled
-- name: rx_re
-  id: blocks_complex_to_real
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1480, 908]
-    rotation: 0
-    state: enabled
-- name: g_canal_t
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Componente I: TX vs RX"'
-    gui_hint: 'pestanas@0: 1,0,1,1'
-    nconnections: '2'
-    size: '200'
-    srate: samp_rate
-    ymin: '-2.5'
-    ymax: '2.5'
-    ylabel: Amplitud
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'True'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: TX
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: RX
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 820]
-    rotation: 0
-    state: enabled
-- name: g_canal_const
-  id: qtgui_const_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    name: '"Muestras RX sin sincronizar"'
-    gui_hint: 'pestanas@0: 1,2,1,1'
-    nconnections: '1'
-    size: '1024'
-    xmin: '-3'
-    xmax: '3'
-    ymin: '-3'
-    ymax: '3'
-    autoscale: 'False'
-    axislabels: 'True'
-    grid: 'True'
-    legend: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: RX
-    color1: '"blue"'
-    width1: '1'
-    alpha1: '0.6'
-    style1: '0'
-    marker1: '0'
-    label2: ''
-    color2: '"red"'
-    width2: '1'
-    alpha2: '0.6'
-    style2: '0'
-    marker2: '0'
-    label3: ''
-    color3: '"green"'
-    width3: '1'
-    alpha3: '0.6'
-    style3: '0'
-    marker3: '0'
-    label4: ''
-    color4: '"black"'
-    width4: '1'
-    alpha4: '0.6'
-    style4: '0'
-    marker4: '0'
-    label5: ''
-    color5: '"cyan"'
-    width5: '1'
-    alpha5: '0.6'
-    style5: '0'
-    marker5: '0'
-    label6: ''
-    color6: '"magenta"'
-    width6: '1'
-    alpha6: '0.6'
-    style6: '0'
-    marker6: '0'
-    label7: ''
-    color7: '"yellow"'
-    width7: '1'
-    alpha7: '0.6'
-    style7: '0'
-    marker7: '0'
-    label8: ''
-    color8: '"dark red"'
-    width8: '1'
-    alpha8: '0.6'
-    style8: '0'
-    marker8: '0'
-    label9: ''
-    color9: '"dark green"'
-    width9: '1'
-    alpha9: '0.6'
-    style9: '0'
-    marker9: '0'
-    label10: ''
-    color10: '"dark blue"'
-    width10: '1'
-    alpha10: '0.6'
-    style10: '0'
-    marker10: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 940]
-    rotation: 0
-    state: enabled
-- name: nota_rx
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: 'RECEPTOR: filtro adaptado RRC -> sincronismo de símbolo -> lazo de Costas (fase y frecuencia) -> decisión 4-QAM -> decodificación diferencial -> bits'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1020]
-    rotation: 0
-    state: enabled
-- name: vsrc_rx
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: senal_rx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1100]
-    rotation: 0
-    state: enabled
-- name: filtro_adaptado
-  id: filter_fft_rrc_filter
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: ccc
-    decim: '1'
-    gain: '1'
-    samp_rate: samp_rate
-    sym_rate: samp_rate/sps
-    alpha: excess_bw
-    ntaps: 11*sps
-    nthreads: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 1076]
-    rotation: 0
-    state: enabled
-- name: sinc_simbolo
-  id: digital_symbol_sync_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: cc
-    ted_type: digital.TED_SIGNAL_TIMES_SLOPE_ML
-    constellation: digital.constellation_bpsk().base()
-    sps: sps
-    ted_gain: '1.0'
-    loop_bw: sync_bw
-    damping: '1.0'
-    max_dev: '1.5'
-    osps: '1'
-    resamp_type: digital.IR_MMSE_8TAP
-    nfilters: '128'
-    pfb_mf_taps: '[]'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [432, 1036]
-    rotation: 0
-    state: enabled
-- name: costas
-  id: digital_costas_loop_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    w: costas_bw
-    order: '4'
-    use_snr: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [752, 1092]
-    rotation: 0
-    state: enabled
-- name: decisor
-  id: digital_constellation_decoder_cb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    constellation: qpsk
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1000, 1100]
-    rotation: 0
-    state: enabled
-- name: dec_diferencial
-  id: digital_diff_decoder_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    coding: digital.DIFF_DIFFERENTIAL
-    modulus: '4'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1216, 1092]
-    rotation: 0
-    state: enabled
-- name: mapa_gray
-  id: digital_map_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    map: '[0, 1, 3, 2]'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1416, 1100]
-    rotation: 0
-    state: enabled
-- name: a_bits
-  id: blocks_unpack_k_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    k: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1576, 1100]
-    rotation: 0
-    state: enabled
-- name: vs_bits_rx
-  id: virtual_sink
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: bits_rx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1752, 1108]
-    rotation: 0
-    state: enabled
-- name: ojo_interp
-  id: rational_resampler_xxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: ccc
-    interp: '4'
-    decim: '1'
-    taps: '[]'
-    fbw: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 1236]
-    rotation: 0
-    state: enabled
-- name: mf_re
-  id: blocks_complex_to_real
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [336, 1252]
-    rotation: 0
-    state: enabled
-- name: g_ojo
-  id: qtgui_eye_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Ojo de la componente I (antes de Costas)"'
-    gui_hint: 'pestanas@1: 0,1,1,1'
-    nconnections: '1'
-    size: '2048'
-    samp_per_symbol: 4*sps
-    srate: 4*samp_rate
-    ymin: '-1.5'
-    ymax: '1.5'
-    ylabel: '"Amplitud"'
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    update_time: '0.10'
-    entags: 'False'
-    legend: 'True'
-    axislabels: 'True'
-    ctrlpanel: 'False'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: Ojo de la componente I (antes de Costas)
-    color1: blue
-    width1: '1'
-    style1: '1'
-    marker1: '-1'
-    alpha1: '0.5'
-    label2: ''
-    color2: blue
-    width2: '1'
-    style2: '1'
-    marker2: '-1'
-    alpha2: '0.5'
-    label3: ''
-    color3: blue
-    width3: '1'
-    style3: '1'
-    marker3: '-1'
-    alpha3: '0.5'
-    label4: ''
-    color4: blue
-    width4: '1'
-    style4: '1'
-    marker4: '-1'
-    alpha4: '0.5'
-    label5: ''
-    color5: blue
-    width5: '1'
-    style5: '1'
-    marker5: '-1'
-    alpha5: '0.5'
-    label6: ''
-    color6: blue
-    width6: '1'
-    style6: '1'
-    marker6: '-1'
-    alpha6: '0.5'
-    label7: ''
-    color7: blue
-    width7: '1'
-    style7: '1'
-    marker7: '-1'
-    alpha7: '0.5'
-    label8: ''
-    color8: blue
-    width8: '1'
-    style8: '1'
-    marker8: '-1'
-    alpha8: '0.5'
-    label9: ''
-    color9: blue
-    width9: '1'
-    style9: '1'
-    marker9: '-1'
-    alpha9: '0.5'
-    label10: ''
-    color10: blue
-    width10: '1'
-    style10: '1'
-    marker10: '-1'
-    alpha10: '0.5'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [496, 1196]
-    rotation: 0
-    state: enabled
-- name: g_mf_t
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    name: '"Salida del filtro adaptado"'
-    gui_hint: 'pestanas@1: 0,0,1,1'
-    nconnections: '1'
-    size: '160'
-    srate: samp_rate
-    ymin: '-1.25'
-    ymax: '1.25'
-    ylabel: Amplitud
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'True'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: I
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: Q
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 1300]
-    rotation: 0
-    state: enabled
-- name: g_sync_const
-  id: qtgui_const_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    name: '"Constelación antes y después de Costas"'
-    gui_hint: 'pestanas@1: 1,0,1,1'
-    nconnections: '2'
-    size: '1024'
-    xmin: '-1.5'
-    xmax: '1.5'
-    ymin: '-1.5'
-    ymax: '1.5'
-    autoscale: 'False'
-    axislabels: 'True'
-    grid: 'True'
-    legend: 'True'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: Antes
-    color1: '"blue"'
-    width1: '1'
-    alpha1: '0.6'
-    style1: '0'
-    marker1: '0'
-    label2: Después
-    color2: '"red"'
-    width2: '1'
-    alpha2: '0.6'
-    style2: '0'
-    marker2: '0'
-    label3: ''
-    color3: '"green"'
-    width3: '1'
-    alpha3: '0.6'
-    style3: '0'
-    marker3: '0'
-    label4: ''
-    color4: '"black"'
-    width4: '1'
-    alpha4: '0.6'
-    style4: '0'
-    marker4: '0'
-    label5: ''
-    color5: '"cyan"'
-    width5: '1'
-    alpha5: '0.6'
-    style5: '0'
-    marker5: '0'
-    label6: ''
-    color6: '"magenta"'
-    width6: '1'
-    alpha6: '0.6'
-    style6: '0'
-    marker6: '0'
-    label7: ''
-    color7: '"yellow"'
-    width7: '1'
-    alpha7: '0.6'
-    style7: '0'
-    marker7: '0'
-    label8: ''
-    color8: '"dark red"'
-    width8: '1'
-    alpha8: '0.6'
-    style8: '0'
-    marker8: '0'
-    label9: ''
-    color9: '"dark green"'
-    width9: '1'
-    alpha9: '0.6'
-    style9: '0'
-    marker9: '0'
-    label10: ''
-    color10: '"dark blue"'
-    width10: '1'
-    alpha10: '0.6'
-    style10: '0'
-    marker10: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [752, 1196]
-    rotation: 0
-    state: enabled
-- name: sinc_err_null
-  id: blocks_null_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    vlen: '1'
-    num_inputs: '1'
-    bus_structure_sink: '[[0,],]'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [752, 1364]
-    rotation: 0
-    state: enabled
-- name: g_periodo
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Período de símbolo estimado [muestras]"'
-    gui_hint: 'pestanas@1: 0,2,1,1'
-    nconnections: '2'
-    size: '2000'
-    srate: samp_rate/sps
-    ymin: '3.5'
-    ymax: '4.5'
-    ylabel: Muestras
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'False'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: Instantáneo
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: Promedio
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [432, 1364]
-    rotation: 0
-    state: enabled
-- name: frec_hz
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    const: samp_rate / sps / (2 * math.pi)
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1000, 1196]
-    rotation: 0
-    state: enabled
-- name: cfo_real
-  id: analog_sig_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    samp_rate: samp_rate/sps
-    waveform: analog.GR_CONST_WAVE
-    freq: '0'
-    amp: cfo_hz
-    offset: '0'
-    phase: '0'
-    showports: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1000, 1276]
-    rotation: 0
-    state: enabled
-- name: g_frec
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Frecuencia de Costas vs CFO [Hz]"'
-    gui_hint: 'pestanas@1: 1,1,1,1'
-    nconnections: '2'
-    size: '2000'
-    srate: samp_rate/sps
-    ymin: '-1100'
-    ymax: '1100'
-    ylabel: Hz
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'False'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: Costas
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: CFO canal
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1216, 1196]
-    rotation: 0
-    state: enabled
-- name: costas_re
-  id: blocks_complex_to_real
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1000, 1356]
-    rotation: 0
-    state: enabled
-- name: g_histograma
-  id: qtgui_histogram_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Histograma de I tras Costas"'
-    gui_hint: 'pestanas@1: 1,2,1,1'
-    size: '4000'
-    bins: '120'
-    grid: 'True'
-    autoscale: 'True'
-    accum: 'False'
-    xmin: '-1.5'
-    xmax: '1.5'
-    nconnections: '1'
-    update_time: '0.20'
-    legend: 'False'
-    axislabels: 'True'
-    label1: Componente I
-    width1: '1'
-    color1: '"blue"'
-    style1: '1'
-    marker1: '-1'
-    alpha1: '1.0'
-    label2: ''
-    width2: '1'
-    color2: '"blue"'
-    style2: '1'
-    marker2: '-1'
-    alpha2: '1.0'
-    label3: ''
-    width3: '1'
-    color3: '"blue"'
-    style3: '1'
-    marker3: '-1'
-    alpha3: '1.0'
-    label4: ''
-    width4: '1'
-    color4: '"blue"'
-    style4: '1'
-    marker4: '-1'
-    alpha4: '1.0'
-    label5: ''
-    width5: '1'
-    color5: '"blue"'
-    style5: '1'
-    marker5: '-1'
-    alpha5: '1.0'
-    label6: ''
-    width6: '1'
-    color6: '"blue"'
-    style6: '1'
-    marker6: '-1'
-    alpha6: '1.0'
-    label7: ''
-    width7: '1'
-    color7: '"blue"'
-    style7: '1'
-    marker7: '-1'
-    alpha7: '1.0'
-    label8: ''
-    width8: '1'
-    color8: '"blue"'
-    style8: '1'
-    marker8: '-1'
-    alpha8: '1.0'
-    label9: ''
-    width9: '1'
-    color9: '"blue"'
-    style9: '1'
-    marker9: '-1'
-    alpha9: '1.0'
-    label10: ''
-    width10: '1'
-    color10: '"blue"'
-    style10: '1'
-    marker10: '-1'
-    alpha10: '1.0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1216, 1340]
-    rotation: 0
-    state: enabled
-- name: nota_tramas
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: 'TRAMAS: busca el preámbulo, lee la longitud (2 copias iguales) y entrega el payload; el CRC-32 descarta las tramas con errores. ''Min Output Buffer'' grande: una longitud dañada no cuelga el flujo.'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1480]
-    rotation: 0
-    state: enabled
-- name: vsrc_bits_1
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: bits_rx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1556]
-    rotation: 0
-    state: enabled
-- name: detector_trama
-  id: digital_correlate_access_code_xx_ts
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '600000'
-    type: byte
-    access_code: digital.packet_utils.default_access_code
-    threshold: umbral
-    tagname: '"packet_len"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 1540]
-    rotation: 0
-    state: enabled
-- name: a_bytes
-  id: blocks_repack_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '70000'
-    k: '1'
-    l: '8'
-    len_tag_key: '"packet_len"'
-    align_output: 'True'
-    endianness: gr.GR_MSB_FIRST
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 1540]
-    rotation: 0
-    state: enabled
-- name: crc_rx
-  id: digital_crc32_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '70000'
-    check: 'True'
-    lengthtagname: '"packet_len"'
-    packed: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [712, 1540]
-    rotation: 0
-    state: enabled
-- name: a_pdu
-  id: pdu_tagged_stream_to_pdu
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    tag: '"packet_len"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [936, 1612]
-    rotation: 0
-    state: enabled
-- name: consola
-  id: blocks_message_debug
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    en_uvec: 'True'
-    log_level: info
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1176, 1596]
-    rotation: 0
-    state: disabled
-- name: una_de_cien
-  id: blocks_keep_m_in_n
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    m: L
-    n: 100*L
-    offset: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [936, 1524]
-    rotation: 0
-    state: enabled
-- name: archivo_mensajes
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    file: '"mensajes_recibidos.txt"'
-    vlen: '1'
-    unbuffered: 'True'
-    append: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1176, 1508]
-    rotation: 0
-    state: enabled
-- name: payload_float
-  id: blocks_char_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-    scale: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 1660]
-    rotation: 0
-    state: enabled
-- name: g_payload
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"Payload del detector de tramas"'
-    gui_hint: 'pestanas@2: 0,1,1,1'
-    nconnections: '1'
-    size: 2 * 8 * (L + 4)
-    srate: samp_rate/sps*2
-    ymin: '-0.5'
-    ymax: '1.5'
-    ylabel: Bit
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'False'
-    ctrlpanel: 'False'
-    entags: 'True'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: Payload + CRC
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: ''
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [640, 1644]
-    rotation: 0
-    state: enabled
-- name: nota_ber
-  id: note
-  parameters:
-    alias: ''
-    comment: ''
-    note: 'BER: se alinea el flujo recibido con el primer preámbulo (Tag + Tagged Stream Align) y se compara bit a bit (XOR) con una copia del transmisor. Todas las tramas son iguales y van una tras otra.'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1780]
-    rotation: 0
-    state: enabled
-- name: vsrc_bits_2
-  id: virtual_source
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: bits_rx
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1860]
-    rotation: 0
-    state: enabled
-- name: marca_preambulo
-  id: digital_correlate_access_code_tag_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    access_code: digital.packet_utils.default_access_code
-    threshold: umbral
-    tagname: '"inicio_trama"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 1844]
-    rotation: 0
-    state: enabled
-- name: alinear
-  id: blocks_tagged_stream_align
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    lengthtagname: '"inicio_trama"'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [480, 1852]
-    rotation: 0
-    state: enabled
-- name: ref_fuente
-  id: blocks_vector_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    vector: payload
-    tags: '[]'
-    repeat: 'True'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [8, 1948]
-    rotation: 0
-    state: enabled
-- name: ref_paquetes
-  id: blocks_stream_to_tagged_stream
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    vlen: '1'
-    packet_len: L
-    len_tag_key: '"packet_len"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [176, 1956]
-    rotation: 0
-    state: enabled
-- name: ref_crc
-  id: digital_crc32_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    check: 'False'
-    lengthtagname: '"packet_len"'
-    packed: 'True'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [400, 1948]
-    rotation: 0
-    state: enabled
-- name: ref_encabezado
-  id: digital_protocol_formatter_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    format: formato_trama
-    len_tag_key: '"packet_len"'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [592, 2012]
-    rotation: 0
-    state: enabled
-- name: ref_trama
-  id: blocks_tagged_stream_mux
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    ninputs: '2'
-    lengthtagname: '"packet_len"'
-    vlen: '1'
-    tag_preserve_head_pos: '0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [816, 1944]
-    rotation: 0
-    state: enabled
-- name: ref_bits
-  id: blocks_unpack_k_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    k: '8'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1000, 1956]
-    rotation: 0
-    state: enabled
-- name: ref_saltar_preambulo
-  id: blocks_skiphead
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    num_items: '64'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1160, 1956]
-    rotation: 0
-    state: enabled
-- name: comparar
-  id: blocks_xor_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: byte
-    num_inputs: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1360, 1864]
-    rotation: 0
-    state: enabled
-- name: errores_float
-  id: blocks_char_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-    scale: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1520, 1868]
-    rotation: 0
-    state: enabled
-- name: ber_ventana
-  id: blocks_moving_average_xx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    length: ventana
-    scale: 1.0/ventana
-    max_iter: '4000'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 1852]
-    rotation: 0
-    state: enabled
-- name: sonda_ber_ventana
-  id: blocks_probe_signal_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1904, 1868]
-    rotation: 0
-    state: enabled
-- name: submuestreo
-  id: blocks_keep_one_in_n
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    n: '1000'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 1964]
-    rotation: 0
-    state: enabled
-- name: log_ber
-  id: blocks_nlog10_ff
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    n: '1'
-    k: '0'
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1880, 1964]
-    rotation: 0
-    state: enabled
-- name: log_teo
-  id: analog_sig_source_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    samp_rate: samp_rate/sps*2/1000
-    waveform: analog.GR_CONST_WAVE
-    freq: '0'
-    amp: math.log10(ber_teo)
-    offset: '0'
-    phase: '0'
-    showports: 'False'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1680, 2044]
-    rotation: 0
-    state: enabled
-- name: g_ber_t
-  id: qtgui_time_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"log10(BER): medido vs teórico"'
-    gui_hint: 'pestanas@2: 1,0,1,1'
-    nconnections: '2'
-    size: '500'
-    srate: samp_rate/sps*2/1000
-    ymin: '-6'
-    ymax: '0'
-    ylabel: log10(BER)
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'False'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: Medido (último Mbit)
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: Teórico
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: ''
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2064, 1948]
-    rotation: 0
-    state: enabled
-- name: rx_bytes_ber
-  id: blocks_repack_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    k: '1'
-    l: '8'
-    len_tag_key: '""'
-    align_output: 'False'
-    endianness: gr.GR_MSB_FIRST
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1360, 2084]
-    rotation: 0
-    state: enabled
-- name: ref_bytes_ber
-  id: blocks_repack_bits_bb
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    k: '1'
-    l: '8'
-    len_tag_key: '""'
-    align_output: 'False'
-    endianness: gr.GR_MSB_FIRST
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1360, 2164]
-    rotation: 0
-    state: enabled
-- name: medidor_ber
-  id: fec_ber_bf
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    test_mode: 'False'
-    berminerrors: '100'
-    berlimit: '-7.0'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1600, 2124]
-    rotation: 0
-    state: enabled
-- name: sonda_ber_acum
-  id: blocks_probe_signal_x
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1824, 2132]
-    rotation: 0
-    state: enabled
-- name: g_ber_num
-  id: qtgui_number_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: float
-    name: '"log10(BER) acumulado"'
-    gui_hint: 'pestanas@2: 1,1,1,1'
-    nconnections: '1'
-    min: '-7'
-    max: '0'
-    autoscale: 'False'
-    avg: '0'
-    graph_type: qtgui.NUM_GRAPH_HORIZ
-    update_time: '0.20'
-    label1: Acumulado
-    unit1: ''
-    color1: ("black", "black")
-    factor1: '1'
-    label2: ''
-    unit2: ''
-    color2: ("black", "black")
-    factor2: '1'
-    label3: ''
-    unit3: ''
-    color3: ("black", "black")
-    factor3: '1'
-    label4: ''
-    unit4: ''
-    color4: ("black", "black")
-    factor4: '1'
-    label5: ''
-    unit5: ''
-    color5: ("black", "black")
-    factor5: '1'
-    label6: ''
-    unit6: ''
-    color6: ("black", "black")
-    factor6: '1'
-    label7: ''
-    unit7: ''
-    color7: ("black", "black")
-    factor7: '1'
-    label8: ''
-    unit8: ''
-    color8: ("black", "black")
-    factor8: '1'
-    label9: ''
-    unit9: ''
-    color9: ("black", "black")
-    factor9: '1'
-    label10: ''
-    unit10: ''
-    color10: ("black", "black")
-    factor10: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1824, 2196]
-    rotation: 0
-    state: enabled
-- name: rx_bit_float
-  id: blocks_char_to_float
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    vlen: '1'
-    scale: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [640, 1772]
+    coordinate: [2952, 16.0]
     rotation: 0
     state: enabled
 - name: ref_bit_float
@@ -3103,16 +2852,84 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Pasa los bits transmitidos a n\xFAmeros reales,\npara el gr\xE1fico.\n\
+      Entra: bits sueltos.\nSale: reales."
     maxoutbuf: '0'
     minoutbuf: '0'
-    vlen: '1'
     scale: '1'
+    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 2004]
+    coordinate: [1808, 5488.0]
+    rotation: 0
+    state: enabled
+- name: ref_bits
+  id: blocks_unpack_k_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Separa cada byte de las tramas de referencia\nen sus 8 bits (primero\
+      \ el m\xE1s significativo).\nEntra: bytes.\nSale: bits sueltos (1 por byte)."
+    k: '8'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1328, 5672.0]
+    rotation: 0
+    state: enabled
+- name: ref_bytes_ber
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    align_output: 'False'
+    comment: 'Junta los bits transmitidos de a 8, como los
+
+      recibidos.
+
+      Entra: bits sueltos.
+
+      Sale: bytes.'
+    endianness: gr.GR_MSB_FIRST
+    k: '1'
+    l: '8'
+    len_tag_key: '""'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1808, 5296.0]
+    rotation: 0
+    state: enabled
+- name: ref_crc
+  id: digital_crc32_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    check: 'False'
+    comment: 'Copia del transmisor: agrega el CRC-32 de cada
+
+      payload.
+
+      Entra: bytes: payload (packet_len).
+
+      Sale: bytes: payload + CRC.'
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packed: 'True'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [544, 5656.0]
     rotation: 0
     state: enabled
 - name: ref_desplazar
@@ -3120,205 +2937,633 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Suma 1,5 a los bits transmitidos, para verlos\nseparados de los recibidos\
+      \ en el gr\xE1fico.\nEntra: reales.\nSale: reales (1,5 o 2,5)."
+    const: '1.5'
     maxoutbuf: '0'
     minoutbuf: '0'
     type: float
-    const: '1.5'
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1520, 2004]
+    coordinate: [2088, 5488.0]
     rotation: 0
     state: enabled
-- name: g_bits
-  id: qtgui_time_sink_x
+- name: ref_encabezado
+  id: digital_protocol_formatter_bb
   parameters:
     affinity: ''
     alias: ''
-    comment: ''
+    comment: "Copia del transmisor: arma el\nencabezado (pre\xE1mbulo + longitud\n\
+      \xD72).\nEntra: bytes: payload + CRC.\nSale: bytes: encabezado (12\n  bytes)."
+    format: formato_trama
+    len_tag_key: '"packet_len"'
     maxoutbuf: '0'
     minoutbuf: '0'
-    type: float
-    name: '"Bits RX vs TX (+1,5) y errores"'
-    gui_hint: 'pestanas@2: 0,0,1,1'
-    nconnections: '3'
-    size: '200'
-    srate: samp_rate/sps*2
-    ymin: '-1'
-    ymax: '4'
-    ylabel: Bit
-    yunit: '""'
-    grid: 'True'
-    autoscale: 'False'
-    axislabels: 'True'
-    legend: 'True'
-    ctrlpanel: 'False'
-    entags: 'False'
-    stemplot: 'False'
-    update_time: '0.10'
-    tr_mode: qtgui.TRIG_MODE_FREE
-    tr_slope: qtgui.TRIG_SLOPE_POS
-    tr_level: '0.0'
-    tr_delay: '0'
-    tr_chan: '0'
-    tr_tag: '""'
-    label1: RX
-    color1: blue
-    width1: '1'
-    alpha1: '1.0'
-    style1: '1'
-    marker1: '-1'
-    label2: TX (+1,5)
-    color2: red
-    width2: '1'
-    alpha2: '1.0'
-    style2: '1'
-    marker2: '-1'
-    label3: Errores
-    color3: green
-    width3: '1'
-    alpha3: '1.0'
-    style3: '1'
-    marker3: '-1'
-    label4: ''
-    color4: black
-    width4: '1'
-    alpha4: '1.0'
-    style4: '1'
-    marker4: '-1'
-    label5: ''
-    color5: cyan
-    width5: '1'
-    alpha5: '1.0'
-    style5: '1'
-    marker5: '-1'
-    label6: ''
-    color6: magenta
-    width6: '1'
-    alpha6: '1.0'
-    style6: '1'
-    marker6: '-1'
-    label7: ''
-    color7: yellow
-    width7: '1'
-    alpha7: '1.0'
-    style7: '1'
-    marker7: '-1'
-    label8: ''
-    color8: dark red
-    width8: '1'
-    alpha8: '1.0'
-    style8: '1'
-    marker8: '-1'
-    label9: ''
-    color9: dark green
-    width9: '1'
-    alpha9: '1.0'
-    style9: '1'
-    marker9: '-1'
-    label10: ''
-    color10: dark blue
-    width10: '1'
-    alpha10: '1.0'
-    style10: '1'
-    marker10: '-1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2064, 1764]
+    coordinate: [824, 5480.0]
     rotation: 0
     state: enabled
+- name: ref_fuente
+  id: blocks_vector_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Copia del transmisor, para saber qu\xE9 bits se\nmandaron: entrega una\
+      \ y otra vez el mismo\nmensaje (lista \"payload\").\nEntra: nada (es una fuente).\n\
+      Sale: bytes."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeat: 'True'
+    tags: '[]'
+    type: byte
+    vector: payload
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 5656.0]
+    rotation: 0
+    state: enabled
+- name: ref_paquetes
+  id: blocks_stream_to_tagged_stream
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: 'Copia del transmisor: corta en
+
+      grupos de L bytes marcados con
+
+      packet_len.
+
+      Entra: bytes.
+
+      Sale: bytes en grupos marcados.'
+    len_tag_key: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    packet_len: L
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [288, 5664.0]
+    rotation: 0
+    state: enabled
+- name: ref_saltar_preambulo
+  id: blocks_skiphead
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Saltea los primeros 64 bits (el\nprimer pre\xE1mbulo), para arrancar\n\
+      en el mismo lugar que lo recibido\ndespu\xE9s de \"alinear\".\nEntra: bits sueltos.\n\
+      Sale: los mismos bits, sin los 64\n  primeros."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_items: '64'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1600, 5672.0]
+    rotation: 0
+    state: enabled
+- name: ref_trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Copia del transmisor: pone el\nencabezado delante del\npayload.\nEntra:\
+      \ in0 = encabezado, in1 =\n  payload + CRC.\nSale: bytes: tramas completas."
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ninputs: '2'
+    tag_preserve_head_pos: '0'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1096, 5664.0]
+    rotation: 0
+    state: enabled
+- name: ruido_awgn
+  id: analog_noise_source_x
+  parameters:
+    affinity: ''
+    alias: ''
+    amp: ruido
+    comment: "Genera ruido blanco gaussiano complejo, con la\namplitud \"ruido\" (seg\xFA\
+      n el Eb/N0 elegido).\nEntra: nada (es una fuente).\nSale: complejos (ruido)."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    noise_type: analog.GR_GAUSSIAN
+    seed: '0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2632, 976.0]
+    rotation: 0
+    state: enabled
+- name: rx_bit_float
+  id: blocks_char_to_float
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Pasa los bits recibidos (ya alineados) a\nn\xFAmeros reales, para el\
+      \ gr\xE1fico.\nEntra: bits sueltos.\nSale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    scale: '1'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 4776.0]
+    rotation: 0
+    state: enabled
+- name: rx_bytes_ber
+  id: blocks_repack_bits_bb
+  parameters:
+    affinity: ''
+    alias: ''
+    align_output: 'False'
+    comment: 'Junta los bits recibidos de a 8, sin mirar
+
+      etiquetas: el medidor de BER compara bytes.
+
+      Entra: bits sueltos.
+
+      Sale: bytes.'
+    endianness: gr.GR_MSB_FIRST
+    k: '1'
+    l: '8'
+    len_tag_key: '""'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [824, 4968.0]
+    rotation: 0
+    state: enabled
+- name: rx_re
+  id: blocks_complex_to_real
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Se queda con la parte\nreal (I) de la se\xF1al\nRX.\nEntra: complejos.\n\
+      Sale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2376, 1352.0]
+    rotation: 0
+    state: enabled
+- name: sinc_err_null
+  id: blocks_null_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    bus_structure_sink: '[[0,],]'
+    comment: "Descarta el error del sincronismo\nde s\xEDmbolo (no se usa).\nEntra:\
+      \ reales.\nSale: nada."
+    num_inputs: '1'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [904, 2872.0]
+    rotation: 0
+    state: enabled
+- name: sinc_simbolo
+  id: digital_symbol_sync_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Sincronismo de s\xEDmbolo: encuentra el mejor\ninstante para muestrear\
+      \ cada s\xEDmbolo (el\ncentro del ojo) y entrega una muestra por\ns\xEDmbolo.\n\
+      Entra: complejos, 4 muestras por s\xEDmbolo (500\n  k/s).\nSale: out0 = complejos,\
+      \ 1 muestra por s\xEDmbolo\n  (125 k/s); out1 = error, out2 = per\xEDodo\n \
+      \ instant\xE1neo y out3 = per\xEDodo promedio del\n  reloj (reales)."
+    constellation: digital.constellation_bpsk().base()
+    damping: '1.0'
+    loop_bw: sync_bw
+    max_dev: '1.5'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    nfilters: '128'
+    osps: '1'
+    pfb_mf_taps: '[]'
+    resamp_type: digital.IR_MMSE_8TAP
+    sps: sps
+    ted_gain: '1.0'
+    ted_type: digital.TED_SIGNAL_TIMES_SLOPE_ML
+    type: cc
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [528, 2496.0]
+    rotation: 0
+    state: enabled
+- name: sonda_ber_acum
+  id: blocks_probe_signal_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Guarda el \xFAltimo valor que le llega, para que\nla variable ber_acum_log\
+      \ lo pueda leer.\nEntra: reales.\nSale: nada (se lee con un Function Probe)."
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2632, 4976.0]
+    rotation: 0
+    state: enabled
+- name: sonda_ber_ventana
+  id: blocks_probe_signal_x
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Guarda el \xFAltimo valor que le llega, para que\nla variable ber_rec\
+      \ lo pueda leer.\nEntra: reales (BER reciente).\nSale: nada (se lee con un Function\
+      \ Probe)."
+    type: float
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2632, 4336.0]
+    rotation: 0
+    state: enabled
+- name: submuestreo
+  id: blocks_keep_one_in_n
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Se queda con 1 de cada 1000 valores, para que\nel gr\xE1fico no tenga\
+      \ que dibujar tantos.\nEntra: reales.\nSale: reales (1000 veces menos)."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: '1000'
+    type: float
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2632, 4560.0]
+    rotation: 0
+    state: enabled
+- name: suma_ruido
+  id: blocks_add_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Suma la se\xF1al y el ruido: es lo que le llega\nal receptor.\nEntra:\
+      \ in0 = se\xF1al, in1 = ruido (complejos).\nSale: complejos (se\xF1al recibida)."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2928, 776.0]
+    rotation: 0
+    state: enabled
+- name: trama
+  id: blocks_tagged_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Pone el encabezado delante del\npayload: arma la trama\ncompleta.\n\
+      Entra: in0 = encabezado (12\n  bytes), in1 = payload + CRC\n  (L + 4 bytes).\n\
+      Sale: bytes: trama de L + 16\n  bytes (packet_len)."
+    lengthtagname: '"packet_len"'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    ninputs: '2'
+    tag_preserve_head_pos: '0'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1056, 848.0]
+    rotation: 0
+    state: enabled
+- name: tx_re
+  id: blocks_complex_to_real
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "Se queda con la parte\nreal (I) de la se\xF1al\nTX.\nEntra: complejos.\n\
+      Sale: reales."
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2376, 1176.0]
+    rotation: 0
+    state: enabled
+- name: una_de_cien
+  id: blocks_keep_m_in_n
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: "De cada 100 mensajes correctos se queda con 1\n(para no llenar el disco).\n\
+      Entra: bytes: mensajes correctos (L bytes cada\n  uno).\nSale: bytes: 1 mensaje\
+      \ de cada 100."
+    m: L
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    n: 100*L
+    offset: '0'
+    type: byte
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1048, 4072.0]
+    rotation: 0
+    state: enabled
+- name: vs_bits_rx
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: "Conexi\xF3n sin cable: los bits recibidos siguen\nen los Virtual Source\
+      \ \"bits_rx\" (tramas y\nBER).\nEntra: bits sueltos (1 por byte).\nSale: nada\
+      \ a la vista."
+    stream_id: bits_rx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2264, 2552.0]
+    rotation: 0
+    state: enabled
+- name: vs_rx
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: "Conexi\xF3n sin cable: la se\xF1al recibida sigue en\nlos Virtual Source\
+      \ \"senal_rx\" (receptor y\ngr\xE1ficos).\nEntra: complejos.\nSale: nada a la\
+      \ vista."
+    stream_id: senal_rx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [3184, 784.0]
+    rotation: 0
+    state: enabled
+- name: vs_tx
+  id: virtual_sink
+  parameters:
+    alias: ''
+    comment: "Conexi\xF3n sin cable: la se\xF1al que entra ac\xE1\nsale por los bloques\
+      \ Virtual Source \"senal_tx\"\n(canal y gr\xE1ficos).\nEntra: complejos (se\xF1\
+      al TX).\nSale: nada a la vista: sigue en los Virtual\n  Source senal_tx."
+    stream_id: senal_tx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1816, 856.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_bits_1
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: 'Toma sin cable los bits
+
+      recibidos (Virtual Sink
+
+      "bits_rx").
+
+      Entra: nada a la vista.
+
+      Sale: bits sueltos.'
+    stream_id: bits_rx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 3776.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_bits_2
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: 'Toma sin cable los bits
+
+      recibidos (Virtual Sink
+
+      "bits_rx").
+
+      Entra: nada a la vista.
+
+      Sale: bits sueltos.'
+    stream_id: bits_rx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 4552.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_rx
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: "Toma sin cable la se\xF1al\nrecibida (Virtual Sink\n\"senal_rx\").\n\
+      Entra: nada a la vista.\nSale: complejos."
+    stream_id: senal_rx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 2552.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_rx_g
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: "Toma sin cable la se\xF1al\nRX (Virtual Sink\n\"senal_rx\"), para los\n\
+      gr\xE1ficos.\nEntra: nada a la vista.\nSale: complejos."
+    stream_id: senal_rx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2096, 1344.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_tx_ch
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: "Toma sin cable la se\xF1al TX\n(Virtual Sink \"senal_tx\").\nEntra:\
+      \ nada a la vista.\nSale: complejos (se\xF1al\n  TX)."
+    stream_id: senal_tx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2096, 784.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_tx_g
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: "Toma sin cable la se\xF1al TX\nque entra al Virtual Sink\n\"senal_tx\"\
+      .\nEntra: nada a la vista.\nSale: complejos (se\xF1al\n  TX)."
+    stream_id: senal_tx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 1304.0]
+    rotation: 0
+    state: enabled
+- name: vsrc_tx_g2
+  id: virtual_source
+  parameters:
+    alias: ''
+    comment: "Toma sin cable la se\xF1al\nTX, para compararla con\nla RX.\nEntra:\
+      \ nada a la vista.\nSale: complejos."
+    stream_id: senal_tx
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2096, 1168.0]
+    rotation: 0
+    state: enabled
+
 connections:
-- [fuente, '0', a_paquetes, '0']
+- [a_bits, '0', vs_bits_rx, '0']
+- [a_bytes, '0', crc_rx, '0']
 - [a_paquetes, '0', crc_tx, '0']
+- [a_pdu, pdus, consola, print]
+- [acelerador, '0', vs_tx, '0']
+- [alinear, '0', comparar, '0']
+- [alinear, '0', rx_bit_float, '0']
+- [alinear, '0', rx_bytes_ber, '0']
+- [ber_ventana, '0', sonda_ber_ventana, '0']
+- [ber_ventana, '0', submuestreo, '0']
+- [bits_tx_float, '0', g_bits_tx, '0']
+- [bits_tx_unpack, '0', bits_tx_float, '0']
+- [cfo, '0', suma_ruido, '0']
+- [cfo_real, '0', g_frec, '1']
+- [comparar, '0', errores_float, '0']
+- [costas, '0', costas_re, '0']
+- [costas, '0', decisor, '0']
+- [costas, '0', g_sync_const, '1']
+- [costas, '1', frec_hz, '0']
+- [costas_re, '0', g_histograma, '0']
+- [crc_rx, '0', a_pdu, '0']
+- [crc_rx, '0', una_de_cien, '0']
 - [crc_tx, '0', encabezado, '0']
 - [crc_tx, '0', trama, '1']
-- [encabezado, '0', trama, '0']
-- [trama, '0', modulador, '0']
-- [modulador, '0', acelerador, '0']
-- [acelerador, '0', vs_tx, '0']
-- [trama, '0', bits_tx_unpack, '0']
-- [bits_tx_unpack, '0', bits_tx_float, '0']
-- [bits_tx_float, '0', g_bits_tx, '0']
-- [vsrc_tx_g, '0', g_tx_iq, '0']
-- [vsrc_tx_g, '0', g_tx_esp, '0']
-- [vsrc_tx_ch, '0', fase, '0']
-- [fase, '0', cfo, '0']
-- [cfo, '0', suma_ruido, '0']
-- [ruido_awgn, '0', suma_ruido, '1']
-- [suma_ruido, '0', vs_rx, '0']
-- [vsrc_tx_g2, '0', g_canal_esp, '0']
-- [vsrc_rx_g, '0', g_canal_esp, '1']
-- [vsrc_tx_g2, '0', tx_re, '0']
-- [vsrc_rx_g, '0', rx_re, '0']
-- [tx_re, '0', g_canal_t, '0']
-- [rx_re, '0', g_canal_t, '1']
-- [vsrc_rx_g, '0', g_canal_const, '0']
-- [vsrc_rx, '0', filtro_adaptado, '0']
-- [filtro_adaptado, '0', sinc_simbolo, '0']
-- [sinc_simbolo, '0', costas, '0']
-- [costas, '0', decisor, '0']
-- [decisor, '0', dec_diferencial, '0']
 - [dec_diferencial, '0', mapa_gray, '0']
-- [mapa_gray, '0', a_bits, '0']
-- [a_bits, '0', vs_bits_rx, '0']
-- [filtro_adaptado, '0', ojo_interp, '0']
-- [ojo_interp, '0', mf_re, '0']
-- [mf_re, '0', g_ojo, '0']
+- [decisor, '0', dec_diferencial, '0']
+- [detector_trama, '0', a_bytes, '0']
+- [detector_trama, '0', payload_float, '0']
+- [encabezado, '0', trama, '0']
+- [errores_float, '0', ber_ventana, '0']
+- [errores_float, '0', g_bits, '2']
+- [fase, '0', cfo, '0']
 - [filtro_adaptado, '0', g_mf_t, '0']
+- [filtro_adaptado, '0', ojo_interp, '0']
+- [filtro_adaptado, '0', sinc_simbolo, '0']
+- [frec_hz, '0', g_frec, '0']
+- [fuente, '0', a_paquetes, '0']
+- [log_ber, '0', g_ber_t, '0']
+- [log_teo, '0', g_ber_t, '1']
+- [mapa_gray, '0', a_bits, '0']
+- [marca_preambulo, '0', alinear, '0']
+- [medidor_ber, '0', g_ber_num, '0']
+- [medidor_ber, '0', sonda_ber_acum, '0']
+- [mf_re, '0', g_ojo, '0']
+- [modulador, '0', acelerador, '0']
+- [ojo_interp, '0', mf_re, '0']
+- [payload_float, '0', g_payload, '0']
+- [ref_bit_float, '0', ref_desplazar, '0']
+- [ref_bits, '0', ref_saltar_preambulo, '0']
+- [ref_bytes_ber, '0', medidor_ber, '1']
+- [ref_crc, '0', ref_encabezado, '0']
+- [ref_crc, '0', ref_trama, '1']
+- [ref_desplazar, '0', g_bits, '1']
+- [ref_encabezado, '0', ref_trama, '0']
+- [ref_fuente, '0', ref_paquetes, '0']
+- [ref_paquetes, '0', ref_crc, '0']
+- [ref_saltar_preambulo, '0', comparar, '1']
+- [ref_saltar_preambulo, '0', ref_bit_float, '0']
+- [ref_saltar_preambulo, '0', ref_bytes_ber, '0']
+- [ref_trama, '0', ref_bits, '0']
+- [ruido_awgn, '0', suma_ruido, '1']
+- [rx_bit_float, '0', g_bits, '0']
+- [rx_bytes_ber, '0', medidor_ber, '0']
+- [rx_re, '0', g_canal_t, '1']
+- [sinc_simbolo, '0', costas, '0']
 - [sinc_simbolo, '0', g_sync_const, '0']
-- [costas, '0', g_sync_const, '1']
 - [sinc_simbolo, '1', sinc_err_null, '0']
 - [sinc_simbolo, '2', g_periodo, '0']
 - [sinc_simbolo, '3', g_periodo, '1']
-- [costas, '1', frec_hz, '0']
-- [frec_hz, '0', g_frec, '0']
-- [cfo_real, '0', g_frec, '1']
-- [costas, '0', costas_re, '0']
-- [costas_re, '0', g_histograma, '0']
-- [vsrc_bits_1, '0', detector_trama, '0']
-- [detector_trama, '0', a_bytes, '0']
-- [a_bytes, '0', crc_rx, '0']
-- [crc_rx, '0', una_de_cien, '0']
-- [una_de_cien, '0', archivo_mensajes, '0']
-- [crc_rx, '0', a_pdu, '0']
-- [a_pdu, pdus, consola, print]
-- [detector_trama, '0', payload_float, '0']
-- [payload_float, '0', g_payload, '0']
-- [vsrc_bits_2, '0', marca_preambulo, '0']
-- [marca_preambulo, '0', alinear, '0']
-- [ref_fuente, '0', ref_paquetes, '0']
-- [ref_paquetes, '0', ref_crc, '0']
-- [ref_crc, '0', ref_encabezado, '0']
-- [ref_crc, '0', ref_trama, '1']
-- [ref_encabezado, '0', ref_trama, '0']
-- [ref_trama, '0', ref_bits, '0']
-- [ref_bits, '0', ref_saltar_preambulo, '0']
-- [alinear, '0', comparar, '0']
-- [ref_saltar_preambulo, '0', comparar, '1']
-- [comparar, '0', errores_float, '0']
-- [errores_float, '0', ber_ventana, '0']
-- [ber_ventana, '0', sonda_ber_ventana, '0']
-- [ber_ventana, '0', submuestreo, '0']
 - [submuestreo, '0', log_ber, '0']
-- [log_ber, '0', g_ber_t, '0']
-- [log_teo, '0', g_ber_t, '1']
-- [alinear, '0', rx_bytes_ber, '0']
-- [ref_saltar_preambulo, '0', ref_bytes_ber, '0']
-- [rx_bytes_ber, '0', medidor_ber, '0']
-- [ref_bytes_ber, '0', medidor_ber, '1']
-- [medidor_ber, '0', sonda_ber_acum, '0']
-- [medidor_ber, '0', g_ber_num, '0']
-- [alinear, '0', rx_bit_float, '0']
-- [ref_saltar_preambulo, '0', ref_bit_float, '0']
-- [ref_bit_float, '0', ref_desplazar, '0']
-- [rx_bit_float, '0', g_bits, '0']
-- [ref_desplazar, '0', g_bits, '1']
-- [errores_float, '0', g_bits, '2']
+- [suma_ruido, '0', vs_rx, '0']
+- [trama, '0', bits_tx_unpack, '0']
+- [trama, '0', modulador, '0']
+- [tx_re, '0', g_canal_t, '0']
+- [una_de_cien, '0', archivo_mensajes, '0']
+- [vsrc_bits_1, '0', detector_trama, '0']
+- [vsrc_bits_2, '0', marca_preambulo, '0']
+- [vsrc_rx, '0', filtro_adaptado, '0']
+- [vsrc_rx_g, '0', g_canal_const, '0']
+- [vsrc_rx_g, '0', g_canal_esp, '1']
+- [vsrc_rx_g, '0', rx_re, '0']
+- [vsrc_tx_ch, '0', fase, '0']
+- [vsrc_tx_g, '0', g_tx_esp, '0']
+- [vsrc_tx_g, '0', g_tx_iq, '0']
+- [vsrc_tx_g2, '0', g_canal_esp, '0']
+- [vsrc_tx_g2, '0', tx_re, '0']
+
 metadata:
   file_format: 1
   grc_version: 3.10.12.0

@@ -61,6 +61,10 @@ gnuradio-companion grc_estandar/halfduplex_4qam.grc       # F6 para ejecutar
 gnuradio-companion grc_estandar/enlace_4qam_tramas.grc
 ```
 
+* **Comentarios:** todos los `.grc` (`grc_estandar/`, `grc_hackrf/` y `hackrf_simulada/`) tienen, debajo de cada bloque,
+  un texto corto que dice qué hace y, en los que procesan señal, qué le **entra** y qué le **sale** (tipo de dato y
+  muestras por símbolo). Las notas de cada parte (transmisor, canal, receptor, tramas, BER) también se leen completas
+  ahí. Si no se ven: menú *View → Show Block Comments*. El texto está en la pestaña *Advanced → Comment* de cada bloque.
 * **Controles:** Eb/N0, fase del canal, CFO / desvío entre osciladores de A y B, y ancho de banda de los lazos de Costas
   y de sincronismo de símbolo. Arriba se ven el BER teórico y el medido (acumulado; en el enlace simple también el del
   último millón de bits).
