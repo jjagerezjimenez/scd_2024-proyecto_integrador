@@ -186,7 +186,7 @@ blocks:
   parameters:
     comment: "Qu\xE9 HackRF usar: \"serial=...\" (el n\xFAmero lo\nmuestra hackrf_info).\
       \ Vac\xEDo = la primera que\nencuentre."
-    value: '""'
+    value: '"0000000000000000308066e62215484b"'
   states:
     bus_sink: false
     bus_source: false
@@ -572,7 +572,7 @@ blocks:
     label: Archivo a transmitir
     short_id: ''
     type: str
-    value: archivo_a_enviar.txt
+    value: Outer.mp3
   states:
     bus_sink: false
     bus_source: false
@@ -1142,7 +1142,7 @@ blocks:
     label: "Veces que se env\xEDa el archivo (0 = sin fin)"
     short_id: ''
     type: intx
-    value: '3'
+    value: '0'
   states:
     bus_sink: false
     bus_source: false

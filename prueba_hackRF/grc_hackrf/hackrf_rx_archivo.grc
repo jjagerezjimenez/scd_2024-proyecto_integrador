@@ -138,7 +138,7 @@ blocks:
   parameters:
     comment: "Qu\xE9 HackRF usar: \"serial=...\" (el n\xFAmero lo\nmuestra hackrf_info).\
       \ Vac\xEDo = la primera que\nencuentre."
-    value: '""'
+    value: '"0000000000000000176c63c82a893d23"'
   states:
     bus_sink: false
     bus_source: false

@@ -106,7 +106,7 @@ class hackrf_rx_archivo(gr.top_block, Qt.QWidget):
         self.fll_bw = fll_bw = 0.005
         self.f_offset = f_offset = 400e3
         self.excess_bw = excess_bw = 0.35
-        self.dispositivo = dispositivo = ""
+        self.dispositivo = dispositivo = "0000000000000000176c63c82a893d23"
         self.costas_bw = costas_bw = 0.01
         self.amp_rx = amp_rx = False
 

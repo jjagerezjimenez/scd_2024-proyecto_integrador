@@ -34,7 +34,7 @@ import time
 
 class hackrf_tx_archivo(gr.top_block, Qt.QWidget):
 
-    def __init__(self, archivo='archivo_a_enviar.txt', repeticiones=3):
+    def __init__(self, archivo='Outer.mp3', repeticiones=0):
         gr.top_block.__init__(self, "HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)", catch_exceptions=True)
         Qt.QWidget.__init__(self)
         self.setWindowTitle("HackRF TX: transmisión de un archivo (4-QAM, bloques estándar)")
@@ -103,7 +103,7 @@ class hackrf_tx_archivo(gr.top_block, Qt.QWidget):
         self.formato_trama = formato_trama = digital.header_format_default(digital.packet_utils.default_access_code,0, 1)
         self.f_offset = f_offset = 400e3
         self.excess_bw = excess_bw = 0.35
-        self.dispositivo = dispositivo = ""
+        self.dispositivo = dispositivo = "0000000000000000308066e62215484b"
         self.datos = datos = contenido + [0] * (n_datos * N - len(contenido)) + (descripcion + [0] * N)[:N]
         self.amplitud = amplitud = 0.5
         self.amp_tx = amp_tx = False
@@ -706,10 +706,10 @@ def argument_parser():
     description = 'Transmite un archivo en paquetes numerados (CRC-32, preámbulo y longitud) con 4-QAM diferencial por un HackRF; solo bloques estándar de GNU Radio'
     parser = ArgumentParser(description=description)
     parser.add_argument(
-        "--archivo", dest="archivo", type=str, default='archivo_a_enviar.txt',
+        "--archivo", dest="archivo", type=str, default='Outer.mp3',
         help="Set Archivo a transmitir [default=%(default)r]")
     parser.add_argument(
-        "--repeticiones", dest="repeticiones", type=intx, default=3,
+        "--repeticiones", dest="repeticiones", type=intx, default=0,
         help="Set Veces que se envía el archivo (0 = sin fin) [default=%(default)r]")
     return parser
 
