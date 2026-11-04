@@ -12,6 +12,7 @@ El HTML intermedio queda en build/<nombre>.html. Las imágenes se buscan desde l
 """
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import sys
@@ -40,24 +41,50 @@ pre { font-family: Consolas, "Courier New", monospace; font-size: 7.3pt; line-he
       border: 1px solid #dde3ea; border-radius: 3px; padding: 6pt 8pt; white-space: pre; overflow: hidden;
       break-inside: avoid; }
 pre code { background: none; padding: 0; font-size: inherit; }
-table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: auto; }
+p:has(+ ul), p:has(+ ol) { break-after: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: avoid; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; }
 th { background: #e8eef5; color: #0b3a6b; font-weight: 600; }
 th, td { border: 1px solid #c9d3de; padding: 2.5pt 4pt; vertical-align: top; }
 img { display: block; max-width: 100%; margin: 8pt auto 2pt auto; break-inside: avoid; }
-p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; }
+p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; break-inside: avoid; }
+p.caption code { font-style: normal; font-size: 7.8pt; background: none; padding: 0; }
+p.caption.tabla { margin: 9pt 0 2pt 0; break-before: auto; break-after: avoid; }
 hr { border: none; border-top: 1px solid #ccc; margin: 10pt 0; }
 .titulo p { text-align: center; margin: 2pt 0; }
+h4 { font-size: 10.3pt; color: #133f6e; margin: 10pt 0 2pt 0; break-after: avoid; }
+.ecuacion { position: relative; text-align: center; font-family: "Cambria Math", Cambria, "Times New Roman", serif;
+            font-size: 11pt; margin: 6pt 0 7pt 0; break-inside: avoid; }
+.ecuacion .num { position: absolute; right: 0; font-size: 10pt; }
+p.ref { text-indent: -21pt; margin: 3pt 0 3pt 21pt; text-align: left; font-size: 9.2pt; }
 """
+
+
+def tipografia(html):
+    """Subíndices en Eb/N0, Es/N0 y N0, y números como 206 473 sin cortar de renglón. No toca etiquetas ni código."""
+    partes = re.split(r"(<[^>]+>)", html)
+    en_codigo = 0
+    for i, parte in enumerate(partes):
+        if parte.startswith("<"):
+            if re.match(r"<(code|pre)\b", parte):
+                en_codigo += 1
+            elif re.match(r"</(code|pre)>", parte):
+                en_codigo -= 1
+        elif not en_codigo:
+            parte = parte.replace("Eb/N0", "E<sub>b</sub>/N<sub>0</sub>").replace("Es/N0", "E<sub>s</sub>/N<sub>0</sub>")
+            parte = re.sub(r"\bN0\b", "N<sub>0</sub>", parte)
+            partes[i] = re.sub(r"(?<=\d) (?=\d{3}\b)", " ", parte)
+    return "".join(partes)
 
 
 def build_html(src):
     md = src.read_text(encoding="utf-8")
     titulo = next((l[2:].strip() for l in md.splitlines() if l.startswith("# ")), src.stem)
-    body = markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"])
-    # epígrafes de figura: párrafos que empiezan con "Figura"
+    body = tipografia(markdown.markdown(md, extensions=["tables", "fenced_code", "sane_lists"]))
+    # epígrafes de figura y de tabla: párrafos que empiezan con "Figura" o "Tabla"
     body = body.replace("<p><em>Figura", '<p class="caption"><em>Figura')
+    body = body.replace("<p><em>Tabla", '<p class="caption tabla"><em>Tabla')
     # bloque de título: lo que está antes de la primera línea horizontal
     head, sep, rest = body.partition("<hr />")
     body = '<div class="titulo">%s</div>%s%s' % (head, sep, rest)

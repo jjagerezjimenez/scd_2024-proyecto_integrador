@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Enlace digital punto a punto half-duplex con modulación 4-QAM en GNU Radio</title><base href="file:///D:/Facultad/Sist_Com_Dig/Proyecto_integrador/claude/integrado/files/proyecto_sdr_4qam_halfduplex/proyecto_sdr_4qam_halfduplex/"><style>
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Sistema de comunicaciones digital half-duplex con modulación 4-QAM mediante radio definida por software</title><base href="file:///D:/Facultad/Sist_Com_Dig/Proyecto_integrador/claude/integrado/files/proyecto_sdr_4qam_halfduplex/proyecto_sdr_4qam_halfduplex/"><style>
 @page { size: A4; margin: 17mm 15mm 17mm 15mm;
         @bottom-center { content: counter(page) " / " counter(pages); font-size: 8pt; color: #666; } }
 body { font-family: "Segoe UI", Calibri, Arial, sans-serif; font-size: 10pt; line-height: 1.42; color: #111; }
@@ -15,112 +15,119 @@ pre { font-family: Consolas, "Courier New", monospace; font-size: 7.3pt; line-he
       border: 1px solid #dde3ea; border-radius: 3px; padding: 6pt 8pt; white-space: pre; overflow: hidden;
       break-inside: avoid; }
 pre code { background: none; padding: 0; font-size: inherit; }
-table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: auto; }
+p:has(+ ul), p:has(+ ol) { break-after: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: avoid; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; }
 th { background: #e8eef5; color: #0b3a6b; font-weight: 600; }
 th, td { border: 1px solid #c9d3de; padding: 2.5pt 4pt; vertical-align: top; }
 img { display: block; max-width: 100%; margin: 8pt auto 2pt auto; break-inside: avoid; }
-p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; }
+p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; break-inside: avoid; }
+p.caption code { font-style: normal; font-size: 7.8pt; background: none; padding: 0; }
+p.caption.tabla { margin: 9pt 0 2pt 0; break-before: auto; break-after: avoid; }
 hr { border: none; border-top: 1px solid #ccc; margin: 10pt 0; }
 .titulo p { text-align: center; margin: 2pt 0; }
-</style></head><body><div class="titulo"><h1>Enlace digital punto a punto half-duplex con modulación 4-QAM en GNU Radio</h1>
-<p><strong>Materia:</strong> Sistemas de Comunicaciones Digitales – FACET, Universidad Nacional de Tucumán</p>
-<p><strong>Tema:</strong> radio definida por software (SDR): diseño, simulación y medición de BER frente a la teoría</p>
-<p><strong>Herramienta:</strong> GNU Radio 3.10.12 (RadioConda, Windows), <strong>solo bloques estándar</strong> (ningún bloque propio)</p>
-<p><strong>Integrantes / comisión:</strong> <strong><em>_</em></strong><strong><em>_</em></strong><strong><em>_</em></strong><strong><em>_</em></strong>__</p>
+h4 { font-size: 10.3pt; color: #133f6e; margin: 10pt 0 2pt 0; break-after: avoid; }
+.ecuacion { position: relative; text-align: center; font-family: "Cambria Math", Cambria, "Times New Roman", serif;
+            font-size: 11pt; margin: 6pt 0 7pt 0; break-inside: avoid; }
+.ecuacion .num { position: absolute; right: 0; font-size: 10pt; }
+p.ref { text-indent: -21pt; margin: 3pt 0 3pt 21pt; text-align: left; font-size: 9.2pt; }
+</style></head><body><div class="titulo"><h1>Sistema de comunicaciones digital half-duplex con modulación 4-QAM mediante radio definida por software</h1>
+<p><strong>Simulación en GNU Radio y prueba de laboratorio con HackRF One</strong></p>
+<p><strong>Autores:</strong> Juan José Armando Gerez Jiménez</p>
+<p>Sistemas de Comunicaciones Digitales – Facultad de Ciencias Exactas y Tecnología (FACET), Universidad Nacional de Tucumán</p>
+<p>Noviembre de 2026</p>
 </div><hr />
-<h2>1. Objetivo y requisitos</h2>
-<p>Desarrollar un sistema de comunicaciones digital punto a punto con técnica de radio definida por software que sea
-<em>half-duplex</em>, con trama simple (preámbulo + indicación de longitud), detección de errores con CRC-32 y modulación
-4-QAM; determinar el BER teórico en función de la relación señal/ruido, simularlo en GNU Radio y medir el BER para
-distintas condiciones de canal comparándolo con la teoría.</p>
-<p>Todo el sistema está armado en GNU Radio Companion <strong>únicamente con bloques que trae cualquier instalación de GNU Radio</strong>
-(módulos <code>blocks</code>, <code>digital</code>, <code>analog</code>, <code>filter</code>, <code>fec</code>, <code>pdu</code> y <code>qtgui</code>): cualquier persona puede abrir los <code>.grc</code> y
-ejecutarlos sin instalar nada extra.</p>
-<table>
-<thead>
-<tr>
-<th>Requisito</th>
-<th>Solución adoptada</th>
-<th>Sección</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Half-duplex</td>
-<td>Dos nodos (A y B) comparten un único canal y se turnan por división en el tiempo (TDD): <code>Stream Mux</code> arma los turnos y <code>Stream Demux</code> es el conmutador de recepción. Ningún nodo transmite y recibe a la vez.</td>
-<td>3.5</td>
-</tr>
-<tr>
-<td>Trama con preámbulo y longitud</td>
-<td>Encabezado estándar de GNU Radio: <code>preámbulo (64 bits) ‖ longitud (16 bits) ‖ longitud (16 bits) ‖ payload ‖ CRC-32</code></td>
-<td>3.2</td>
-</tr>
-<tr>
-<td>CRC-32</td>
-<td>Bloque <code>Stream CRC32</code>: lo agrega el transmisor y lo verifica el receptor, que descarta las tramas erróneas.</td>
-<td>3.2, 6.5</td>
-</tr>
-<tr>
-<td>4-QAM</td>
-<td><code>Constellation Modulator</code> con constelación Gray, filtro RRC (roll-off 0,35, 4 muestras/símbolo) y codificación diferencial.</td>
-<td>3.3</td>
-</tr>
-<tr>
-<td>BER teórico vs SNR</td>
-<td><code>Pb = Q(√(2·Eb/N0))</code> y, con la codificación diferencial que usa el sistema, <code>Pb = 2p(1−p)</code>; también PER y BER con error de fase.</td>
-<td>2</td>
-</tr>
-<tr>
-<td>Simulación en GNU Radio</td>
-<td>Tres flowgraphs: enlace simple con gráficos de cada etapa, half-duplex con interfaz y half-duplex de medición.</td>
-<td>4</td>
-</tr>
-<tr>
-<td>BER medido y comparación</td>
-<td>Barrido de Eb/N0 en 4 condiciones de canal con intervalos de confianza.</td>
-<td>5, 6</td>
-</tr>
-</tbody>
-</table>
+<h2>Resumen</h2>
+<p>Este trabajo presenta el diseño, la simulación y la prueba real de un sistema de comunicaciones digital punto a punto
+hecho con radio definida por software. El sistema es half-duplex, usa tramas con preámbulo e indicación de longitud,
+detecta errores con CRC-32 y transmite con modulación 4-QAM. Se armó en GNU Radio únicamente con bloques estándar.</p>
+<p>Se calculó el BER teórico en función de la relación señal/ruido y se midió el BER en simulación para cuatro condiciones
+de canal. El BER medido sigue a la teoría a lo largo de más de cuatro décadas, con una diferencia de apenas 0,08 dB
+cuando el receptor corrige la fase. De las 206 473 tramas que el CRC-32 aceptó, ninguna tenía errores.</p>
+<p>En la prueba de laboratorio se transmitieron archivos por el aire entre dos HackRF One separados unos 40 cm, a 915 MHz.
+La prueba documentada con capturas usó un archivo de texto. Fue necesario subir las ganancias del receptor hasta
+LNA 40 dB y VGA 40 dB. Con esos valores, el E<sub>b</sub>/N<sub>0</sub> estimado fue de unos 23 dB, el receptor corrigió un desvío de frecuencia
+de unos 7 kHz entre las placas y el archivo llegó idéntico, según su huella SHA-256. También llegaron idénticas una
+imagen y una canción.</p>
+<p>Se concluye que el sistema cumple los objetivos planteados. Frente al ruido se comporta como predice la teoría. Las pocas
+tramas que se perdieron en el laboratorio no se explican por el ruido: en el registro de la canción coinciden con cortes
+breves y periódicos. El CRC-32 impide que esos errores lleguen al archivo y la repetición del envío recupera los datos.</p>
+<p><strong>Palabras clave:</strong> radio definida por software, 4-QAM, BER, CRC-32, half-duplex, GNU Radio, HackRF One.</p>
 <hr />
-<h2>2. BER teórico del 4-QAM</h2>
-<h3>2.1 Modelo y definiciones</h3>
-<p>El 4-QAM (equivalente a QPSK) transmite 2 bits por símbolo, uno por cada componente (I y Q). Con codificación <strong>Gray</strong>
-los símbolos vecinos difieren en un solo bit. La constelación usada tiene los puntos <code>(±1 ± j)/√2</code> (energía unitaria).</p>
-<p>Canal AWGN con densidad espectral de potencia de ruido <code>N0</code>; el ruido de cada componente tiene varianza <code>N0/2</code>.
-Receptor coherente con filtro adaptado, muestreo óptimo y decisión por cuadrantes:</p>
-<pre><code>Es/N0 = 2 · Eb/N0                         (2 bits por símbolo)
-SNR en el ancho de banda de muestreo:  SNR = (Es/N0) / sps   →  con sps = 4: SNR[dB] = Eb/N0[dB] − 3,01 dB
-</code></pre>
-<p>En todo el informe el eje de abscisas es <strong>Eb/N0</strong>, que no depende del ancho de banda ni del sobremuestreo.</p>
-<h3>2.2 Probabilidad de error de bit (4-QAM coherente)</h3>
-<p>Cada componente es una señal antipodal de amplitud <code>±√Eb</code> en ruido gaussiano de varianza <code>N0/2</code>:</p>
-<pre><code>p = Q( √(2·Eb/N0) ) = ½ · erfc( √(Eb/N0) ),          Q(x) = ½·erfc(x/√2)
-Ps = 1 − (1 − p)² = 2p − p²                           (probabilidad de error de símbolo)
-</code></pre>
-<h3>2.3 Codificación diferencial: por qué hace falta y cuánto cuesta</h3>
-<p>El lazo de Costas que recupera la portadora del 4-QAM tiene <strong>ambigüedad de 90°</strong>: puede engancharse en cualquiera de
-las cuatro rotaciones de la constelación (todas "se ven" igual). Si se engancha girado, todos los bits salen mal. La
-solución estándar —la que trae el <code>Constellation Modulator</code> de GNU Radio— es la <strong>codificación diferencial</strong>: se
-transmite la <em>diferencia</em> de fase entre símbolos consecutivos (en múltiplos de 90°, con mapeo Gray de esa diferencia),
-y el receptor decodifica la diferencia entre dos decisiones seguidas. Una rotación fija de la constelación aparece en
-las dos decisiones y se cancela.</p>
-<p>El costo es que <strong>cada error de decisión arruina dos diferencias</strong> (la del símbolo con la anterior y la del siguiente).
-Sea <code>e_k</code> el giro de error de la decisión <code>k</code>: con errores independientes en cada eje (probabilidad <code>p</code>),</p>
-<pre><code>P(e = 0) = (1−p)²     P(e = +90°) = P(e = −90°) = p(1−p)     P(e = 180°) = p²
-</code></pre>
-<p>La diferencia decodificada tiene error <code>d = e_k − e_{k−1}</code>. Con mapeo Gray, <code>d = ±90°</code> cuesta 1 bit y <code>d = 180°</code>
-cuesta 2 bits. Haciendo la cuenta para los dos bits de cada símbolo:</p>
-<pre><code>Pb (con codificación diferencial) = 2·p·(1 − p) ≈ 2·Q(√(2·Eb/N0))
-</code></pre>
-<p>Es decir, aproximadamente <strong>el doble</strong> del BER coherente. En Eb/N0 la penalidad es pequeña y disminuye al subir la
-relación señal/ruido (la curva es muy empinada):</p>
+<h2>1. Introducción</h2>
+<p>Una radio definida por software permite armar un sistema de comunicaciones completo con una computadora y un equipo de
+radio económico. El mismo sistema se puede simular, medir y después transmitir por el aire. Este proyecto sigue ese
+camino con un enlace simple, para comparar en cada paso lo que predice la teoría con lo que realmente ocurre.</p>
+<h3>1.1 Objetivos</h3>
+<ul>
+<li>Desarrollar un sistema de comunicaciones digital punto a punto con técnica de radio definida por software, con estas
+  características: half-duplex, trama simple con preámbulo e indicación de longitud, detección de errores con CRC-32 y
+  modulación 4-QAM.</li>
+<li>Determinar el BER teórico en función de la relación señal/ruido.</li>
+<li>Realizar una simulación en GNU Radio del sistema desarrollado.</li>
+<li>Medir el BER en la simulación para distintas condiciones de canal y compararlo con el resultado teórico.</li>
+<li>Realizar una prueba de laboratorio transmitiendo archivos con periféricos de radio definida por software HackRF.</li>
+</ul>
+<h3>1.2 Marco teórico</h3>
+<h4>Radio definida por software</h4>
+<p>En una radio definida por software (SDR, del inglés <em>Software Defined Radio</em>), funciones que antes hacían circuitos
+electrónicos, como modular, filtrar o sincronizar, las hace un programa [1]. El equipo de radio solo convierte entre la
+señal de radiofrecuencia y las muestras digitales.</p>
+<p>En este proyecto se usó GNU Radio, un entorno libre en el que un sistema se arma conectando bloques [2]. Cada diagrama de
+bloques se llama <em>flowgraph</em> y se edita con GNU Radio Companion (GRC). Como equipo de radio se usó el HackRF One, que
+trabaja de 1 MHz a 6 GHz, con muestras de 8 bits y entre 2 y 20 millones de muestras por segundo [3].</p>
+<h4>Half-duplex</h4>
+<p>Un enlace half-duplex permite comunicarse en los dos sentidos, pero no al mismo tiempo. El HackRF One es half-duplex: en
+un momento dado transmite o recibe, pero no ambas cosas [3]. Una forma simple de repartir el canal es la división en el
+tiempo (TDD, del inglés <em>Time Division Duplex</em>), en la que cada nodo transmite solo en su turno.</p>
+<h4>Modulación 4-QAM y filtro RRC</h4>
+<p>La modulación 4-QAM envía 2 bits en cada símbolo, usando dos componentes de la señal: I (en fase) y Q (en cuadratura). Los
+cuatro símbolos tienen la misma amplitud y solo cambia su fase, por lo que 4-QAM es equivalente a QPSK (Figura 1, a la
+izquierda). Con el mapeo Gray, dos símbolos vecinos difieren en un solo bit. Así, el error más común, que es confundir un
+símbolo con su vecino, arruina un solo bit [4].</p>
+<p><img src="figuras_informe/constelacion.png" alt="Constelación de 4-QAM y cambios de fase" style="width:78%"></p>
+<p class="caption"><em>Figura 1 – A la izquierda, los cuatro símbolos de 4-QAM. A la derecha, la codificación diferencial que usa este sistema:
+cada par de bits indica cuánto gira la fase respecto del símbolo anterior. Los giros de ±90° corresponden a pares que
+difieren en un bit de "00", y el de 180° a un par que difiere en dos bits.</em></p>
+<p>Para no ocupar más ancho de banda del necesario, cada símbolo se envía con un pulso de raíz de coseno alzado (RRC). El
+receptor usa un filtro igual, llamado filtro adaptado. Los dos juntos evitan que un símbolo interfiera con sus vecinos en
+el instante en que se toma la decisión [4], [5]. El ancho de banda ocupado es (1 + α)·R<sub>s</sub>, donde R<sub>s</sub>
+es la velocidad de símbolos y α es el factor de exceso de banda, que en este proyecto vale 0,35.</p>
+<h4>Canal con ruido y relación señal/ruido</h4>
+<p>El modelo de canal es el de ruido blanco gaussiano aditivo (AWGN, del inglés <em>Additive White Gaussian Noise</em>): a la señal
+se le suma ruido con densidad espectral de potencia N<sub>0</sub>. La calidad del enlace se expresa con E<sub>b</sub>/N<sub>0</sub>, la energía de cada bit
+dividida por N<sub>0</sub>. Esta medida no depende del ancho de banda, por lo que permite comparar sistemas distintos. Se relaciona
+con la energía por símbolo E<sub>s</sub> y con la relación señal/ruido (SNR) medida muestra a muestra de este modo:</p>
+<div class="ecuacion">E<sub>s</sub>/N<sub>0</sub> = 2 · E<sub>b</sub>/N<sub>0</sub><span class="num">(1)</span></div>
+
+<div class="ecuacion">SNR = (E<sub>s</sub>/N<sub>0</sub>) / sps<span class="num">(2)</span></div>
+
+<p>donde sps es la cantidad de muestras por símbolo. En la simulación sps = 4, y entonces SNR [dB] = E<sub>b</sub>/N<sub>0</sub> [dB] − 3,01 dB.</p>
+<h4>BER teórico</h4>
+<p>El BER (del inglés <em>Bit Error Rate</em>) es la fracción de bits que llegan con error. En 4-QAM, cada componente se comporta como
+una señal de dos niveles con ruido gaussiano. Si el receptor conoce exactamente la fase, la probabilidad de error de bit es
+[4], [5]:</p>
+<div class="ecuacion">p = Q( √(2 · E<sub>b</sub>/N<sub>0</sub>) ),&nbsp;&nbsp; con Q(x) = ½ · erfc(x / √2)<span class="num">(3)</span></div>
+
+<p>En la práctica, el receptor recupera la fase a partir de la propia señal, con un lazo de Costas [6]. Este lazo no puede saber
+en cuál de las cuatro rotaciones posibles se enganchó, porque todas se ven iguales. Si queda girado 90°, todos los bits salen
+mal. Para evitarlo se usa la codificación diferencial: la información no va en el símbolo, sino en el cambio de fase entre
+un símbolo y el siguiente (Figura 1, a la derecha). Un giro fijo afecta por igual a dos símbolos seguidos y se cancela al
+compararlos.</p>
+<p>El costo es que cada bit se obtiene comparando dos decisiones, y queda mal cuando falla exactamente una de las dos. Por eso,
+el BER de este sistema es:</p>
+<div class="ecuacion">P<sub>b</sub> = 2 · p · (1 − p) ≈ 2 · p<span class="num">(4)</span></div>
+
+<p>Es decir, casi el doble que sin codificación diferencial. Expresada en dB, esta penalidad es pequeña, porque la curva es muy
+empinada (Tabla 1). Una simulación estadística (Monte Carlo) independiente de GNU Radio, incluida en <code>ber_teorico.py</code>,
+reproduce la ecuación (4) con menos de 1 % de diferencia hasta 6 dB. A 8 dB la diferencia es de 4,5 %, que se explica por
+la poca cantidad de errores que ocurren a ese nivel en esa simulación.</p>
+<p class="caption tabla"><em>Tabla 1 – E<sub>b</sub>/N<sub>0</sub> necesario para cada valor de BER.</em></p>
 <table>
 <thead>
 <tr>
-<th>BER objetivo</th>
+<th>BER buscado</th>
 <th style="text-align: right;">10⁻²</th>
 <th style="text-align: right;">10⁻³</th>
 <th style="text-align: right;">10⁻⁴</th>
@@ -130,7 +137,7 @@ relación señal/ruido (la curva es muy empinada):</p>
 </thead>
 <tbody>
 <tr>
-<td>Eb/N0 necesario, 4-QAM coherente [dB]</td>
+<td>Sin codificación diferencial, ecuación (3) [dB]</td>
 <td style="text-align: right;">4,32</td>
 <td style="text-align: right;">6,79</td>
 <td style="text-align: right;">8,40</td>
@@ -138,7 +145,7 @@ relación señal/ruido (la curva es muy empinada):</p>
 <td style="text-align: right;">10,53</td>
 </tr>
 <tr>
-<td>Eb/N0 necesario, con codificación diferencial [dB]</td>
+<td>Con codificación diferencial, ecuación (4) [dB]</td>
 <td style="text-align: right;">5,20</td>
 <td style="text-align: right;">7,33</td>
 <td style="text-align: right;">8,79</td>
@@ -146,7 +153,7 @@ relación señal/ruido (la curva es muy empinada):</p>
 <td style="text-align: right;">10,78</td>
 </tr>
 <tr>
-<td>Penalidad de la codificación diferencial [dB]</td>
+<td>Penalidad [dB]</td>
 <td style="text-align: right;">0,88</td>
 <td style="text-align: right;">0,55</td>
 <td style="text-align: right;">0,39</td>
@@ -155,253 +162,377 @@ relación señal/ruido (la curva es muy empinada):</p>
 </tr>
 </tbody>
 </table>
-<p><img alt="BER teórico" src="resultados/ber_teorico.png" /></p>
-<p class="caption"><em>Figura 1 – Curvas teóricas. La verificación Monte Carlo (<code>python ber_teorico.py --montecarlo</code>), que simula exactamente la
-misma cadena que GNU Radio (mapa Gray → codificador diferencial → constelación → ruido → decisión → decodificador
-diferencial), reproduce <code>2p(1−p)</code> y la versión con error de fase dentro del 1 %.</em></p>
-<h3>2.4 Error de trama y detección con CRC-32</h3>
-<p>Como con codificación diferencial los errores vienen de a pares, una trama de <code>K</code> símbolos llega bien solo si no hay
-ningún error de símbolo en ella ni en el símbolo anterior:</p>
-<pre><code>PER = 1 − (1 − Ps)^(K+1),      K = (32 bits de longitud + 8·(L + 4) bits de payload y CRC) / 2
-</code></pre>
-<p>Para el payload de <code>L = 93</code> bytes del sistema, <code>K = 404</code> símbolos. El CRC-32 detecta todos los errores de 1, 2 y 3 bits,
-todas las ráfagas de hasta 32 bits y, para patrones de error aleatorios, deja pasar una fracción ≈ 2⁻³² ≈ 2,3×10⁻¹⁰;
-por lo tanto el enlace <em>entrega</em> tramas con probabilidad <code>1 − PER</code> y <em>casi nunca</em> entrega tramas corruptas.</p>
-<h3>2.5 Error de fase constante sin corregir</h3>
-<p>Si el receptor no corrige una rotación fija <code>φ</code> de la portadora, cada eje tiene su propia probabilidad de error:</p>
-<pre><code>pa = Q( √(2Eb/N0)·(cos φ − sin φ) )        pb = Q( √(2Eb/N0)·(cos φ + sin φ) )
-</code></pre>
-<p>Sin codificación diferencial, <code>Pb(φ) = ½(pa + pb)</code>. Con codificación diferencial se combinan los giros de error de dos
-decisiones seguidas igual que en 2.3 pero con <code>P(+90°) = pa(1−pb)</code>, <code>P(−90°) = pb(1−pa)</code>, <code>P(180°) = pa·pb</code>
-(función <code>ber_deqpsk_phase_error</code> de <code>ber_teorico.py</code>). Para <code>φ = 20°</code>, <code>cos φ − sin φ = 0,60</code>: el margen de decisión de un
-eje se reduce un 40 % y el BER se aleja mucho de la curva ideal (sección 6.2). Para <code>φ = 45°</code> el margen se anula.</p>
-<hr />
-<h2>3. Diseño del sistema</h2>
-<h3>3.1 Arquitectura</h3>
-<pre><code> NODO A:  mensaje → CRC-32 → encabezado → modulador 4-QAM ──┐
-                                                            ├──▶ Stream Mux: turnos [A | guarda | B | guarda]
- NODO B:  mensaje → CRC-32 → encabezado → modulador 4-QAM ──┘          │
-                                                                       ▼
-                                          CANAL COMPARTIDO: fase + ruido (Multiply Const, Noise Source, Add)
-                                                                       │
-                                                                       ▼
-                                             Stream Demux: conmutador de recepción
-                                            │                    │                    │
-                               ranura de A  ▼           guardas  ▼        ranura de B ▼
-                                 oscilador B (+Δf)           descarte         oscilador A (−Δf)
-                                            │                                         │
-                                            ▼                                         ▼
-                               RECEPTOR B (recibe a A)                   RECEPTOR A (recibe a B)
+<h4>Error de fase sin corregir</h4>
+<p>Si el receptor no corrige una rotación fija φ de la señal, los dos ejes dejan de tener el mismo margen frente al ruido. Cada
+uno tiene su propia probabilidad de error:</p>
+<div class="ecuacion">p<sub>a</sub> = Q( √(2 · E<sub>b</sub>/N<sub>0</sub>) · (cos φ − sen φ) ),&nbsp;&nbsp; p<sub>c</sub> = Q( √(2 · E<sub>b</sub>/N<sub>0</sub>) · (cos φ + sen φ) )<span class="num">(5)</span></div>
 
- RECEPTOR:  filtro adaptado → Symbol Sync → Costas → decisión → decodificación diferencial → bits
-            bits → detector de trama (preámbulo + longitud) → CRC-32 → mensajes
-            bits → alineación con el primer preámbulo → comparación con una copia del transmisor → BER
-</code></pre>
-<p>Parámetros: frecuencia de muestreo <code>fs = 500 kHz</code>, <code>sps = 4</code> muestras/símbolo (velocidad de símbolo <code>Rs = 125 kbaudios</code>,
-250 kbit/s), roll-off <code>α = 0,35</code> (ancho de banda ocupado <code>(1+α)·Rs = 169 kHz</code>, es decir ±84 kHz), filtros RRC de
-11 símbolos. Cada nodo usa el canal en ranuras de 2048 muestras (4,1 ms) separadas por guardas de 256 muestras (0,5 ms).</p>
-<h3>3.2 Formato de trama y CRC-32</h3>
-<table>
-<thead>
-<tr>
-<th>Campo</th>
-<th>Tamaño</th>
-<th>Contenido</th>
-<th>Bloque que lo genera</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Preámbulo</td>
-<td>64 bits</td>
-<td>Código de acceso estándar de GNU Radio (<code>digital.packet_utils.default_access_code</code>), elegido por su baja autocorrelación. Sirve para detectar la trama.</td>
-<td><code>Protocol Formatter</code> con <code>Header Format Default</code></td>
-</tr>
-<tr>
-<td>Longitud</td>
-<td>16 bits</td>
-<td>Bytes de payload + CRC, en binario.</td>
-<td>ídem</td>
-</tr>
-<tr>
-<td>Longitud (copia)</td>
-<td>16 bits</td>
-<td>La misma longitud repetida: el receptor solo acepta la trama si las dos copias coinciden.</td>
-<td>ídem</td>
-</tr>
-<tr>
-<td>Payload</td>
-<td><code>L</code> bytes</td>
-<td>Un mensaje de texto (93 bytes en el half-duplex: <em>"Hola, soy el nodo A…"</em>).</td>
-<td><code>Vector Source</code> + <code>Stream to Tagged Stream</code></td>
-</tr>
-<tr>
-<td>CRC-32</td>
-<td>32 bits</td>
-<td>CRC-32 IEEE 802.3 del payload (el de Ethernet / <code>zlib</code>).</td>
-<td><code>Stream CRC32</code></td>
-</tr>
-</tbody>
-</table>
-<p>La trama completa del half-duplex tiene 8 + 4 + 93 + 4 = 109 bytes = 872 bits = 436 símbolos. El <code>Tagged Stream Mux</code>
-concatena encabezado y payload+CRC. Las tramas salen una detrás de otra (el mensaje se repite).</p>
-<h3>3.3 Modulación 4-QAM y conformación de pulso</h3>
+<p>Para φ = 20°, cos φ − sen φ ≈ 0,60, lo que significa que el margen de un eje se reduce un 40 %. Con codificación diferencial,
+el BER se obtiene combinando p<sub>a</sub> y p<sub>c</sub> sobre dos decisiones seguidas (función <code>ber_deqpsk_phase_error</code> de
+<code>ber_teorico.py</code>). La Figura 2 reúne las curvas teóricas.</p>
+<p><img src="resultados/ber_teorico.png" alt="BER teórico" style="width:76%"></p>
+<p class="caption"><em>Figura 2 – Curvas teóricas de 4-QAM en AWGN. La línea negra gruesa es la ecuación (4), la que corresponde a este sistema, y
+la línea de trazos es la ecuación (3). Las líneas verde, naranja y roja muestran cuánto empeora el BER con un error de fase
+fijo sin corregir. La línea azul es el PER de una trama de la simulación.</em></p>
+<h4>Trama, CRC-32 y PER</h4>
+<p>Una trama simple tiene tres partes. El preámbulo es un patrón fijo de bits que el receptor busca para encontrar el comienzo.
+La indicación de longitud dice cuántos bytes siguen. El CRC-32 es un código de 32 bits calculado a partir de los datos: el
+receptor lo vuelve a calcular y, si no coincide, descarta la trama. Detecta todos los errores de hasta 3 bits y cualquier
+ráfaga de hasta 32 bits; de los demás patrones de error deja pasar, aproximadamente, 1 de cada 4300 millones (2⁻³²) [7].</p>
+<p>El PER (del inglés <em>Packet Error Rate</em>) es la fracción de tramas que no llegan bien. Una trama de n bits llega bien solo si no
+hay ningún error de decisión en ella:</p>
+<div class="ecuacion">PER = 1 − (1 − p)<sup>n</sup><span class="num">(6)</span></div>
+
+<p>Se usa p y no el BER de la ecuación (4) porque, con codificación diferencial, cada error de decisión arruina dos bits seguidos
+de la misma trama: con el BER, cada error se contaría dos veces. En la simulación, n vale unos 810 bits (longitud, datos y
+CRC-32); en el indicador del laboratorio, 1744 bits (la trama completa de 218 bytes).</p>
+<h4>Sincronización en un receptor real</h4>
+<p>Además de decidir los símbolos, un receptor real tiene que resolver tres problemas:</p>
 <ul>
-<li><strong>Constelación</strong> (<code>Constellation Rect.</code>): puntos <code>(±0,707 ± 0,707j)</code> con mapeo Gray <code>[0, 1, 3, 2]</code>.</li>
-<li><strong><code>Constellation Modulator</code></strong>: agrupa los bits de a 2, aplica la codificación diferencial (sección 2.3) y el filtro de
-  raíz de coseno realzado (RRC) de 11 símbolos con <code>α = 0,35</code>. Entrega 4 muestras por símbolo con <strong>potencia media 1</strong>
-  (medido).</li>
-<li><strong>Filtro adaptado</strong> (<code>FFT Root Raised Cosine Filter</code>, 44 coeficientes, ganancia 1) en el receptor: la cascada RRC·RRC es
-  un filtro de Nyquist (sin interferencia entre símbolos en el instante óptimo) y los símbolos salen con amplitud 1.</li>
+<li><strong>Frecuencia.</strong> Los osciladores de dos equipos nunca son iguales, y su diferencia se llama desvío de frecuencia. Una
+  corrección gruesa se logra con un lazo FLL de borde de banda, que compara la energía en los dos bordes del espectro RRC y
+  ajusta la frecuencia hasta igualarlas [8].</li>
+<li><strong>Tiempo.</strong> Hay que tomar cada símbolo en el instante justo. De eso se encarga el bloque <code>Symbol Sync</code>, que mide el error de
+  temporización y corrige el punto de muestreo [9].</li>
+<li><strong>Fase.</strong> El lazo de Costas corrige la fase y el pequeño desvío de frecuencia que quede [6].</li>
 </ul>
-<h3>3.4 Canal y calibración de Eb/N0</h3>
-<p>El canal se arma con bloques simples, para que la calibración quede explícita:</p>
+<p>El ancho de banda de cada lazo define un compromiso: un lazo ancho se engancha rápido pero deja pasar más ruido, y uno angosto
+es más estable pero más lento.</p>
+<p>El receptor del laboratorio también estima la relación señal/ruido con el método de los momentos de segundo y cuarto orden
+(M2M4), que no necesita conocer los datos transmitidos [10]. Para comprobar que un archivo llegó completo se usa la huella
+SHA-256, un resumen de 256 bits de su contenido: si cambia un solo bit del archivo, la huella resulta completamente distinta
+[11].</p>
+<h3>1.3 Antecedentes</h3>
+<p>Se buscaron trabajos previos que combinen GNU Radio con equipos SDR para transmitir datos digitales. Los más cercanos a este
+proyecto son los siguientes:</p>
 <ul>
-<li><code>Multiply Const</code> por <code>e^{jφ}</code>: rotación de fase fija del canal (deslizador "Fase").</li>
-<li><code>Noise Source</code> (gaussiano complejo) + <code>Add</code>: ruido blanco de varianza total <code>σ²</code> por muestra.</li>
-<li><code>Rotator</code>: desvío de frecuencia (CFO) — ver 3.5.</li>
+<li><strong>Transmisión por paquetes con QPSK.</strong> Kaliaskarov y otros [12] combinan análisis teórico, simulación en GNU Radio y pruebas
+  por el aire con placas ADALM-PLUTO. Miden BER, PER y velocidad efectiva, reconstruyen archivos y atribuyen las diferencias
+  con la teoría a errores de sincronismo, desbalance entre I y Q y ruido de fase. Es el antecedente más parecido en su
+  planteo.</li>
+<li><strong>BER medido contra la teoría.</strong> El banco de pruebas COSMOS publica un tutorial que mide el BER contra E<sub>b</sub>/N<sub>0</sub> para BPSK, QPSK
+  y 8PSK, con dos radios USRP B210 y GNU Radio 3.10, y lo compara con las curvas teóricas [13].</li>
+<li><strong>Comunicación por paquetes en GNU Radio.</strong> El tutorial oficial [14] muestra cómo armar un transmisor y un receptor de
+  paquetes con bloques estándar como <code>Stream CRC32</code>, <code>Protocol Formatter</code> y <code>Correlate Access Code - Tag Stream</code>. Se tomó como
+  referencia para usar esos bloques.</li>
+<li><strong>HackRF y GNU Radio en la enseñanza.</strong> Del Barrio y otros [15] proponen esta combinación para enseñar teoría de las
+  comunicaciones, y la evalúan en una prueba con 36 estudiantes.</li>
+<li><strong>Transmisión de archivos con HackRF One.</strong> Castillo Alarcón y otros [16] implementan un modulador GMSK con HackRF One y GNU
+  Radio y lo demuestran enviando un archivo de texto. El repositorio abierto HackRF-data [17] también transfiere datos binarios
+  entre dos HackRF One.</li>
+<li><strong>Trabajos finales de carrera.</strong> Tábara Carbajo [18] simula modulaciones en GNU Radio y luego transmite con HackRF hacia un
+  receptor RTL-SDR. Sáenz Valero [19] implementa modulaciones PSK y QAM con herramientas de código abierto.</li>
 </ul>
-<p>Con potencia de señal <code>P = 1</code> por muestra, la energía por símbolo es <code>Es = P·sps</code> y <code>N0 = σ²</code>; por lo tanto</p>
-<pre><code>Es/N0 = 2·Eb/N0  ⟹  σ = √( sps / (2·Eb/N0) )          (variable `ruido` de los .grc)
-</code></pre>
-<p><strong>No se usa el bloque <code>Channel Model</code></strong>: se midió que su generador de ruido reutiliza solo <strong>16 384 valores distintos</strong>
-(el mayor llega a 3,84 σ). A Eb/N0 = 10 dB un error de bit necesita ruido mayor que √(2·Eb/N0) ≈ 4,5 σ en un eje, de modo
-que con ese bloque el BER daría <strong>0</strong> aunque la teoría diga 3,9×10⁻⁶. El <code>Noise Source</code> genera siempre valores nuevos.</p>
-<h3>3.5 Half-duplex por división en el tiempo (TDD)</h3>
-<ul>
-<li><strong>Turnos (<code>Stream Mux</code>)</strong>: el canal compartido se arma tomando, en forma cíclica, 2048 muestras del transmisor A,
-  256 de silencio (guarda), 2048 del transmisor B y 256 de silencio. Mientras un nodo no tiene el turno, su transmisor
-  queda en espera (no pierde datos: sigue donde quedó en su próximo turno). En las guardas no transmite nadie.</li>
-<li><strong>Conmutador de recepción (<code>Stream Demux</code>)</strong>: con el mismo patrón de longitudes, las ranuras de A van al receptor de B,
-  las de B al receptor de A y las guardas se descartan. <strong>Ningún nodo escucha lo que él mismo transmite</strong> y nunca
-  transmiten los dos a la vez.</li>
-<li>Cada nodo usa el 44 % del tiempo del canal (≈ 111 kbit/s por sentido).</li>
-<li><strong>Desvío de frecuencia</strong>: el CFO no es una propiedad del medio sino la <strong>diferencia entre los osciladores</strong> de los
-  nodos; si el de A está <code>Δf</code> por encima del de B, el receptor de B ve <code>+Δf</code> y el de A ve <code>−Δf</code>. Por eso el <code>Rotator</code>
-  se aplica a la entrada de cada receptor (B: <code>+Δf</code>, A: <code>−Δf</code>). Aplicarlo en el canal compartido sería incorrecto en esta
-  simulación: el <code>Stream Demux</code> saca del flujo de cada receptor el tiempo de la ranura ajena, y el receptor vería un
-  salto de fase en cada cambio de turno que un receptor real (cuyo oscilador sigue girando) no ve. Se comprobó: con el
-  CFO en el canal compartido el BER subía a 1,5–2 veces la teoría con 100–500 Hz; con el modelo correcto queda ≈ teoría.</li>
-</ul>
-<h3>3.6 Receptor</h3>
-<p>Cada nodo tiene un receptor completo, todo con bloques estándar:</p>
+<p>A partir de estos antecedentes, este proyecto reúne en un solo sistema, armado solo con bloques estándar: trama con CRC-32,
+turnos half-duplex en simulación, comparación del BER con una teoría que incluye la codificación diferencial, y transmisión
+real de archivos entre dos HackRF One, verificada con SHA-256.</p>
+<hr />
+<h2>2. Metodología</h2>
+<p>El trabajo se hizo por etapas, y cada etapa se comprobó antes de pasar a la siguiente:</p>
 <ol>
-<li><strong>Filtro adaptado</strong> RRC (3.3).</li>
-<li><strong>Sincronismo de símbolo</strong> (<code>Symbol Sync</code>, detector de error de temporización de máxima verosimilitud, interpolador
-   MMSE de 8 coeficientes, ancho de banda de lazo 0,01): elige el instante óptimo de muestreo y entrega 1 muestra por
-   símbolo.</li>
-<li><strong>Lazo de Costas</strong> (<code>Costas Loop</code>, orden 4, ancho de banda 0,005): corrige la fase y la frecuencia de la portadora.</li>
-<li><strong>Decisión</strong> (<code>Constellation Decoder</code>) → <strong>decodificación diferencial</strong> (<code>Differential Decoder</code>, módulo 4) →
-   <strong>mapa Gray inverso</strong> (<code>Map</code>) → <strong>bits</strong> (<code>Unpack K Bits</code>).</li>
-<li><strong>Detección de trama</strong> (<code>Correlate Access Code - Tag Stream</code>): busca el preámbulo tolerando hasta 12 bits erróneos
-   de 64, lee las dos copias de la longitud (deben coincidir) y entrega solo el payload + CRC como "tagged stream".</li>
-<li><strong>CRC-32</strong> (<code>Repack Bits</code> → <code>Stream CRC32</code> en modo verificación): descarta las tramas con errores; las correctas se
-   convierten en mensajes (<code>Tagged Stream to PDU</code>) y se escriben en <code>mensajes_recibidos_A.txt</code> / <code>_B.txt</code>
-   (una de cada 100).</li>
+<li><strong>Cálculo teórico.</strong> Se obtuvieron las fórmulas del BER y del PER, y se verificaron con la simulación Monte Carlo.</li>
+<li><strong>Diseño en GNU Radio.</strong> Se armó el sistema solo con bloques estándar, para que cualquier persona pueda abrir los flowgraphs
+   sin instalar nada adicional. Se hicieron tres flowgraphs: un enlace en un solo sentido con un gráfico por etapa, para
+   estudiar cada bloque; el sistema half-duplex completo con interfaz; y el mismo sistema sin interfaz, para medir.</li>
+<li><strong>Medición del BER en simulación</strong> (sección 2.2).</li>
+<li><strong>Adaptación a HackRF y ensayo sin equipos</strong> (sección 2.3).</li>
+<li><strong>Prueba de laboratorio</strong> (sección 2.4).</li>
 </ol>
-<p><strong>Anchos de banda de los lazos.</strong> Los valores típicos de los tutoriales de GNU Radio (Costas 0,0628 y sincronismo 0,045)
-enganchan rápido pero agregan mucho ruido de fase y de temporización: con ellos el BER medido a 6 dB era 1,72 veces la
-teoría. Con 0,005 y 0,01 baja a 1,06. Lazos todavía más angostos mejoran muy poco (1,24 → 1,16 a 10 dB) y enganchan
-más lento; ambos anchos de banda quedan como controles en la interfaz.</p>
-<h3>3.7 Medición del BER</h3>
-<ul>
-<li>Un segundo detector (<code>Correlate Access Code - Tag</code>) solo <strong>marca</strong> dónde termina el primer preámbulo y
-  <code>Tagged Stream Align</code> descarta todo lo anterior: desde ahí el flujo de bits recibido está alineado con el transmitido.</li>
-<li>Se compara bit a bit con una <strong>copia del transmisor del otro nodo</strong> (los mismos bloques: como todas las tramas son
-  iguales y van una tras otra, la alineación se mantiene aunque se pierdan tramas).</li>
-<li>El conteo lo hace el bloque estándar <strong><code>BER</code> (<code>fec.ber_bf</code>)</strong>, que compara bytes empaquetados (8 bits por byte).</li>
-<li>Se descartan los primeros 100 000 bits (≈ 0,9 s de recepción por nodo, <code>Skip Head</code> en ambos flujos): mientras el lazo de
-  Costas se engancha —por ejemplo a un CFO de 200 Hz, partiendo de 0 Hz— hay una ráfaga de errores de arranque
-  (decenas de errores por nodo) que no pertenece al régimen permanente. Se comprobó que con 50 000 bits descartados el
-  caso con CFO ya da los mismos errores que sin CFO; 100 000 deja margen.</li>
-<li>El BER medido incluye todos los bits después del primer preámbulo (encabezados, payload y CRC) de las tramas
-  detectadas y no detectadas.</li>
-</ul>
-<hr />
-<h2>4. Implementación en GNU Radio</h2>
+<h3>2.1 Herramientas y repositorio</h3>
+<p>Se usó GNU Radio 3.10.12 con Python 3.11 (distribución RadioConda, en Windows) y dos HackRF One. La Tabla 2 resume el
+contenido del repositorio.</p>
+<p class="caption tabla"><em>Tabla 2 – Contenido principal del repositorio.</em></p>
 <table>
 <thead>
 <tr>
-<th>Archivo</th>
-<th>Para qué sirve</th>
+<th>Archivo o carpeta</th>
+<th>Contenido</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>grc_estandar/enlace_4qam_tramas.grc</code></td>
-<td>Enlace en un solo sentido con <strong>un gráfico por etapa</strong> (bits de la trama, señal transmitida, espectros, canal, ojo, sincronismo, constelaciones, frecuencia del lazo, histograma, bits recibidos vs transmitidos, BER). Sirve para entender qué pasa en cada bloque.</td>
+<td><code>grc_estandar/</code></td>
+<td>Los tres flowgraphs de la simulación</td>
 </tr>
 <tr>
-<td><code>grc_estandar/halfduplex_4qam.grc</code></td>
-<td><strong>Sistema completo</strong>: dos nodos half-duplex por TDD, con interfaz (turnos en el canal, recepción de cada nodo y BER de cada uno).</td>
+<td><code>grc_hackrf/</code></td>
+<td>Transmisor y receptor para HackRF One</td>
 </tr>
 <tr>
-<td><code>grc_estandar/halfduplex_4qam_ber.grc</code></td>
-<td>El mismo half-duplex <strong>sin interfaz</strong> y con parámetros por línea de comandos, para medir BER (lo usa <code>run_ber_sweep.py</code>).</td>
+<td><code>ber_teorico.py</code></td>
+<td>Fórmulas del BER y del PER, y verificación Monte Carlo</td>
+</tr>
+<tr>
+<td><code>run_ber_sweep.py</code></td>
+<td>Barrido automático de BER en todas las condiciones de canal</td>
+</tr>
+<tr>
+<td><code>reconstruir_archivo.py</code></td>
+<td>Arma el archivo recibido y verifica su huella SHA-256</td>
+</tr>
+<tr>
+<td><code>tests/</code>, <code>hackrf_simulada/</code></td>
+<td>Pruebas automáticas y emulador de los HackRF</td>
+</tr>
+<tr>
+<td><code>resultados/</code>, <code>resultados_laboratorio/</code></td>
+<td>Mediciones, gráficos y capturas de pantalla</td>
 </tr>
 </tbody>
 </table>
-<p>Controles de las interfaces: Eb/N0, fase del canal, CFO / desvío entre osciladores y anchos de banda de los dos lazos.
-Arriba se muestran el BER teórico y el medido (acumulado y reciente).</p>
-<p><img alt="Half-duplex: canal compartido" src="resultados/captura_halfduplex_1.png" /></p>
-<p class="caption"><em>Figura 2 – <code>halfduplex_4qam.grc</code>, pestaña 1 (Eb/N0 = 8 dB, fase 20°, desvío entre osciladores 200 Hz). Arriba a la
-izquierda, los </em><em>turnos</em><em>: el nodo A (azul) y el nodo B (rojo) se alternan; la señal en el canal (verde) solo aparece en
-el turno de cada uno y en las guardas el canal queda en silencio. Abajo, la señal de cada transmisor y las muestras en
-el canal.</em></p>
-<p><img alt="Half-duplex: el nodo A recibe" src="resultados/captura_halfduplex_2.png" /></p>
-<p class="caption"><em>Figura 3 – Pestaña 2: el nodo A recibe lo que transmite B. Antes de Costas la constelación es un anillo (gira por el
-desvío de frecuencia y el ojo aparece cerrado); después del lazo quedan las cuatro nubes. El lazo estima −200 Hz, el
-desvío que ve A. Abajo: bits recibidos vs transmitidos (sin errores en la ventana mostrada), payload entregado por el
-detector de tramas (la etiqueta <code>len: 776</code> es payload + CRC en bits) y log₁₀(BER) medido vs teórico.</em></p>
-<p><img alt="Half-duplex: el nodo B recibe" src="resultados/captura_halfduplex_3.png" /></p>
-<p class="caption"><em>Figura 4 – Pestaña 3: el nodo B recibe lo que transmite A; su lazo estima +200 Hz.</em></p>
-<p><img alt="Enlace simple: transmisor y canal" src="resultados/captura_enlace_1.png" /></p>
-<p class="caption"><em>Figura 5 – <code>enlace_4qam_tramas.grc</code>, pestaña 1: comienzo de una trama (preámbulo de 64 bits, longitud y comienzo del
-payload; la etiqueta <code>packet_len: 112</code> marca el inicio de la trama de 112 bytes), señal transmitida (pulsos RRC en I y Q;
-los tramos planos son símbolos repetidos: en el texto hay muchos bits en 0 y con codificación diferencial "00" significa
-"repetir el símbolo anterior"), espectro (±84 kHz = (1+α)·Rs/2), señal transmitida vs recibida, espectros con ruido y
-muestras recibidas sin sincronizar.</em></p>
-<p><img alt="Enlace simple: receptor, sin fase ni CFO" src="resultados/captura_enlace_ideal_2.png" /></p>
-<p class="caption"><em>Figura 6 – Pestaña 2 sin fase ni CFO (10 dB): </em><em>ojo abierto</em><em> en cada período de símbolo (8 µs), período de símbolo
-estimado estable en 4 muestras, constelación con cuatro nubes (antes y después de Costas coinciden porque no hay nada que
-corregir) e histograma de la componente I: dos campanas gaussianas centradas en ±0,707. Los números de BER de arriba
-corresponden a pocos segundos de ejecución (pocos errores) y no son una medición; las mediciones están en la sección 6.</em></p>
-<p><img alt="Enlace simple: receptor con fase y CFO" src="resultados/captura_enlace_2.png" /></p>
-<p class="caption"><em>Figura 7 – La misma pestaña con fase 20° y CFO 200 Hz: el ojo se cierra porque está antes del lazo de Costas (la rotación
-mezcla I con Q), pero el lazo corrige la frecuencia (estima 200 Hz) y la constelación final vuelve a ser la de la Figura 6.</em></p>
-<p><img alt="Enlace simple: bits y BER" src="resultados/captura_enlace_3.png" /></p>
-<p class="caption"><em>Figura 8 – Pestaña 3: bits recibidos vs transmitidos con los errores (XOR), payload entregado por el detector de tramas,
-log₁₀(BER) medido en el último millón de bits vs teórico y BER acumulado.</em></p>
-<hr />
-<h2>5. Metodología de medición</h2>
+<h3>2.2 Medición del BER en simulación</h3>
+<p>Se usó la versión sin interfaz del sistema, ejecutada por <code>run_ber_sweep.py</code>. El método fue el siguiente:</p>
 <ul>
-<li><code>python run_ber_sweep.py</code> compila <code>grc_estandar/halfduplex_4qam_ber.grc</code> con <code>grcc</code> y lo ejecuta una vez por punto
-  (condición de canal, Eb/N0) con los parámetros correspondientes; el <code>.grc</code> es la única descripción del enlace.</li>
-<li>En cada punto corren <strong>los dos nodos</strong>; se suman los errores y los bits de los dos receptores.</li>
-<li>Muestras del canal por punto: las necesarias para acumular ≈ 400 errores (mínimo 4×10⁶ y máximo 2×10⁸ muestras).</li>
-<li><strong>BER</strong> = errores / bits comparados (<code>fec.ber_bf</code>), con <strong>intervalo de confianza de Wilson al 95 %</strong>.
-  <strong>PER</strong> = 1 − (tramas con CRC correcto) / (tramas enviadas); las tramas no detectadas cuentan como perdidas.</li>
-<li>Condiciones de canal: (1) AWGN ideal; (2) AWGN + fase de 20° <strong>sin</strong> corrección (lazo de Costas con ancho de banda 0);
-  (3) AWGN + 20° <strong>con</strong> lazo de Costas; (4) AWGN + 20° + desvío entre osciladores de 200 Hz (0,16 % de la velocidad de
-  símbolo) con lazo de Costas.</li>
-<li>Todas las condiciones usan la <strong>misma semilla de ruido</strong>, de modo que las diferencias entre ellas se deben al receptor y
-  no al azar; con la misma semilla se obtienen exactamente los mismos números. El barrido completo (44 puntos,
-  5,4×10⁸ muestras, 2,3×10⁸ bits comparados) tarda ≈ 30 segundos.</li>
+<li><strong>Barrido.</strong> E<sub>b</sub>/N<sub>0</sub> de 0 a 10 dB, de a 1 dB, en cuatro condiciones de canal: (1) AWGN; (2) AWGN con rotación de fase de 20° sin
+  corregir, con el lazo de Costas desactivado; (3) AWGN con 20° y lazo de Costas; (4) AWGN con 20°, desvío de frecuencia de
+  200 Hz y lazo de Costas.</li>
+<li><strong>Cantidad de datos.</strong> En cada punto se acumularon alrededor de 400 errores, con un mínimo de 4×10⁶ y un máximo de 2×10⁸
+  muestras, y se sumaron los resultados de los dos nodos. En total fueron 44 puntos, 5,4×10⁸ muestras y 2,3×10⁸ bits
+  comparados.</li>
+<li><strong>Comparación de bits.</strong> Un detector marca el final del primer preámbulo. Desde allí, los bits recibidos se comparan uno a uno
+  con una copia del transmisor del otro nodo, usando el bloque estándar <code>BER</code>.</li>
+<li><strong>Arranque.</strong> Se descartan los primeros 100 000 bits, porque mientras los lazos se enganchan hay una ráfaga de errores que no
+  representa el funcionamiento normal.</li>
+<li><strong>Cálculos.</strong> BER = errores / bits comparados, con intervalo de confianza de Wilson al 95 % [20].
+  PER = 1 − (tramas con CRC correcto / tramas enviadas).</li>
 </ul>
-<hr />
-<h2>6. Resultados y análisis</h2>
-<h3>6.1 AWGN ideal: BER medido vs teórico</h3>
+<p>Todas las condiciones usan la misma semilla de ruido. Entre dos ejecuciones completas del barrido, la cantidad de errores puede
+variar levemente (hasta 0,04 %), sin que cambien las conclusiones.</p>
+<p>Durante el desarrollo, varias decisiones de diseño surgieron de comparar las mediciones con la teoría (Tabla 3).</p>
+<p class="caption tabla"><em>Tabla 3 – Problemas detectados al comparar con la teoría, y cómo se resolvieron.</em></p>
 <table>
 <thead>
 <tr>
-<th style="text-align: right;">Eb/N0 [dB]</th>
-<th style="text-align: right;">muestras</th>
-<th style="text-align: right;">bits comparados</th>
-<th style="text-align: right;">errores</th>
+<th>Problema observado</th>
+<th>Causa</th>
+<th>Solución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>El BER daba 0 con E<sub>b</sub>/N<sub>0</sub> alto</td>
+<td>El bloque <code>Channel Model</code> reutiliza solo 16 384 valores de ruido</td>
+<td>Canal armado con <code>Noise Source</code> y <code>Add</code></td>
+</tr>
+<tr>
+<td>BER 1,7 veces mayor que la teoría a 6 dB</td>
+<td>Lazos de Costas y de sincronismo demasiado anchos</td>
+<td>Anchos de banda 0,005 y 0,01: la relación bajó a 1,06</td>
+</tr>
+<tr>
+<td>Tramas perdidas por el enganche del lazo de Costas</td>
+<td>El lazo puede quedar girado 90°</td>
+<td>Codificación diferencial y teoría de la ecuación (4)</td>
+</tr>
+<tr>
+<td>BER 1,5 a 2 veces mayor con desvío de frecuencia</td>
+<td>Aplicar el desvío en el canal compartido genera saltos de fase en cada turno</td>
+<td>Desvío aplicado a la entrada de cada receptor</td>
+</tr>
+<tr>
+<td>Con desvío, BER 2 a 3 veces mayor en corridas cortas</td>
+<td>Ráfaga de errores mientras se engancha el lazo</td>
+<td>Descartar los primeros 100 000 bits</td>
+</tr>
+</tbody>
+</table>
+<h3>2.3 Preparación de la prueba de laboratorio</h3>
+<p>Antes de usar las placas se hicieron dos ensayos sin equipos, ambos con los flowgraphs de la prueba real:</p>
+<ul>
+<li><strong>Canal de laboratorio simulado</strong> (<code>tests/test_hackrf.py</code>, 7 pruebas). Reemplaza los HackRF por un canal con desvío de hasta
+  ±40 kHz, relojes distintos en ±20 ppm, ruido de fase y ruido previo al comienzo de la transmisión. Con este canal se eligieron
+  los anchos de banda de los lazos: con FLL 0,005 y Costas 0,01 el PER fue de 0,06 a 0,09 a E<sub>b</sub>/N<sub>0</sub> = 9 dB (teórico: 0,058),
+  mientras que con FLL 0,02 y Costas 0,02 subía a 0,4.</li>
+<li><strong>Emulador de los dos HackRF</strong> (<code>hackrf_simulada/</code>, 9 casos). Un programa en Python imita las placas y el aire, para ensayar el
+  procedimiento completo en una sola computadora, incluyendo errores como la saturación o una frecuencia mal elegida.</li>
+</ul>
+<p>Estas pruebas se volvieron a ejecutar con los flowgraphs usados en el laboratorio y todas dieron resultado correcto, al igual que
+las 9 pruebas de la simulación (<code>tests/test_flowgraphs.py</code>).</p>
+<h3>2.4 Prueba de laboratorio</h3>
+<p>Las dos placas se conectaron por USB a una misma computadora y se ubicaron a unos 40 cm de distancia, cada una con su antena
+(Figura 3). Se trabajó a 915 MHz, dentro de la banda ISM de 902 a 928 MHz de la Región 2 [21], con los amplificadores apagados.</p>
+<p><img src="figuras_informe/montaje_laboratorio.png" alt="Montaje de la prueba de laboratorio" style="width:86%"></p>
+<p class="caption"><em>Figura 3 – Disposición de los equipos en la prueba de laboratorio, con los ajustes finales.</em></p>
+<p>El procedimiento fue el siguiente:</p>
+<ol>
+<li>Se asoció cada flowgraph a su placa mediante el número de serie y se eligió el archivo a enviar.</li>
+<li>Con los dos flowgraphs en marcha, se ajustaron las ganancias del receptor mirando el espectro y la señal cruda. Se buscó que
+   la señal quedara bien por encima del ruido y lejos del límite de ±1, donde el conversor del HackRF satura.</li>
+<li>Se comprobó el sincronismo en la constelación y se observaron los indicadores: tramas detectadas, tramas con CRC correcto,
+   E<sub>b</sub>/N<sub>0</sub> estimado y desvío de frecuencia.</li>
+<li>Se dejó transmitir el archivo durante varias pasadas y se guardaron capturas de pantalla.</li>
+<li>Se cerraron los flowgraphs y se ejecutó <code>reconstruir_archivo.py</code>, que ordena los paquetes por número, descarta los repetidos,
+   arma el archivo y compara su huella SHA-256 con la del transmisor.</li>
+</ol>
+<p>En el laboratorio, el receptor no tiene una copia de los datos con la cual comparar mientras recibe, así que el BER no se midió de
+forma directa. La prueba se evaluó con las tramas descartadas y con la igualdad exacta entre el archivo enviado y el recibido.</p>
+<hr />
+<h2>3. Resultados y discusión</h2>
+<h3>3.1 Diseño obtenido</h3>
+<h4>Formato de trama</h4>
+<p>La Figura 4 muestra el formato de la trama. El preámbulo es el código de acceso estándar de GNU Radio, y el receptor lo acepta
+aunque tenga hasta 12 bits erróneos de 64. La longitud se envía dos veces, y la trama solo se acepta si las dos copias coinciden.
+El CRC-32 es el mismo que usa Ethernet: se comprobó que el bloque <code>Stream CRC32</code> da el mismo resultado que la función estándar
+<code>zlib.crc32</code>.</p>
+<p>En el laboratorio, los datos llevan delante un número de 2 bytes. Al conjunto de número y datos se lo llama <em>paquete</em>. El archivo
+se envía por <em>pasadas</em>: un relleno al azar, que da tiempo a que los lazos del receptor se enganchen, seguido de todos los paquetes.
+El último paquete describe el archivo con su nombre, su tamaño y su huella SHA-256.</p>
+<p><img alt="Formato de trama y de pasada" src="figuras_informe/trama.png" /></p>
+<p class="caption"><em>Figura 4 – Formato de la trama en simulación y en laboratorio, y estructura de una pasada. En naranja, lo que se agrega para el
+laboratorio.</em></p>
+<h4>Transmisor y receptor</h4>
+<p>La Figura 5 muestra las etapas del sistema, y las Figuras 6 y 7 los flowgraphs reales del laboratorio. En el transmisor, <code>Stream
+CRC32</code> agrega el CRC-32, <code>Protocol Formatter</code> arma el encabezado y <code>Tagged Stream Mux</code> lo une a los datos. <code>Constellation Modulator</code>
+agrupa los bits de a dos, aplica la codificación diferencial y el filtro RRC.</p>
+<p>En el receptor, el filtro adaptado, <code>Symbol Sync</code> y <code>Costas Loop</code> recuperan los símbolos. <code>Constellation Decoder</code>, <code>Differential
+Decoder</code> y <code>Map</code> los convierten en bits. <code>Correlate Access Code - Tag Stream</code> busca el preámbulo, lee la longitud y entrega los datos
+de la trama. Por último, <code>Stream CRC32</code> verifica el código y deja pasar solo las tramas correctas. La Tabla 4 resume los parámetros principales.</p>
+<p class="caption tabla"><em>Tabla 4 – Parámetros principales.</em></p>
+<table>
+<thead>
+<tr>
+<th>Parámetro</th>
+<th>Simulación</th>
+<th>Laboratorio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frecuencia de muestreo</td>
+<td>500 kHz</td>
+<td>2 MHz (1 MHz en el receptor, después de filtrar)</td>
+</tr>
+<tr>
+<td>Muestras por símbolo</td>
+<td>4</td>
+<td>8 en el transmisor, 4 en el receptor</td>
+</tr>
+<tr>
+<td>Velocidad de símbolos</td>
+<td>125 000 símbolos/s</td>
+<td>250 000 símbolos/s</td>
+</tr>
+<tr>
+<td>Velocidad de bits en el canal</td>
+<td>250 kbit/s</td>
+<td>500 kbit/s</td>
+</tr>
+<tr>
+<td>Factor de exceso de banda</td>
+<td>0,35</td>
+<td>0,35</td>
+</tr>
+<tr>
+<td>Ancho de banda ocupado</td>
+<td>169 kHz</td>
+<td>338 kHz</td>
+</tr>
+<tr>
+<td>Datos por trama</td>
+<td>93 bytes</td>
+<td>202 bytes (número y datos)</td>
+</tr>
+<tr>
+<td>Trama completa</td>
+<td>109 bytes</td>
+<td>218 bytes</td>
+</tr>
+<tr>
+<td>Ancho de banda de los lazos</td>
+<td>Costas 0,005; sincronismo 0,01</td>
+<td>FLL 0,005; Costas 0,01; sincronismo 0,01</td>
+</tr>
+</tbody>
+</table>
+<p><img src="figuras_informe/cadena_tx_rx.png" alt="Etapas del transmisor y del receptor" style="width:84%"></p>
+<p class="caption"><em>Figura 5 – Etapas del transmisor y del receptor. El receptor de la simulación y el del laboratorio usan los mismos bloques a partir
+del filtro adaptado.</em></p>
+<p><img alt="Flowgraph del transmisor" src="figuras_informe/flowgraph_tx.png" /></p>
+<p class="caption"><em>Figura 6 – Flowgraph del transmisor (<code>hackrf_tx_archivo.grc</code>), dibujado por GNU Radio Companion. Para que se pueda leer en la hoja,
+los bloques se acercaron y se omitieron los comentarios, las variables y los gráficos. La salida de arriba a la derecha vuelve a la
+entrada <code>in1</code> del <code>Stream Mux</code>, que alterna el relleno con las tramas.</em></p>
+<p><img src="figuras_informe/flowgraph_rx.png" alt="Flowgraph del receptor" style="width:90%"></p>
+<p class="caption"><em>Figura 7 – Flowgraph del receptor (<code>hackrf_rx_archivo.grc</code>), con el mismo criterio. También se omitieron los gráficos, las sondas de
+los indicadores y los bloques que arman el gráfico de números de paquete. La cadena sigue de una fila a la siguiente.</em></p>
+<h4>Canal simulado</h4>
+<p>El canal se armó con bloques simples, para que la calibración quede a la vista: <code>Multiply Const</code> aplica la rotación de fase, y
+<code>Noise Source</code> con <code>Add</code> suman el ruido. Como la señal tiene potencia 1 por muestra, el desvío estándar del ruido se calcula con:</p>
+<div class="ecuacion">σ = √( sps / (2 · E<sub>b</sub>/N<sub>0</sub>) )<span class="num">(7)</span></div>
+
+<h4>Half-duplex por división en el tiempo</h4>
+<p>La Figura 8 muestra cómo los dos nodos comparten el canal, y la Figura 9 el flowgraph correspondiente. <code>Stream Mux</code> toma, en forma
+cíclica, 2048 muestras del nodo A, 256 de silencio, 2048 del nodo B y otras 256 de silencio. A 500 kHz, eso equivale a turnos de
+4,1 ms separados por 0,5 ms. <code>Stream Demux</code> usa el mismo patrón y envía cada turno al receptor que corresponde. Cada nodo ocupa el
+44 % del tiempo, es decir, unos 111 kbit/s por sentido.</p>
+<p>El desvío de frecuencia se aplica a la entrada de cada receptor, con signo opuesto en cada uno (+Δf en B, −Δf en A), porque es la
+diferencia entre los osciladores de los dos nodos y no una propiedad del canal.</p>
+<p><img src="figuras_informe/sistema_halfduplex.png" alt="Esquema del sistema half-duplex" style="width:88%"></p>
+<p class="caption"><em>Figura 8 – Sistema half-duplex de la simulación y reparto del canal en el tiempo.</em></p>
+<p><img alt="Flowgraph del canal compartido" src="figuras_informe/flowgraph_halfduplex.png" /></p>
+<p class="caption"><em>Figura 9 – Parte de <code>halfduplex_4qam.grc</code>. Arriba, el transmisor del nodo A (el del nodo B es igual). Abajo, los turnos, el canal
+y el reparto hacia cada receptor. Se omitieron los gráficos y los comentarios.</em></p>
+<h4>Adaptación a los HackRF</h4>
+<p class="caption tabla"><em>Tabla 5 – Qué se agregó para trabajar con equipos reales.</em></p>
+<table>
+<thead>
+<tr>
+<th>Problema del equipo real</th>
+<th>Solución</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>El receptor no sabe a qué parte del archivo corresponde cada trama, ni si se perdió alguna</td>
+<td>Número de paquete de 2 bytes y paquete final de descripción</td>
+</tr>
+<tr>
+<td>Al comenzar, los lazos del receptor tardan en engancharse</td>
+<td>Relleno de 2500 bytes al inicio de cada pasada</td>
+</tr>
+<tr>
+<td>El HackRF tiene una espiga justo en la frecuencia sintonizada</td>
+<td>Corrimiento digital de 400 kHz: las placas se sintonizan a 914,6 MHz y la señal va en +400 kHz, por lo que la espiga queda fuera del filtro</td>
+</tr>
+<tr>
+<td>El HackRF necesita al menos 2 millones de muestras por segundo</td>
+<td>Transmisor con 8 muestras por símbolo. El receptor baja a 1 millón de muestras por segundo, y recupera las 4 muestras por símbolo de la simulación</td>
+</tr>
+<tr>
+<td>El nivel recibido depende de la distancia y las ganancias</td>
+<td>Control automático de ganancia (<code>AGC2</code>)</td>
+</tr>
+<tr>
+<td>Los osciladores de las placas difieren en varios kHz</td>
+<td>Corrección gruesa de frecuencia (<code>FLL Band-Edge</code>), preparada para desvíos de hasta unos ±40 kHz</td>
+</tr>
+<tr>
+<td>No hay canal de vuelta para pedir lo que se perdió</td>
+<td>El archivo se repite y <code>reconstruir_archivo.py</code> toma cada paquete de la pasada en que llegó bien</td>
+</tr>
+</tbody>
+</table>
+<h3>3.2 Resultados de la simulación</h3>
+<h4>Funcionamiento del sistema half-duplex</h4>
+<p>Las Figuras 10 y 11 muestran la interfaz con E<sub>b</sub>/N<sub>0</sub> = 8 dB, una rotación de fase de 20° y un desvío de 200 Hz.</p>
+<p><img src="resultados/captura_halfduplex_1.png" alt="Turnos en el canal compartido" style="width:92%"></p>
+<p class="caption"><em>Figura 10 – <code>halfduplex_4qam.grc</code>, pestaña 1. Arriba a la izquierda se ven los turnos: el nodo A (azul) y el nodo B (rojo) se
+alternan, y la señal del canal (verde) solo aparece en el turno de cada uno. En las guardas, el canal queda en silencio.</em></p>
+<p><img src="resultados/captura_halfduplex_2.png" alt="El nodo A recibe lo que transmite B" style="width:92%"></p>
+<p class="caption"><em>Figura 11 – Pestaña 2: el nodo A recibe lo que transmite B. Antes del lazo de Costas, la constelación (azul) es un anillo, porque la
+fase gira; después (rojo) quedan cuatro nubes. El lazo estima −200 Hz, que es el desvío que ve el nodo A. Abajo: los bits recibidos
+coinciden con los transmitidos en la ventana mostrada, y el BER medido queda sobre el teórico.</em></p>
+<h4>BER en canal AWGN</h4>
+<p class="caption tabla"><em>Tabla 6 – BER y PER medidos en canal AWGN, comparados con la teoría.</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">E<sub>b</sub>/N<sub>0</sub> [dB]</th>
+<th style="text-align: right;">Bits comparados</th>
+<th style="text-align: right;">Errores</th>
 <th style="text-align: right;">BER medido</th>
-<th style="text-align: center;">IC 95 %</th>
-<th style="text-align: right;">BER teórico 2p(1−p)</th>
-<th style="text-align: right;">medido / teórico</th>
+<th style="text-align: right;">Intervalo de confianza (95 %)</th>
+<th style="text-align: right;">BER teórico</th>
+<th style="text-align: right;">Medido / teórico</th>
 <th style="text-align: right;">PER medido</th>
 <th style="text-align: right;">PER teórico</th>
 </tr>
@@ -409,660 +540,602 @@ log₁₀(BER) medido en el último millón de bits vs teórico y BER acumulado.
 <tbody>
 <tr>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.576.600</td>
-<td style="text-align: right;">235556</td>
+<td style="text-align: right;">1 576 600</td>
+<td style="text-align: right;">235 556</td>
 <td style="text-align: right;">1,49×10⁻¹</td>
-<td style="text-align: center;">[1,49×10⁻¹ ; 1,50×10⁻¹]</td>
+<td style="text-align: right;">[1,49 ; 1,50]×10⁻¹</td>
 <td style="text-align: right;">1,45×10⁻¹</td>
-<td style="text-align: right;">1,031</td>
+<td style="text-align: right;">1,03</td>
 <td style="text-align: right;">1,000</td>
 <td style="text-align: right;">1,000</td>
 </tr>
 <tr>
 <td style="text-align: right;">1</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.576.600</td>
-<td style="text-align: right;">172870</td>
+<td style="text-align: right;">1 576 600</td>
+<td style="text-align: right;">172 870</td>
 <td style="text-align: right;">1,10×10⁻¹</td>
-<td style="text-align: center;">[1,09×10⁻¹ ; 1,10×10⁻¹]</td>
+<td style="text-align: right;">[1,09 ; 1,10]×10⁻¹</td>
 <td style="text-align: right;">1,06×10⁻¹</td>
-<td style="text-align: right;">1,032</td>
+<td style="text-align: right;">1,03</td>
 <td style="text-align: right;">1,000</td>
 <td style="text-align: right;">1,000</td>
 </tr>
 <tr>
 <td style="text-align: right;">2</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
-<td style="text-align: right;">118010</td>
+<td style="text-align: right;">1 577 472</td>
+<td style="text-align: right;">118 010</td>
 <td style="text-align: right;">7,48×10⁻²</td>
-<td style="text-align: center;">[7,44×10⁻² ; 7,52×10⁻²]</td>
+<td style="text-align: right;">[7,44 ; 7,52]×10⁻²</td>
 <td style="text-align: right;">7,22×10⁻²</td>
-<td style="text-align: right;">1,036</td>
+<td style="text-align: right;">1,04</td>
 <td style="text-align: right;">1,000</td>
 <td style="text-align: right;">1,000</td>
 </tr>
 <tr>
 <td style="text-align: right;">3</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
-<td style="text-align: right;">73760</td>
+<td style="text-align: right;">1 577 472</td>
+<td style="text-align: right;">73 760</td>
 <td style="text-align: right;">4,68×10⁻²</td>
-<td style="text-align: center;">[4,64×10⁻² ; 4,71×10⁻²]</td>
+<td style="text-align: right;">[4,64 ; 4,71]×10⁻²</td>
 <td style="text-align: right;">4,47×10⁻²</td>
-<td style="text-align: right;">1,046</td>
+<td style="text-align: right;">1,05</td>
 <td style="text-align: right;">1,000</td>
 <td style="text-align: right;">1,000</td>
 </tr>
 <tr>
 <td style="text-align: right;">4</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
-<td style="text-align: right;">40674</td>
+<td style="text-align: right;">1 577 472</td>
+<td style="text-align: right;">40 674</td>
 <td style="text-align: right;">2,58×10⁻²</td>
-<td style="text-align: center;">[2,55×10⁻² ; 2,60×10⁻²]</td>
+<td style="text-align: right;">[2,55 ; 2,60]×10⁻²</td>
 <td style="text-align: right;">2,47×10⁻²</td>
-<td style="text-align: right;">1,044</td>
+<td style="text-align: right;">1,04</td>
 <td style="text-align: right;">1,000</td>
 <td style="text-align: right;">1,000</td>
 </tr>
 <tr>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
-<td style="text-align: right;">19506</td>
+<td style="text-align: right;">1 577 472</td>
+<td style="text-align: right;">19 506</td>
 <td style="text-align: right;">1,24×10⁻²</td>
-<td style="text-align: center;">[1,22×10⁻² ; 1,25×10⁻²]</td>
+<td style="text-align: right;">[1,22 ; 1,25]×10⁻²</td>
 <td style="text-align: right;">1,18×10⁻²</td>
-<td style="text-align: right;">1,045</td>
+<td style="text-align: right;">1,04</td>
 <td style="text-align: right;">0,994</td>
 <td style="text-align: right;">0,992</td>
 </tr>
 <tr>
 <td style="text-align: right;">6</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
-<td style="text-align: right;">7836</td>
+<td style="text-align: right;">1 577 472</td>
+<td style="text-align: right;">7 836</td>
 <td style="text-align: right;">4,97×10⁻³</td>
-<td style="text-align: center;">[4,86×10⁻³ ; 5,08×10⁻³]</td>
+<td style="text-align: right;">[4,86 ; 5,08]×10⁻³</td>
 <td style="text-align: right;">4,77×10⁻³</td>
-<td style="text-align: right;">1,042</td>
+<td style="text-align: right;">1,04</td>
 <td style="text-align: right;">0,864</td>
 <td style="text-align: right;">0,856</td>
 </tr>
 <tr>
 <td style="text-align: right;">7</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
-<td style="text-align: right;">2588</td>
+<td style="text-align: right;">1 577 472</td>
+<td style="text-align: right;">2 588</td>
 <td style="text-align: right;">1,64×10⁻³</td>
-<td style="text-align: center;">[1,58×10⁻³ ; 1,70×10⁻³]</td>
+<td style="text-align: right;">[1,58 ; 1,70]×10⁻³</td>
 <td style="text-align: right;">1,54×10⁻³</td>
-<td style="text-align: right;">1,062</td>
+<td style="text-align: right;">1,06</td>
 <td style="text-align: right;">0,493</td>
 <td style="text-align: right;">0,465</td>
 </tr>
 <tr>
 <td style="text-align: right;">8</td>
-<td style="text-align: right;">4.000.000</td>
-<td style="text-align: right;">1.577.472</td>
+<td style="text-align: right;">1 577 472</td>
 <td style="text-align: right;">584</td>
 <td style="text-align: right;">3,70×10⁻⁴</td>
-<td style="text-align: center;">[3,41×10⁻⁴ ; 4,01×10⁻⁴]</td>
+<td style="text-align: right;">[3,41 ; 4,01]×10⁻⁴</td>
 <td style="text-align: right;">3,82×10⁻⁴</td>
-<td style="text-align: right;">0,970</td>
+<td style="text-align: right;">0,97</td>
 <td style="text-align: right;">0,147</td>
 <td style="text-align: right;">0,143</td>
 </tr>
 <tr>
 <td style="text-align: right;">9</td>
-<td style="text-align: right;">13.382.462</td>
-<td style="text-align: right;">5.747.531</td>
+<td style="text-align: right;">5 747 531</td>
 <td style="text-align: right;">428</td>
 <td style="text-align: right;">7,45×10⁻⁵</td>
-<td style="text-align: center;">[6,77×10⁻⁵ ; 8,19×10⁻⁵]</td>
+<td style="text-align: right;">[6,77 ; 8,19]×10⁻⁵</td>
 <td style="text-align: right;">6,73×10⁻⁵</td>
-<td style="text-align: right;">1,107</td>
+<td style="text-align: right;">1,11</td>
 <td style="text-align: right;">0,030</td>
 <td style="text-align: right;">0,027</td>
 </tr>
 <tr>
 <td style="text-align: right;">10</td>
-<td style="text-align: right;">116.216.210</td>
-<td style="text-align: right;">51.451.402</td>
+<td style="text-align: right;">51 451 402</td>
 <td style="text-align: right;">508</td>
 <td style="text-align: right;">9,87×10⁻⁶</td>
-<td style="text-align: center;">[9,05×10⁻⁶ ; 1,08×10⁻⁵]</td>
+<td style="text-align: right;">[9,05 ; 10,8]×10⁻⁶</td>
 <td style="text-align: right;">7,74×10⁻⁶</td>
-<td style="text-align: right;">1,275</td>
+<td style="text-align: right;">1,27</td>
 <td style="text-align: right;">0,004</td>
 <td style="text-align: right;">0,003</td>
 </tr>
 </tbody>
 </table>
-<p><img alt="BER AWGN" src="resultados/ber_awgn_medido_vs_teorico.png" /></p>
-<p class="caption"><em>Figura 9 – BER medido (puntos, con IC 95 %) vs teoría con codificación diferencial (línea azul). La línea gris es el
-4-QAM coherente sin codificación diferencial: la distancia entre ambas es el costo de esa codificación (0,3 dB a 10⁻⁵).</em></p>
-<p>El BER medido sigue a <code>2p(1−p)</code> a lo largo de <strong>más de cuatro décadas</strong> (de 1,5×10⁻¹ a 1×10⁻⁵). Entre 0 y 7 dB el exceso es
-de 3–6 % y es sistemático: con miles o decenas de miles de errores por punto el IC 95 % es de solo ± 1–4 % y la teoría queda
-justo fuera de él. Ese exceso equivale a <strong>+0,08 dB</strong> de Eb/N0 (tabla 6.6) y es la <strong>pérdida de implementación</strong> de un
-receptor real: el lazo de Costas y el sincronismo de símbolo estiman la fase y el instante de muestreo a partir de la
-señal ruidosa, y esas estimaciones tienen su propio ruido. A 8 dB la teoría cae dentro del intervalo; a 9 y 10 dB el
-cociente sube a 1,11 y 1,27 (≈ 0,1 dB): a Eb/N0 alto la curva es tan empinada que el mismo pequeño corrimiento en dB se
-traduce en un cociente mayor.</p>
-<h3>6.2 Rotación de fase fija sin corregir</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: right;">Eb/N0 [dB]</th>
-<th style="text-align: right;">errores</th>
-<th style="text-align: right;">BER medido</th>
-<th style="text-align: right;">BER teórico (2.5)</th>
-<th style="text-align: right;">medido / teórico</th>
-<th style="text-align: right;">nodo A</th>
-<th style="text-align: right;">nodo B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">306360</td>
-<td style="text-align: right;">1,94×10⁻¹</td>
-<td style="text-align: right;">1,93×10⁻¹</td>
-<td style="text-align: right;">1,007</td>
-<td style="text-align: right;">1,94×10⁻¹</td>
-<td style="text-align: right;">1,95×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">258110</td>
-<td style="text-align: right;">1,64×10⁻¹</td>
-<td style="text-align: right;">1,63×10⁻¹</td>
-<td style="text-align: right;">1,007</td>
-<td style="text-align: right;">1,64×10⁻¹</td>
-<td style="text-align: right;">1,64×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">212560</td>
-<td style="text-align: right;">1,35×10⁻¹</td>
-<td style="text-align: right;">1,34×10⁻¹</td>
-<td style="text-align: right;">1,005</td>
-<td style="text-align: right;">1,35×10⁻¹</td>
-<td style="text-align: right;">1,35×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">171478</td>
-<td style="text-align: right;">1,09×10⁻¹</td>
-<td style="text-align: right;">1,08×10⁻¹</td>
-<td style="text-align: right;">1,007</td>
-<td style="text-align: right;">1,09×10⁻¹</td>
-<td style="text-align: right;">1,09×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">132982</td>
-<td style="text-align: right;">8,43×10⁻²</td>
-<td style="text-align: right;">8,41×10⁻²</td>
-<td style="text-align: right;">1,003</td>
-<td style="text-align: right;">8,42×10⁻²</td>
-<td style="text-align: right;">8,44×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">99198</td>
-<td style="text-align: right;">6,29×10⁻²</td>
-<td style="text-align: right;">6,26×10⁻²</td>
-<td style="text-align: right;">1,004</td>
-<td style="text-align: right;">6,29×10⁻²</td>
-<td style="text-align: right;">6,29×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">69626</td>
-<td style="text-align: right;">4,41×10⁻²</td>
-<td style="text-align: right;">4,39×10⁻²</td>
-<td style="text-align: right;">1,005</td>
-<td style="text-align: right;">4,41×10⁻²</td>
-<td style="text-align: right;">4,41×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">45456</td>
-<td style="text-align: right;">2,88×10⁻²</td>
-<td style="text-align: right;">2,84×10⁻²</td>
-<td style="text-align: right;">1,015</td>
-<td style="text-align: right;">2,90×10⁻²</td>
-<td style="text-align: right;">2,87×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">26536</td>
-<td style="text-align: right;">1,68×10⁻²</td>
-<td style="text-align: right;">1,66×10⁻²</td>
-<td style="text-align: right;">1,014</td>
-<td style="text-align: right;">1,69×10⁻²</td>
-<td style="text-align: right;">1,67×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">13470</td>
-<td style="text-align: right;">8,54×10⁻³</td>
-<td style="text-align: right;">8,53×10⁻³</td>
-<td style="text-align: right;">1,001</td>
-<td style="text-align: right;">8,60×10⁻³</td>
-<td style="text-align: right;">8,48×10⁻³</td>
-</tr>
-<tr>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">5868</td>
-<td style="text-align: right;">3,72×10⁻³</td>
-<td style="text-align: right;">3,75×10⁻³</td>
-<td style="text-align: right;">0,993</td>
-<td style="text-align: right;">3,77×10⁻³</td>
-<td style="text-align: right;">3,67×10⁻³</td>
-</tr>
-</tbody>
-</table>
-<p>Sin corregir la fase (<code>φ = 20°</code>, lazo de Costas con ancho de banda 0) el BER <strong>no</strong> sigue la curva ideal: a 10 dB es
-3,72×10⁻³ contra 7,74×10⁻⁶ ideal, casi tres décadas peor. Pero coincide con la fórmula de la sección 2.5 con una exactitud
-notable (cociente medio 1,006): en este caso no hay ningún lazo de fase y la única fuente de pérdida de implementación es
-el sincronismo de símbolo. Esto valida a la vez el modelo teórico y la simulación.</p>
-<h3>6.3 Rotación de fase con lazo de Costas</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: right;">Eb/N0 [dB]</th>
-<th style="text-align: right;">errores</th>
-<th style="text-align: right;">BER medido</th>
-<th style="text-align: right;">BER teórico</th>
-<th style="text-align: right;">medido / teórico</th>
-<th style="text-align: right;">nodo A</th>
-<th style="text-align: right;">nodo B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">235938</td>
-<td style="text-align: right;">1,50×10⁻¹</td>
-<td style="text-align: right;">1,45×10⁻¹</td>
-<td style="text-align: right;">1,033</td>
-<td style="text-align: right;">1,50×10⁻¹</td>
-<td style="text-align: right;">1,50×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">173522</td>
-<td style="text-align: right;">1,10×10⁻¹</td>
-<td style="text-align: right;">1,06×10⁻¹</td>
-<td style="text-align: right;">1,037</td>
-<td style="text-align: right;">1,10×10⁻¹</td>
-<td style="text-align: right;">1,10×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">117980</td>
-<td style="text-align: right;">7,48×10⁻²</td>
-<td style="text-align: right;">7,22×10⁻²</td>
-<td style="text-align: right;">1,036</td>
-<td style="text-align: right;">7,50×10⁻²</td>
-<td style="text-align: right;">7,47×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">73698</td>
-<td style="text-align: right;">4,67×10⁻²</td>
-<td style="text-align: right;">4,47×10⁻²</td>
-<td style="text-align: right;">1,045</td>
-<td style="text-align: right;">4,70×10⁻²</td>
-<td style="text-align: right;">4,64×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">40658</td>
-<td style="text-align: right;">2,58×10⁻²</td>
-<td style="text-align: right;">2,47×10⁻²</td>
-<td style="text-align: right;">1,044</td>
-<td style="text-align: right;">2,59×10⁻²</td>
-<td style="text-align: right;">2,56×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">19602</td>
-<td style="text-align: right;">1,24×10⁻²</td>
-<td style="text-align: right;">1,18×10⁻²</td>
-<td style="text-align: right;">1,050</td>
-<td style="text-align: right;">1,26×10⁻²</td>
-<td style="text-align: right;">1,22×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">7776</td>
-<td style="text-align: right;">4,93×10⁻³</td>
-<td style="text-align: right;">4,77×10⁻³</td>
-<td style="text-align: right;">1,034</td>
-<td style="text-align: right;">4,92×10⁻³</td>
-<td style="text-align: right;">4,94×10⁻³</td>
-</tr>
-<tr>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">2510</td>
-<td style="text-align: right;">1,59×10⁻³</td>
-<td style="text-align: right;">1,54×10⁻³</td>
-<td style="text-align: right;">1,030</td>
-<td style="text-align: right;">1,61×10⁻³</td>
-<td style="text-align: right;">1,57×10⁻³</td>
-</tr>
-<tr>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">620</td>
-<td style="text-align: right;">3,93×10⁻⁴</td>
-<td style="text-align: right;">3,82×10⁻⁴</td>
-<td style="text-align: right;">1,030</td>
-<td style="text-align: right;">4,21×10⁻⁴</td>
-<td style="text-align: right;">3,65×10⁻⁴</td>
-</tr>
-<tr>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">428</td>
-<td style="text-align: right;">7,45×10⁻⁵</td>
-<td style="text-align: right;">6,73×10⁻⁵</td>
-<td style="text-align: right;">1,107</td>
-<td style="text-align: right;">6,75×10⁻⁵</td>
-<td style="text-align: right;">8,14×10⁻⁵</td>
-</tr>
-<tr>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">488</td>
-<td style="text-align: right;">9,48×10⁻⁶</td>
-<td style="text-align: right;">7,74×10⁻⁶</td>
-<td style="text-align: right;">1,225</td>
-<td style="text-align: right;">1,00×10⁻⁵</td>
-<td style="text-align: right;">8,94×10⁻⁶</td>
-</tr>
-</tbody>
-</table>
-<p>Con el lazo de Costas la misma rotación queda compensada y el receptor recupera la curva AWGN (pérdida equivalente
-+0,08 dB, igual que sin rotación). Como la semilla de ruido es la misma, los errores son prácticamente los mismos que en 6.1
-(a 9 dB, exactamente 428 en ambos casos): la rotación no deja rastro una vez corregida.</p>
-<h3>6.4 Rotación de fase + desvío de frecuencia con lazo de Costas</h3>
-<table>
-<thead>
-<tr>
-<th style="text-align: right;">Eb/N0 [dB]</th>
-<th style="text-align: right;">errores</th>
-<th style="text-align: right;">BER medido</th>
-<th style="text-align: right;">BER teórico</th>
-<th style="text-align: right;">medido / teórico</th>
-<th style="text-align: right;">nodo A</th>
-<th style="text-align: right;">nodo B</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">235776</td>
-<td style="text-align: right;">1,50×10⁻¹</td>
-<td style="text-align: right;">1,45×10⁻¹</td>
-<td style="text-align: right;">1,033</td>
-<td style="text-align: right;">1,50×10⁻¹</td>
-<td style="text-align: right;">1,50×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">173446</td>
-<td style="text-align: right;">1,10×10⁻¹</td>
-<td style="text-align: right;">1,06×10⁻¹</td>
-<td style="text-align: right;">1,037</td>
-<td style="text-align: right;">1,10×10⁻¹</td>
-<td style="text-align: right;">1,10×10⁻¹</td>
-</tr>
-<tr>
-<td style="text-align: right;">2</td>
-<td style="text-align: right;">118096</td>
-<td style="text-align: right;">7,49×10⁻²</td>
-<td style="text-align: right;">7,22×10⁻²</td>
-<td style="text-align: right;">1,037</td>
-<td style="text-align: right;">7,50×10⁻²</td>
-<td style="text-align: right;">7,48×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">73624</td>
-<td style="text-align: right;">4,67×10⁻²</td>
-<td style="text-align: right;">4,47×10⁻²</td>
-<td style="text-align: right;">1,044</td>
-<td style="text-align: right;">4,70×10⁻²</td>
-<td style="text-align: right;">4,64×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">40670</td>
-<td style="text-align: right;">2,58×10⁻²</td>
-<td style="text-align: right;">2,47×10⁻²</td>
-<td style="text-align: right;">1,045</td>
-<td style="text-align: right;">2,59×10⁻²</td>
-<td style="text-align: right;">2,57×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">19548</td>
-<td style="text-align: right;">1,24×10⁻²</td>
-<td style="text-align: right;">1,18×10⁻²</td>
-<td style="text-align: right;">1,047</td>
-<td style="text-align: right;">1,26×10⁻²</td>
-<td style="text-align: right;">1,22×10⁻²</td>
-</tr>
-<tr>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">7776</td>
-<td style="text-align: right;">4,93×10⁻³</td>
-<td style="text-align: right;">4,77×10⁻³</td>
-<td style="text-align: right;">1,035</td>
-<td style="text-align: right;">4,91×10⁻³</td>
-<td style="text-align: right;">4,95×10⁻³</td>
-</tr>
-<tr>
-<td style="text-align: right;">7</td>
-<td style="text-align: right;">2506</td>
-<td style="text-align: right;">1,59×10⁻³</td>
-<td style="text-align: right;">1,54×10⁻³</td>
-<td style="text-align: right;">1,029</td>
-<td style="text-align: right;">1,61×10⁻³</td>
-<td style="text-align: right;">1,57×10⁻³</td>
-</tr>
-<tr>
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">616</td>
-<td style="text-align: right;">3,90×10⁻⁴</td>
-<td style="text-align: right;">3,82×10⁻⁴</td>
-<td style="text-align: right;">1,023</td>
-<td style="text-align: right;">4,13×10⁻⁴</td>
-<td style="text-align: right;">3,68×10⁻⁴</td>
-</tr>
-<tr>
-<td style="text-align: right;">9</td>
-<td style="text-align: right;">432</td>
-<td style="text-align: right;">7,52×10⁻⁵</td>
-<td style="text-align: right;">6,73×10⁻⁵</td>
-<td style="text-align: right;">1,118</td>
-<td style="text-align: right;">6,75×10⁻⁵</td>
-<td style="text-align: right;">8,28×10⁻⁵</td>
-</tr>
-<tr>
-<td style="text-align: right;">10</td>
-<td style="text-align: right;">490</td>
-<td style="text-align: right;">9,52×10⁻⁶</td>
-<td style="text-align: right;">7,74×10⁻⁶</td>
-<td style="text-align: right;">1,230</td>
-<td style="text-align: right;">9,95×10⁻⁶</td>
-<td style="text-align: right;">9,10×10⁻⁶</td>
-</tr>
-</tbody>
-</table>
-<p>Con un desvío de 200 Hz la fase gira 0,01 rad por símbolo, ≈ 4,4 rad (250°) a lo largo de una trama: sin seguimiento de
-frecuencia la trama sería irrecuperable. El lazo de Costas de segundo orden estima la frecuencia (Figuras 3 y 7) y,
-descontado el enganche inicial (3.7), el BER es <strong>el mismo</strong> que sin desvío (pérdida +0,08 dB). La codificación
-diferencial hace que el enganche del lazo en cualquiera de las cuatro rotaciones posibles no importe.</p>
-<p><img alt="BER condiciones" src="resultados/ber_condiciones_de_canal.png" /></p>
-<p class="caption"><em>Figura 10 – BER para las cuatro condiciones de canal (puntos = medido, línea = teoría correspondiente). Las tres
-condiciones con el lazo de Costas se superponen con la curva AWGN.</em></p>
-<h3>6.5 Detección de errores (CRC-32) y tasa de error de trama</h3>
-<p><img alt="PER" src="resultados/per_awgn_medido_vs_teorico.png" /></p>
-<p class="caption"><em>Figura 11 – PER medido vs <code>1 − (1 − Ps)^(K+1)</code> (sección 2.4).</em></p>
-<ul>
-<li>El PER medido coincide con la teoría en todo el rango (columnas "PER" de la tabla 6.1; por ejemplo 0,147 vs 0,143 a
-  8 dB y 0,030 vs 0,027 a 9 dB). El pequeño exceso viene de la pérdida de implementación (el BER medido es 3–6 % mayor
-  que el teórico) y de las tramas cuyo preámbulo no se detecta.</li>
-<li>En todo el barrido se enviaron <strong>275.647 tramas</strong> y el receptor aceptó <strong>206.473</strong> con CRC correcto; se comparó cada una
-  con el mensaje transmitido y <strong>en ninguna</strong> el contenido difería (0 errores no detectados), coherente con una
-  probabilidad ≈ 2⁻³² por trama corrupta.</li>
-</ul>
-<h3>6.6 Resumen de pérdidas respecto de la teoría</h3>
-<p>Pérdida equivalente = Eb/N0 adicional que necesitaría la curva teórica para dar el BER medido (promedio ponderado por
-errores, solo puntos con ≥ 100 errores), separada en Eb/N0 bajo (0–1 dB) y medio-alto (2–10 dB). Para la condición
-«fase sin corregir» la referencia es su propia curva teórica (sección 2.5):</p>
+<p>El BER medido sigue a la ecuación (4) desde 1,5×10⁻¹ hasta 1×10⁻⁵, es decir, a lo largo de más de cuatro décadas (Figura 12). Entre 0 y 7 dB
+resulta entre 3 % y 6 % mayor que la teoría. Esa diferencia es real, porque con tantos errores contados el intervalo de confianza es muy chico.
+Equivale a solo 0,08 dB y se llama pérdida de implementación: el lazo de Costas y el sincronismo de símbolo estiman la fase y el instante
+de muestreo a partir de una señal con ruido, y esas estimaciones tienen su propio error. A 9 y 10 dB la relación sube a 1,11 y 1,27. Esto
+no indica un problema mayor: como allí la curva es muy empinada, el mismo corrimiento pequeño en dB produce una relación más grande.</p>
+<p><img src="resultados/ber_awgn_medido_vs_teorico.png" alt="BER medido en AWGN" style="width:70%"></p>
+<p class="caption"><em>Figura 12 – BER medido (puntos, con su intervalo de confianza) y teoría con codificación diferencial (línea azul). La línea gris es la
+teoría sin codificación diferencial.</em></p>
+<h4>Otras condiciones de canal</h4>
+<p><img src="resultados/ber_condiciones_de_canal.png" alt="BER en distintas condiciones de canal" style="width:70%"></p>
+<p class="caption"><em>Figura 13 – BER en las cuatro condiciones de canal (puntos: medido; línea: teoría de cada caso). Las tres condiciones con corrección de
+fase quedan una sobre otra, sobre la curva teórica.</em></p>
+<p class="caption tabla"><em>Tabla 7 – Pérdida respecto de la teoría, entre 2 y 10 dB. La pérdida es cuántos dB más necesitaría la curva teórica para dar el BER
+medido.</em></p>
 <table>
 <thead>
 <tr>
 <th>Condición de canal</th>
-<th style="text-align: right;">pérdida a 0–1 dB [dB]</th>
-<th style="text-align: right;">pérdida a 2–10 dB [dB]</th>
-<th style="text-align: right;">medido/teórico medio (2–10 dB)</th>
-<th style="text-align: right;">puntos (2–10 dB)</th>
+<th style="text-align: right;">Pérdida [dB]</th>
+<th style="text-align: right;">Medido / teórico (promedio)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>AWGN ideal</td>
-<td style="text-align: right;">+0,10</td>
+<td>AWGN</td>
 <td style="text-align: right;">+0,08</td>
-<td style="text-align: right;">1,042</td>
-<td style="text-align: right;">9</td>
+<td style="text-align: right;">1,04</td>
 </tr>
 <tr>
-<td>AWGN + fase 20° SIN corregir</td>
-<td style="text-align: right;">+0,04</td>
+<td>AWGN + fase de 20° sin corregir (referida a su propia teoría)</td>
 <td style="text-align: right;">+0,02</td>
-<td style="text-align: right;">1,006</td>
-<td style="text-align: right;">9</td>
+<td style="text-align: right;">1,01</td>
 </tr>
 <tr>
-<td>AWGN + fase 20° con lazo de Costas</td>
-<td style="text-align: right;">+0,11</td>
+<td>AWGN + fase de 20° con lazo de Costas</td>
 <td style="text-align: right;">+0,08</td>
-<td style="text-align: right;">1,041</td>
-<td style="text-align: right;">9</td>
+<td style="text-align: right;">1,04</td>
 </tr>
 <tr>
-<td>AWGN + fase 20° + CFO 200 Hz con lazo de Costas</td>
-<td style="text-align: right;">+0,11</td>
+<td>AWGN + fase de 20° + desvío de 200 Hz con lazo de Costas</td>
 <td style="text-align: right;">+0,08</td>
-<td style="text-align: right;">1,042</td>
-<td style="text-align: right;">9</td>
+<td style="text-align: right;">1,04</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Conclusión:</strong> el enlace half-duplex armado solo con bloques estándar de GNU Radio alcanza el BER teórico del 4-QAM con
-codificación diferencial con una pérdida de implementación menor a 0,1 dB, también con rotación de fase y desvío de
-frecuencia, y entrega los mensajes sin errores no detectados.</p>
-<hr />
-<h2>7. Problemas encontrados y cómo se resolvieron</h2>
-<p>El sistema partió de dos flowgraphs previos (un medidor de BER y un transceptor de paquetes) que no funcionaban. Estos
-fueron los problemas, en el orden en que aparecieron; todos se resolvieron con bloques o parámetros estándar:</p>
+<p>Estos resultados significan lo siguiente:</p>
+<ul>
+<li><strong>Sin corregir la fase</strong>, el sistema es mucho peor: a 10 dB, el BER es de 3,72×10⁻³, contra 7,74×10⁻⁶ en el caso ideal, casi tres décadas
+  de diferencia. Pero el valor coincide con la teoría de la sección 1.2, lo que valida ese modelo.</li>
+<li><strong>Con el lazo de Costas</strong>, la misma rotación queda compensada y se recupera la curva ideal.</li>
+<li><strong>Con un desvío de 200 Hz</strong>, la fase gira unos 250° a lo largo de cada trama, de modo que sin seguimiento la trama sería irrecuperable.
+  El lazo de Costas estima el desvío (Figura 11) y el BER es el mismo que sin desvío.</li>
+</ul>
+<h4>Tramas y CRC-32</h4>
+<p><img src="resultados/per_awgn_medido_vs_teorico.png" alt="PER medido y teórico" style="width:66%"></p>
+<p class="caption"><em>Figura 14 – PER medido en canal AWGN (puntos) y PER teórico (línea).</em></p>
+<p>El PER medido también coincide con la teoría, por ejemplo 0,147 contra 0,143 a 8 dB, y 0,030 contra 0,027 a 9 dB. En todo el barrido se
+enviaron 275 647 tramas y el receptor aceptó 206 473. Cada una se comparó con el mensaje transmitido y <strong>ninguna</strong> tenía contenido distinto.
+Este resultado es coherente con la probabilidad de 2⁻³² de que el CRC-32 deje pasar una trama errónea.</p>
+<p>En conjunto, la simulación muestra que el sistema armado con bloques estándar se comporta como predice la teoría, con una pérdida de
+implementación menor a 0,1 dB, y que el CRC-32 impide entregar datos con errores.</p>
+<h3>3.3 Resultados de la prueba de laboratorio</h3>
+<h4>Condiciones de la prueba</h4>
+<p class="caption tabla"><em>Tabla 8 – Condiciones de la prueba con el archivo de texto.</em></p>
 <table>
 <thead>
 <tr>
-<th>Problema</th>
-<th>Causa</th>
-<th>Solución</th>
+<th>Parámetro</th>
+<th>Valor</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>El BER no se podía medir a Eb/N0 alto</td>
-<td><code>Channel Model</code> reutiliza 16 384 valores de ruido (máximo 3,84 σ)</td>
-<td>Canal con <code>Noise Source</code> + <code>Add</code> (3.4)</td>
+<td>Frecuencia</td>
+<td>915 MHz (placas sintonizadas a 914,6 MHz)</td>
 </tr>
 <tr>
-<td>BER medido 8 veces menor que el real</td>
-<td><code>fec.ber_bf</code> espera bytes empaquetados y recibía bits sueltos</td>
-<td><code>Repack Bits</code> (1 → 8) antes del medidor</td>
+<td>Distancia entre placas</td>
+<td>Unos 40 cm, por el aire</td>
 </tr>
 <tr>
-<td>El receptor de tramas no entregaba nada</td>
-<td>Después de <code>Correlate Access Code - Tag Stream</code> (que ya quita la cabecera) había un <code>Header/Payload Demux</code> que esperaba otro formato; además, la etiqueta se llamaba distinto</td>
-<td>Ir directo a <code>Repack Bits</code> → <code>Stream CRC32</code> con la misma etiqueta</td>
+<td>Computadoras</td>
+<td>Una sola, con las dos placas conectadas</td>
 </tr>
 <tr>
-<td>BER 1,7 veces la teoría</td>
-<td>Lazos de Costas y sincronismo demasiado anchos</td>
-<td>Anchos de banda 0,005 y 0,01 (3.6)</td>
+<td>Transmisor</td>
+<td>VGA 20 dB, amplificador apagado, amplitud digital 0,5</td>
 </tr>
 <tr>
-<td>Sin codificación diferencial se perdían tramas</td>
-<td>Ambigüedad de 90° del lazo de Costas</td>
-<td>Codificación diferencial; teoría <code>2p(1−p)</code> (2.3)</td>
+<td>Receptor</td>
+<td>LNA 40 dB, VGA 40 dB, amplificador apagado</td>
 </tr>
 <tr>
-<td>El flowgraph se colgaba a Eb/N0 bajo</td>
-<td>Si el ruido corrompe igual las dos copias de la longitud, el detector acepta una "trama" de cientos de miles de bits que no entra en el buffer del bloque siguiente</td>
-<td><code>Min Output Buffer</code> = 600 000 en el detector y 70 000 en <code>Repack Bits</code> y <code>Stream CRC32</code> (pestaña <em>Advanced</em>)</td>
+<td>Anchos de banda de los lazos</td>
+<td>FLL 0,005; Costas 0,01; sincronismo de símbolo 0,01</td>
 </tr>
 <tr>
-<td>El BER saltaba a 0,5</td>
-<td>Medir comparando tramas: una longitud corrupta desalinea la referencia</td>
-<td>Alinear con el primer preámbulo (<code>Correlate Access Code - Tag</code> + <code>Tagged Stream Align</code>) y comparar flujos continuos (3.7)</td>
+<td>Archivo</td>
+<td><code>archivo_a_enviar.txt</code>: 2125 bytes, 12 paquetes por pasada, 0,08 s cada pasada</td>
 </tr>
 <tr>
-<td>Con CFO, BER 1,5–2 veces la teoría en el half-duplex</td>
-<td>El CFO aplicado al canal compartido produce saltos de fase en cada cambio de turno</td>
-<td>CFO como diferencia entre osciladores, aplicado en cada receptor (3.5)</td>
-</tr>
-<tr>
-<td>El half-duplex con interfaz se trababa a los pocos segundos</td>
-<td>Una misma fuente alimentaba entradas de un <code>Stream Mux</code> que consumen a ritmos distintos</td>
-<td>Patrón de turnos con <code>Vector Source</code> y una fuente por entrada</td>
-</tr>
-<tr>
-<td>BER 2–3 veces la teoría a Eb/N0 alto con CFO (corridas cortas)</td>
-<td>Ráfaga de errores mientras el lazo de Costas se engancha</td>
-<td>Descartar los primeros 100 000 bits en la medición (3.7)</td>
+<td>Huella SHA-256</td>
+<td>Comienza con 44e310390b75b43a</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<h2>8. Verificación del software</h2>
-<p><code>python tests/test_flowgraphs.py</code> (9 pruebas, ≈ 30 s, con GNU Radio real) comprueba que: los tres <code>.grc</code> compilan con
-<code>grcc</code>; el BER medido coincide con la teoría en AWGN, con fase sin corregir y con fase + CFO; cada nodo recibe exactamente
-el mensaje del otro con CRC correcto; con la misma semilla se obtiene el mismo resultado; los dos flowgraphs con interfaz
-corren varios segundos sin trabarse y con BER cercano a la teoría (habría detectado el problema del <code>Stream Mux</code>); y la
-teoría con codificación diferencial coincide con su verificación Monte Carlo.</p>
-<hr />
-<h2>9. Limitaciones y posibles extensiones</h2>
+<h4>Ajuste de las ganancias</h4>
+<p>Con las ganancias iniciales del receptor (LNA 16 dB y VGA 20 dB, 36 dB en total) los datos no se recibían bien, y desde el primer momento
+hubo que subirlas hasta LNA 40 dB y VGA 40 dB (80 dB en total). No hizo falta encender los amplificadores ni aumentar la potencia de
+transmisión.</p>
+<p>Las capturas permiten estimar el motivo. Con 80 dB de ganancia, la señal cruda llega a ±0,3 (Figura 16). Son 44 dB más que al comienzo, es
+decir, 158 veces en amplitud. Por lo tanto, con los valores iniciales la señal habría llegado a unos ±0,002. Un escalón del conversor de
+8 bits del HackRF equivale a 1/128 ≈ 0,008, así que la señal quedaba por debajo de un solo escalón.</p>
+<p>La señal es débil a propósito: se transmite con poca ganancia para no interferir, y en 40 cm a 915 MHz se pierden además unos 24 dB en el
+aire (valor de espacio libre, solo orientativo a tan poca distancia). El emulador usado en los ensayos previos, en cambio, recibía bien con
+las ganancias iniciales. La enseñanza práctica es que los niveles absolutos no se pueden predecir bien de antemano y hay que ajustarlos en
+el lugar, mirando la señal cruda.</p>
+<h4>Lo que muestran las capturas</h4>
+<p><img src="resultados_laboratorio/captura_real_tx.png" alt="Transmisor, prueba real" style="width:90%"></p>
+<p class="caption"><em>Figura 15 – Transmisor, prueba real. El espectro corresponde a la señal digital antes de entrar al HackRF: está centrada en +400 kHz y ocupa
+unos 340 kHz, como se esperaba. I y Q quedan dentro de ±1, con picos cercanos a 0,7. Arriba se leen el archivo, los 12 paquetes por pasada,
+la huella SHA-256 y las 1638 pasadas enviadas hasta el momento de la captura.</em></p>
+<p><img src="resultados_laboratorio/captura_real_rx_1_senal.png" alt="Receptor, señal, prueba real" style="width:90%"></p>
+<p class="caption"><em>Figura 16 – Receptor, pestaña 1, prueba real. La señal aparece en +400 kHz, unos 30 dB por encima del ruido. La espiga en 0 es propia del
+HackRF, y por eso la señal se corrió 400 kHz. La señal cruda llega a ±0,3, lejos de saturar. Abajo, la señal ya centrada y filtrada, y la
+salida del control de ganancia, con el nivel normalizado.</em></p>
+<p><img src="resultados_laboratorio/captura_real_rx_2_sincronismo.png" alt="Receptor, sincronismo, prueba real" style="width:90%"></p>
+<p class="caption"><em>Figura 17 – Receptor, pestaña 2, prueba real. El FLL se mantiene estable en unos 9 kHz. El ojo de la componente I se ve cerrado porque se mide
+antes del lazo de Costas, cuando la fase todavía gira. En la constelación, "Antes" es un anillo y "Después" son cuatro nubes compactas. El
+anillo se ve ovalado solo porque los ejes tienen distinta escala.</em></p>
+<p><img src="resultados_laboratorio/captura_real_rx_3_paquetes.png" alt="Receptor, paquetes, prueba real" style="width:90%"></p>
+<p class="caption"><em>Figura 18 – Receptor, pestaña 3, prueba real. Cada fila de puntos es un número de paquete, del 0 al 11. Las 12 filas están completas: en la
+ventana que muestra el gráfico no falta ningún paquete.</em></p>
+<p>Las capturas permiten observar lo siguiente:</p>
 <ul>
-<li>Los resultados cubren AWGN con errores de fase/frecuencia fijos; no se modeló desvanecimiento, multitrayecto ni deriva
-  del reloj de muestreo (el <code>Stream Demux</code> supone que los dos nodos comparten el reloj de ranuras; con deriva habría que
-  sincronizar las ranuras con el preámbulo).</li>
-<li>El lazo de Costas tarda en engancharse con CFO grandes (≳ 500 Hz con ancho de banda 0,005); para osciladores reales
-  (decenas de ppm en RF) haría falta un estimador grueso de frecuencia previo o un lazo más ancho durante el enganche.</li>
-<li>La codificación diferencial cuesta ≈ 0,3 dB a BER 10⁻⁵. Se podría evitar resolviendo la ambigüedad de fase con el
-  preámbulo (<code>Correlation Estimator</code>), a costa de un receptor más complejo.</li>
-<li>El encabezado estándar protege la longitud solo con la repetición; un encabezado con CRC propio reduciría las tramas
-  perdidas a Eb/N0 bajo.</li>
-<li>Extensiones: reconocimiento y retransmisión (ARQ) sobre los mismos turnos, codificación de canal (FEC), y reemplazo del
-  canal simulado por un SDR real (por ejemplo un HackRF, que es half-duplex por naturaleza).</li>
+<li><strong>La señal transmitida es la esperada.</strong> Su posición y su ancho coinciden con el diseño (Figura 15) y se reconocen en el receptor (Figura 16).</li>
+<li><strong>El sincronismo funciona con un desvío real.</strong> La constelación pasa de un anillo a cuatro nubes (Figura 17). El FLL corrige unos 9 kHz y el
+  lazo de Costas, unos −2 kHz. La suma, unos 7 kHz, es el desvío real entre las placas.</li>
+<li><strong>Las líneas horizontales de las cascadas no son fallas.</strong> Corresponden a los bytes en cero que completan el último paquete de datos y el de
+  descripción: 169 de los 5116 bytes de cada pasada (3,3 %). Con codificación diferencial, una serie de ceros repite el mismo símbolo, y por un
+  instante la señal es casi un tono puro. La cascada dibuja un renglón cada 0,1 s, de modo que unos 7 de cada 200 caen en esos tramos, que es
+  lo que se ve en la Figura 15.</li>
+<li><strong>La espiga en −0,85 MHz</strong> (Figura 16) es un tono angosto ajeno a la señal. No se investigó su origen; queda fuera del filtro de canal y no
+  afecta la recepción.</li>
 </ul>
-<hr />
-<h2>10. Referencias</h2>
+<h4>Indicadores del receptor</h4>
+<p class="caption tabla"><em>Tabla 9 – Valores que muestra el receptor en las tres capturas, tomadas en distintos momentos.</em></p>
+<table>
+<thead>
+<tr>
+<th>Indicador</th>
+<th style="text-align: right;">Figura 16</th>
+<th style="text-align: right;">Figura 17</th>
+<th style="text-align: right;">Figura 18</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tramas detectadas</td>
+<td style="text-align: right;">6159</td>
+<td style="text-align: right;">10 451</td>
+<td style="text-align: right;">13 719</td>
+</tr>
+<tr>
+<td>Con CRC correcto</td>
+<td style="text-align: right;">6106</td>
+<td style="text-align: right;">10 446</td>
+<td style="text-align: right;">13 610</td>
+</tr>
+<tr>
+<td>Descartadas por CRC</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">109</td>
+</tr>
+<tr>
+<td>Descartadas / detectadas</td>
+<td style="text-align: right;">0,86 %</td>
+<td style="text-align: right;">0,05 %</td>
+<td style="text-align: right;">0,79 %</td>
+</tr>
+<tr>
+<td>E<sub>b</sub>/N<sub>0</sub> estimado</td>
+<td style="text-align: right;">22,7 dB</td>
+<td style="text-align: right;">22,9 dB</td>
+<td style="text-align: right;">23,2 dB</td>
+</tr>
+<tr>
+<td>Desvío de frecuencia</td>
+<td style="text-align: right;">7070 Hz</td>
+<td style="text-align: right;">6934 Hz</td>
+<td style="text-align: right;">7052 Hz</td>
+</tr>
+<tr>
+<td>Desvío en ppm</td>
+<td style="text-align: right;">7,7</td>
+<td style="text-align: right;">7,6</td>
+<td style="text-align: right;">7,7</td>
+</tr>
+<tr>
+<td>BER teórico para ese E<sub>b</sub>/N<sub>0</sub></td>
+<td style="text-align: right;">2,6×10⁻⁸³</td>
+<td style="text-align: right;">1,7×10⁻⁸⁷</td>
+<td style="text-align: right;">1,9×10⁻⁹²</td>
+</tr>
+<tr>
+<td>PER teórico para ese E<sub>b</sub>/N<sub>0</sub></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+<p>Estos valores significan lo siguiente:</p>
 <ul>
-<li>J. G. Proakis, M. Salehi, <em>Digital Communications</em>, 5.ª ed., McGraw-Hill — BER de PSK/QAM en AWGN, codificación
-  diferencial, error de fase.</li>
-<li>B. Sklar, <em>Digital Communications: Fundamentals and Applications</em>, Prentice Hall.</li>
-<li>P. Koopman, T. Chakravarty, "Cyclic Redundancy Code (CRC) Polynomial Selection for Embedded Networks", DSN 2004.</li>
-<li>Documentación de GNU Radio (<code>wiki.gnuradio.org</code>): <em>Guided Tutorial PSK Demodulation</em>, bloques <em>Constellation Modulator</em>,
-  <em>Symbol Sync</em>, <em>Costas Loop</em>, <em>Correlate Access Code</em>, <em>Stream Mux/Demux</em>, <em>BER</em>.</li>
-</ul></body></html>
+<li><strong>La señal estuvo muy por encima del mínimo necesario.</strong> Según la ecuación (6), un PER de 10⁻³ en estas tramas requiere 10,7 dB, y la prueba
+  se hizo con unos 23 dB. Hay un margen de unos 12 dB. Además, el valor de unos 30 dB que se ve en el espectro es del mismo orden que el
+  E<sub>s</sub>/N<sub>0</sub> estimado, de unos 26 dB (E<sub>b</sub>/N<sub>0</sub> + 3 dB).</li>
+<li><strong>El desvío entre las placas es estable y es 35 veces mayor que el simulado.</strong> Se mantuvo cerca de 7 kHz (7,7 ppm), muy por debajo de los
+  ±40 kHz previstos. Para un desvío de este tamaño conviene la corrección gruesa del FLL, y dejar al lazo de Costas, que tiene un ancho de banda
+  angosto, solo lo que quede.</li>
+<li><strong>Se descartaron menos del 1 % de las tramas, aunque la teoría da 0.</strong> Con este E<sub>b</sub>/N<sub>0</sub>, el ruido no puede explicar esas tramas, así que deben
+  tener otra causa. Hay que tener en cuenta que este indicador es la resta de dos contadores que se leen por separado dos veces por segundo, por
+  lo que sirve como referencia y no como conteo exacto. Además, acumula desde el arranque, que incluye el tiempo en que se ajustaban las
+  ganancias. El conteo exacto de pérdidas requiere el registro de paquetes, y solo se conservó el de la canción.</li>
+</ul>
+<h4>Archivo recibido</h4>
+<p>Al terminar, <code>reconstruir_archivo.py</code> armó el archivo a partir de los paquetes con CRC correcto. La copia recibida coincide byte a byte con el
+original. Este es el comienzo del archivo recibido:</p>
+<pre><code>Sistemas de Comunicaciones Digitales - FACET - UNT
+Proyecto integrador: enlace punto a punto half-duplex con 4-QAM
+Prueba de laboratorio con HackRF: transmision de un archivo
+
+Si este texto se puede leer completo en la computadora del receptor, el archivo viajo por el aire
+desde un HackRF hasta el otro y llego sin errores.
+</code></pre>
+<p>En la computadora del laboratorio el texto tenía finales de línea de Windows, y por eso la Figura 15 indica 2125 bytes. Las copias guardadas en el
+repositorio, tanto la original como la recibida, tienen finales de línea de un solo carácter y ocupan 2089 bytes: la diferencia son las 36 líneas
+del texto. Se verificó que, al agregar esos 36 caracteres a la copia del repositorio, se obtiene la misma huella que muestra la Figura 15.</p>
+<h4>Otros archivos transmitidos</h4>
+<p>Con el mismo sistema también se transmitieron una imagen y una canción (Tabla 10). En los tres casos, el archivo recibido es idéntico al original.</p>
+<p class="caption tabla"><em>Tabla 10 – Archivos transmitidos. La velocidad útil es el tamaño del archivo dividido por la duración de una pasada.</em></p>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th style="text-align: right;">Tamaño [bytes]</th>
+<th style="text-align: right;">Paquetes por pasada</th>
+<th style="text-align: right;">Duración de una pasada</th>
+<th style="text-align: right;">Velocidad útil</th>
+<th>Huella SHA-256 (comienzo)</th>
+<th>Resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Texto</td>
+<td style="text-align: right;">2125</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0,08 s</td>
+<td style="text-align: right;">208 kbit/s</td>
+<td>44e310390b75b43a</td>
+<td>Idéntico</td>
+</tr>
+<tr>
+<td>Imagen (JPEG)</td>
+<td style="text-align: right;">7992</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">0,18 s</td>
+<td style="text-align: right;">349 kbit/s</td>
+<td>27c7679bc4d6d143</td>
+<td>Idéntico</td>
+</tr>
+<tr>
+<td>Canción (MP3)</td>
+<td style="text-align: right;">3 521 652</td>
+<td style="text-align: right;">17 610</td>
+<td style="text-align: right;">61,5 s</td>
+<td style="text-align: right;">458 kbit/s</td>
+<td>6122486beb190811</td>
+<td>Idéntico</td>
+</tr>
+</tbody>
+</table>
+<p>En los archivos chicos, la velocidad útil es menor porque el relleno de 40 ms ocupa una parte importante de cada pasada. En los grandes, se acerca
+a 459 kbit/s (200 de cada 218 bytes, a 500 kbit/s).</p>
+<p>De la canción se conservó el registro completo de paquetes, que permite contar con exactitud lo que los indicadores muestran solo de forma
+aproximada. En 183 s de recepción, casi tres pasadas, llegaron 52 451 paquetes con CRC correcto y se perdieron 31 (PER = 5,9×10⁻⁴). Los
+52 448 paquetes de datos recibidos se compararon con el original, unos 84 millones de bits, y <strong>no hubo ni un bit distinto</strong>. Cada paquete perdido
+en una pasada llegó en otra.</p>
+<p>Las 31 pérdidas no están repartidas al azar, sino concentradas en tres momentos (Tabla 11).</p>
+<p class="caption tabla"><em>Tabla 11 – Momentos en que se perdieron paquetes durante la recepción de la canción.</em></p>
+<table>
+<thead>
+<tr>
+<th>Tiempo desde la primera pérdida</th>
+<th>Paquetes perdidos</th>
+<th>Números de paquete</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 s</td>
+<td>10</td>
+<td>7678 a 7687</td>
+</tr>
+<tr>
+<td>60,00 s</td>
+<td>10</td>
+<td>7258 a 7267</td>
+</tr>
+<tr>
+<td>120,00 s</td>
+<td>1 + 10</td>
+<td>6830, y 6839 a 6848</td>
+</tr>
+</tbody>
+</table>
+<p>Cada corte dura unos 35 ms y se repite cada 60,00 s, con una diferencia de milisegundos. Este dato descarta dos explicaciones:</p>
+<ul>
+<li><strong>No es ruido.</strong> El ruido produciría pérdidas sueltas y repartidas al azar, y a este E<sub>b</sub>/N<sub>0</sub> prácticamente ninguna.</li>
+<li><strong>No depende del archivo.</strong> Una pasada dura 61,46 s, así que un problema del contenido afectaría siempre a los mismos paquetes. En cambio, cada
+  corte afecta a paquetes distintos.</li>
+</ul>
+<p>No se determinó la causa. Por su regularidad, las explicaciones más probables son una tarea periódica de la computadora, que manejaba las dos placas
+a la vez, o un equipo externo que transmita una vez por minuto en la banda ISM. Un corte así afectaría, en la prueba de texto, unas 5 a 7 de cada
+8800 tramas (0,06 % a 0,08 %), del mismo orden que el 0,05 % de la Figura 17.</p>
+<h3>3.4 Comparación entre simulación y laboratorio</h3>
+<p class="caption tabla"><em>Tabla 12 – Comparación de los resultados.</em></p>
+<table>
+<thead>
+<tr>
+<th>Aspecto</th>
+<th>Simulación</th>
+<th>Laboratorio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canal</td>
+<td>Ruido blanco, con fase y desvío elegidos</td>
+<td>Aire, unos 40 cm, 915 MHz</td>
+</tr>
+<tr>
+<td>E<sub>b</sub>/N<sub>0</sub></td>
+<td>De 0 a 10 dB, fijado en el programa</td>
+<td>Unos 23 dB, estimado por el receptor</td>
+</tr>
+<tr>
+<td>Desvío de frecuencia</td>
+<td>200 Hz</td>
+<td>Unos 7000 Hz</td>
+</tr>
+<tr>
+<td>Corrección de frecuencia</td>
+<td>Lazo de Costas</td>
+<td>FLL (unos 9 kHz) y lazo de Costas (unos −2 kHz)</td>
+</tr>
+<tr>
+<td>BER</td>
+<td>Medido: sigue a la teoría (+0,08 dB)</td>
+<td>Sin medición directa; 0 bits distintos en los paquetes aceptados de la canción</td>
+</tr>
+<tr>
+<td>Tramas perdidas</td>
+<td>Coinciden con la teoría (0,147 contra 0,143 a 8 dB)</td>
+<td>Más que la teoría, que da 0: PER de 5,9×10⁻⁴ en la canción, por cortes breves y no por ruido</td>
+</tr>
+<tr>
+<td>Errores que el CRC-32 no detectó</td>
+<td>0 en 206 473 tramas</td>
+<td>0 en 52 448 paquetes de la canción</td>
+</tr>
+<tr>
+<td>Resultado final</td>
+<td>Mensajes correctos en los dos nodos</td>
+<td>Archivos idénticos</td>
+</tr>
+</tbody>
+</table>
+<p>La principal diferencia es qué limita al sistema. En la simulación, el único límite es el ruido, y por eso el resultado coincide con la teoría. En el
+laboratorio, el ruido casi no influye, porque la señal tiene mucho margen. Lo que limita son efectos que el modelo no incluye, como los cortes breves, y
+la necesidad de ajustar las ganancias. Aun así, el diseño resultó adecuado: el receptor es el mismo a partir del filtro adaptado, el CRC-32 evitó que
+llegaran datos con errores y la repetición del archivo recuperó todo lo perdido.</p>
+<hr />
+<h2>4. Conclusiones</h2>
+<p class="caption tabla"><em>Tabla 13 – Cumplimiento de los objetivos.</em></p>
+<table>
+<thead>
+<tr>
+<th>Objetivo</th>
+<th>Resultado</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sistema punto a punto half-duplex</td>
+<td>Dos nodos por turnos en simulación; en el laboratorio, dos equipos half-duplex, uno transmite y el otro recibe</td>
+<td>Cumplido, con la salvedad indicada abajo</td>
+</tr>
+<tr>
+<td>Trama con preámbulo y longitud</td>
+<td>Preámbulo de 64 bits y longitud de 16 bits, repetida</td>
+<td>Cumplido</td>
+</tr>
+<tr>
+<td>Detección de errores con CRC-32</td>
+<td>Ninguna trama errónea aceptada, en simulación ni en el registro de la canción</td>
+<td>Cumplido</td>
+</tr>
+<tr>
+<td>Modulación 4-QAM</td>
+<td>4-QAM con mapeo Gray, codificación diferencial y filtro RRC</td>
+<td>Cumplido</td>
+</tr>
+<tr>
+<td>BER teórico</td>
+<td>Ecuaciones (3) a (5), verificadas por Monte Carlo</td>
+<td>Cumplido</td>
+</tr>
+<tr>
+<td>Simulación en GNU Radio</td>
+<td>Tres flowgraphs, solo con bloques estándar</td>
+<td>Cumplido</td>
+</tr>
+<tr>
+<td>BER medido y comparado con la teoría</td>
+<td>Cuatro condiciones de canal; diferencia de 0,08 dB o menos</td>
+<td>Cumplido</td>
+</tr>
+<tr>
+<td>Prueba de laboratorio con HackRF</td>
+<td>Texto, imagen y canción recibidos idénticos, según SHA-256</td>
+<td>Cumplido</td>
+</tr>
+</tbody>
+</table>
+<p>Se concluye lo siguiente:</p>
+<ul>
+<li><strong>La teoría describe bien el sistema cuando el límite es el ruido.</strong> El BER simulado coincide con la teoría en más de cuatro décadas. Fue necesario
+  incluir la codificación diferencial en el cálculo: sin ella, el BER medido parecería casi el doble del esperado.</li>
+<li><strong>El sistema funciona fuera de la simulación.</strong> Corrigió sin dificultad un desvío real de unos 7 kHz, y entregó archivos idénticos, desde 2 kB hasta
+  3,5 MB, con velocidades útiles de hasta 458 kbit/s.</li>
+<li><strong>La integridad de los datos no depende de que no haya pérdidas.</strong> El CRC-32 descarta las tramas erróneas, la numeración permite ordenar los paquetes y
+  la repetición recupera los que faltan. La huella SHA-256 confirma el resultado final.</li>
+<li><strong>El ajuste de ganancias es parte de la prueba.</strong> A 40 cm hicieron falta 80 dB de ganancia en el receptor para que la señal aprovechara el conversor de
+  8 bits, algo que el emulador no había anticipado.</li>
+</ul>
+<p><strong>Limitaciones.</strong> La prueba documentada se hizo en un solo sentido y con señal fuerte, por lo que no permite comparar el PER real con la teoría. Los turnos
+half-duplex automáticos solo se probaron en simulación: en el laboratorio, cada placa cumplió un solo papel. Las capturas se tomaron en distintos momentos
+y el indicador de tramas descartadas es aproximado. Tampoco se identificó la causa de los cortes de 35 ms por minuto.</p>
+<p><strong>Trabajo futuro.</strong> Repetir la prueba con señal débil, cerca de 9 dB, para comparar el PER con la teoría. Invertir los papeles de las placas y agregar turnos
+automáticos sobre el hardware. Repetir con una computadora por placa, para saber si los cortes periódicos vienen de la computadora. Compartir el reloj entre
+las placas, para eliminar el desvío de frecuencia. Agregar retransmisión a pedido o codificación para corrección de errores.</p>
+<hr />
+<h2>5. Referencias</h2>
+<p class="ref">[1] J. Mitola, «The software radio architecture», <i>IEEE Communications Magazine</i>, vol. 33, n.º 5, pp. 26–38, 1995.</p>
+<p class="ref">[2] E. Blossom, «GNU Radio: Tools for Exploring the Radio Frequency Spectrum», <i>Linux Journal</i>, n.º 122, 2004. https://www.linuxjournal.com/article/7319</p>
+<p class="ref">[3] Great Scott Gadgets, «HackRF One», documentación de HackRF. https://hackrf.readthedocs.io/en/latest/hackrf_one.html (consultado en noviembre de 2026).</p>
+<p class="ref">[4] J. G. Proakis y M. Salehi, <i>Digital Communications</i>, 5.ª ed., McGraw-Hill, 2008.</p>
+<p class="ref">[5] B. Sklar, <i>Digital Communications: Fundamentals and Applications</i>, 2.ª ed., Prentice Hall, 2001.</p>
+<p class="ref">[6] J. P. Costas, «Synchronous communications», <i>Proceedings of the IRE</i>, vol. 44, n.º 12, pp. 1713–1718, 1956.</p>
+<p class="ref">[7] P. Koopman y T. Chakravarty, «Cyclic redundancy code (CRC) polynomial selection for embedded networks», en <i>Proc. International Conference on Dependable Systems and Networks (DSN)</i>, pp. 145–154, 2004.</p>
+<p class="ref">[8] F. Harris, E. Venosa, X. Chen y C. Dick, «Band edge filters perform non data-aided carrier and timing synchronization of software defined radio QAM receivers», en <i>Proc. 15th International Symposium on Wireless Personal Multimedia Communications (WPMC)</i>, Taipéi, pp. 271–275, 2012.</p>
+<p class="ref">[9] M. Rice, <i>Digital Communications: A Discrete-Time Approach</i>, Pearson/Prentice Hall, 2009.</p>
+<p class="ref">[10] D. R. Pauluzzi y N. C. Beaulieu, «A comparison of SNR estimation techniques for the AWGN channel», <i>IEEE Transactions on Communications</i>, vol. 48, n.º 10, pp. 1681–1691, 2000.</p>
+<p class="ref">[11] National Institute of Standards and Technology, <i>Secure Hash Standard (SHS)</i>, FIPS PUB 180-4, 2015.</p>
+<p class="ref">[12] N. Kaliaskarov, K. Taissariyeva, N. Raulyev y A. Sabibolda, «Model of packet transmission of text data using SDR in the GNU Radio Companion environment», <i>Informatyka, Automatyka, Pomiary w Gospodarce i Ochronie Środowiska (IAPGOŚ)</i>, vol. 16, n.º 1, pp. 171–176, 2026. DOI: 10.35784/iapgos.7852.</p>
+<p class="ref">[13] COSMOS Testbed, «PSK BER — BPSK / QPSK / 8PSK», COSMOS Wiki. https://www.cosmos-lab.org/wiki/public/tutorials/sdr-gnuradio/ber/psk (consultado en noviembre de 2026).</p>
+<p class="ref">[14] GNU Radio Project, «Packet Communications», GNU Radio Wiki. https://wiki.gnuradio.org/index.php/Packet_Communications (consultado en noviembre de 2026).</p>
+<p class="ref">[15] A. A. Del Barrio, J. P. Manzano, V. M. Maroto, Á. Villarín, J. Pagán, M. Zapater, J. Ayala y R. Hermida, «HackRF + GNU Radio: A software-defined radio to teach communication theory», <i>The International Journal of Electrical Engineering & Education</i>, vol. 60, n.º 1, pp. 23–40, 2023. DOI: 10.1177/0020720919868144.</p>
+<p class="ref">[16] O. Castillo Alarcón, J. A. Rivera Suaña, J. Mendoza Montoya y P. H. Mamani Sánchez, «Implementación de un Modulador Digital GMSK Utilizando Radio Definida por Software HackRF One», Universidad Andina Néstor Cáceres Velásquez, Perú, 2021. https://buscador.lareferencia.info/Record/PE_9d2529090ce3fc69322804023a887b4a</p>
+<p class="ref">[17] bkbilly, «HackRF-data», repositorio de código. https://github.com/bkbilly/HackRF-data (consultado en noviembre de 2026).</p>
+<p class="ref">[18] M. Tábara Carbajo, «Radiocomunicaciones con radio definida por software y GNU Radio», Trabajo Fin de Grado, Universidad de Valladolid, 2023. https://uvadoc.uva.es/handle/10324/63119</p>
+<p class="ref">[19] R. M. Sáenz Valero, «Implementación de sistemas definidos por radio basado en código abierto para modulaciones PSK y QAM en fase de cuadratura», Trabajo de Integración Curricular, Universidad Estatal Península de Santa Elena, La Libertad, Ecuador, 2024.</p>
+<p class="ref">[20] E. B. Wilson, «Probable inference, the law of succession, and statistical inference», <i>Journal of the American Statistical Association</i>, vol. 22, n.º 158, pp. 209–212, 1927.</p>
+<p class="ref">[21] Unión Internacional de Telecomunicaciones, <i>Reglamento de Radiocomunicaciones</i>, artículo 5, nota 5.150.</p></body></html>

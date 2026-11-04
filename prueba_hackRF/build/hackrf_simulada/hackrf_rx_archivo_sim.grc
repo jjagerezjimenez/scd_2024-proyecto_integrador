@@ -145,7 +145,7 @@ blocks:
       Qué HackRF usar: "serial=..." (el número lo
       muestra hackrf_info). Vacío = la primera que
       encuentre.
-    value: '""'
+    value: '"0000000000000000176c63c82a893d23"'
   states:
     bus_sink: false
     bus_source: false

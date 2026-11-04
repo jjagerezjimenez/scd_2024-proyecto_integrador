@@ -192,7 +192,7 @@ blocks:
       Qué HackRF usar: "serial=..." (el número lo
       muestra hackrf_info). Vacío = la primera que
       encuentre.
-    value: '""'
+    value: '"0000000000000000308066e62215484b"'
   states:
     bus_sink: false
     bus_source: false
@@ -620,7 +620,7 @@ blocks:
     label: Archivo a transmitir
     short_id: ''
     type: str
-    value: ../grc_hackrf/archivo_a_enviar.txt
+    value: ../grc_hackrf/Outer.mp3
   states:
     bus_sink: false
     bus_source: false

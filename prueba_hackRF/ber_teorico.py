@@ -5,7 +5,7 @@ BER teórico de 4-QAM (QPSK) con codificación Gray en canal AWGN.
 
 NO necesita GNU Radio: solo numpy (y matplotlib para los gráficos).
 
-Resultados que se calculan (ver INFORME.md, sección 2):
+Resultados que se calculan (ver INFORME.md, sección 1.2):
 
     Pb       = Q( sqrt(2 Eb/N0) ) = 1/2 erfc( sqrt(Eb/N0) )        BER por bit
     Ps       = 2 Q( sqrt(Es/N0) ) - Q^2( sqrt(Es/N0) )             error de símbolo

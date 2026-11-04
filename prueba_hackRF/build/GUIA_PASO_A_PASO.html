@@ -15,15 +15,23 @@ pre { font-family: Consolas, "Courier New", monospace; font-size: 7.3pt; line-he
       border: 1px solid #dde3ea; border-radius: 3px; padding: 6pt 8pt; white-space: pre; overflow: hidden;
       break-inside: avoid; }
 pre code { background: none; padding: 0; font-size: inherit; }
-table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: auto; }
+p:has(+ ul), p:has(+ ol) { break-after: avoid; }
+table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 8.3pt; break-inside: avoid; }
 thead { display: table-header-group; }
 tr { break-inside: avoid; }
 th { background: #e8eef5; color: #0b3a6b; font-weight: 600; }
 th, td { border: 1px solid #c9d3de; padding: 2.5pt 4pt; vertical-align: top; }
 img { display: block; max-width: 100%; margin: 8pt auto 2pt auto; break-inside: avoid; }
-p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; }
+p.caption { font-size: 8.6pt; color: #333; margin: 0 4% 10pt 4%; text-align: justify; break-before: avoid; break-inside: avoid; }
+p.caption code { font-style: normal; font-size: 7.8pt; background: none; padding: 0; }
+p.caption.tabla { margin: 9pt 0 2pt 0; break-before: auto; break-after: avoid; }
 hr { border: none; border-top: 1px solid #ccc; margin: 10pt 0; }
 .titulo p { text-align: center; margin: 2pt 0; }
+h4 { font-size: 10.3pt; color: #133f6e; margin: 10pt 0 2pt 0; break-after: avoid; }
+.ecuacion { position: relative; text-align: center; font-family: "Cambria Math", Cambria, "Times New Roman", serif;
+            font-size: 11pt; margin: 6pt 0 7pt 0; break-inside: avoid; }
+.ecuacion .num { position: absolute; right: 0; font-size: 10pt; }
+p.ref { text-indent: -21pt; margin: 3pt 0 3pt 21pt; text-align: left; font-size: 9.2pt; }
 </style></head><body><div class="titulo"><h1>Guía paso a paso: de la HackRF simulada a las HackRF reales</h1>
 <p>Sistemas de Comunicaciones Digitales – FACET – UNT</p>
 <p>Cómo ensayar la prueba de laboratorio en casa y cómo hacerla después con las placas</p>
@@ -84,8 +92,8 @@ Al final, un programa arma el archivo recibido y comprueba que sea <strong>idén
 <h2>Antes de empezar: tres cosas básicas</h2>
 <p><strong>1. El radioconda Prompt.</strong> Es una consola que ya tiene GNU Radio listo. Se abre desde el menú Inicio de Windows,
 buscando "radioconda Prompt". Todos los comandos de esta guía se escriben ahí, <strong>desde la carpeta del proyecto</strong>.
-Para ir a esa carpeta (cambiar la ruta si el proyecto está en otro lugar):</p>
-<pre><code>cd /d &quot;D:\Facultad\Sist_Com_Dig\Proyecto_integrador\claude\integrado\files\proyecto_sdr_4qam_halfduplex\proyecto_sdr_4qam_halfduplex&quot;
+Para ir a esa carpeta, se escribe <code>cd /d</code> y la ruta donde está el proyecto, entre comillas. Por ejemplo:</p>
+<pre><code>cd /d &quot;D:\Facultad\proyecto_sdr_4qam_halfduplex&quot;
 </code></pre>
 <p><strong>2. GNU Radio Companion (GRC).</strong> Es el programa donde se abren los <code>.grc</code>. Se abre escribiendo
 <code>gnuradio-companion</code> en el prompt, o desde el menú Inicio. En GRC:</p>
@@ -143,12 +151,12 @@ de ejemplo la transmisión dura 0,3 s.</p>
 <li>☐ <strong>Pestaña 1 (Señal del HackRF):</strong> a la derecha de una rayita fina en el centro aparece una "montaña": es la
   señal, en +400 kHz. La rayita del centro es normal (es el oscilador de la placa).</li>
 <li>☐ <strong>Pestaña 2 (Sincronismo):</strong> la línea de "Desvío de frecuencia que estima el FLL" está quieta, cerca de
-  12 800 Hz. En la constelación, los puntos rojos ("Después") forman <strong>4 nubes</strong>.</li>
+  12 800 Hz. En la constelación, los puntos rojos ("Después") forman <strong>4 nubes</strong>.</li>
 <li>☐ <strong>Indicadores de arriba:</strong> "Con CRC correcto" sube y "Descartadas por CRC" queda en 0 o casi 0.</li>
 <li>☐ <strong>Pestaña 3 (Paquetes recibidos):</strong> filas de puntos del 0 al 11, sin huecos. Un hueco es un paquete perdido.</li>
 <li>☐ <strong>Comparar con el emulador:</strong> el emulador dice <code>desvío +12.8 kHz</code> y el receptor muestra "Desvío de frecuencia"
-  ≈ 12 800 Hz. El emulador dice <code>Es/N0 ~ 20.4 dB</code> y el receptor, "Eb/N0 estimado" ≈ 17,4 dB (Eb/N0 es 3 dB menos
-  que Es/N0).</li>
+  ≈ 12 800 Hz. El emulador dice <code>Es/N0 ~ 20.4 dB</code> y el receptor, "E<sub>b</sub>/N<sub>0</sub> estimado" ≈ 17,4 dB (E<sub>b</sub>/N<sub>0</sub> es 3 dB menos
+  que E<sub>s</sub>/N<sub>0</sub>).</li>
 </ul>
 <p><img alt="Receptor simulado, pestaña 1" src="hackrf_simulada/capturas/captura_sim_rx_1.png" /></p>
 <p class="caption"><em>Figura 1 – Pestaña 1 del receptor simulado: la rayita del centro y la señal ("montaña") en +400 kHz.</em></p>
@@ -180,7 +188,7 @@ original.</p>
 <tbody>
 <tr>
 <td>Receptor: "Ganancia VGA" de 20 a 36</td>
-<td>El emulador pasa de <code>-36 dBFS</code> a <code>-20 dBFS</code> y el Es/N0 sube de ~20 a ~24 dB</td>
+<td>El emulador pasa de <code>-36 dBFS</code> a <code>-20 dBFS</code> y el E<sub>s</sub>/N<sub>0</sub> sube de ~20 a ~24 dB</td>
 <td>Con poca ganancia la señal queda muy chica para el conversor de 8 bits</td>
 </tr>
 <tr>
@@ -300,7 +308,7 @@ Es normal.</p>
   cualquier valor, positivo o negativo, de hasta unos 40 kHz.</li>
 <li>El emulador ya no está: los números se leen solo en la ventana del receptor.</li>
 </ul>
-<p><strong>Anotar en la tabla (B6):</strong> "Desvío de frecuencia" [Hz], "Desvío [ppm]", "Eb/N0 estimado" y las ganancias que se
+<p><strong>Anotar en la tabla (B6):</strong> "Desvío de frecuencia" [Hz], "Desvío [ppm]", "E<sub>b</sub>/N<sub>0</sub> estimado" y las ganancias que se
 usaron.</p>
 <h3>Paso 5: terminar y armar el archivo</h3>
 <p>Cuando terminaste de revisar y "Pasadas enviadas" ya pasó de 3, cerrar con la <strong>X</strong> la ventana del transmisor,
@@ -320,7 +328,7 @@ copy grc_hackrf\recibido_* laboratorio\prueba_1\
 <h2>B5. Pruebas 2 y 3</h2>
 <h3>Prueba 2: señal débil (A → B)</h3>
 <p>Repetir la prueba 1, pero <strong>bajando la "Ganancia TX (VGA)"</strong> del transmisor de a poco, hasta que se pierdan
-algunos paquetes: aparecen huecos en la pestaña 3 y el "Eb/N0 estimado" queda entre 8 y 10 dB. Poner
+algunos paquetes: aparecen huecos en la pestaña 3 y el "E<sub>b</sub>/N<sub>0</sub> estimado" queda entre 8 y 10 dB. Poner
 <strong>repeticiones en 5</strong>.</p>
 <p><strong>Qué se busca mostrar:</strong></p>
 <ul>
@@ -346,7 +354,7 @@ vez (<em>half-duplex</em>).</p>
 <th>Distancia o cable</th>
 <th>Ganancias TX (VGA / amp)</th>
 <th>Ganancias RX (LNA / VGA / amp)</th>
-<th>Eb/N0 estimado</th>
+<th>E<sub>b</sub>/N<sub>0</sub> estimado</th>
 <th>Desvío [Hz] / [ppm]</th>
 <th>Paquetes recibidos / perdidos</th>
 <th>PER medido</th>

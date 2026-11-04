@@ -34,10 +34,10 @@ Al final, un programa arma el archivo recibido y comprueba que sea **idéntico**
 
 **1. El radioconda Prompt.** Es una consola que ya tiene GNU Radio listo. Se abre desde el menú Inicio de Windows,
 buscando "radioconda Prompt". Todos los comandos de esta guía se escriben ahí, **desde la carpeta del proyecto**.
-Para ir a esa carpeta (cambiar la ruta si el proyecto está en otro lugar):
+Para ir a esa carpeta, se escribe `cd /d` y la ruta donde está el proyecto, entre comillas. Por ejemplo:
 
 ```
-cd /d "D:\Facultad\Sist_Com_Dig\Proyecto_integrador\claude\integrado\files\proyecto_sdr_4qam_halfduplex\proyecto_sdr_4qam_halfduplex"
+cd /d "D:\Facultad\proyecto_sdr_4qam_halfduplex"
 ```
 
 **2. GNU Radio Companion (GRC).** Es el programa donde se abren los `.grc`. Se abre escribiendo

@@ -1,0 +1,15 @@
+Archivo: Outer.mp3, 3521652 bytes, 17610 paquetes por pasada
+Una trama dura 3.488 ms; una pasada, 61.464 s
+Paquetes recibidos con CRC correcto: 52451
+Tiempo cubierto por la recepción: 183.2 s (2.98 pasadas)
+Paquetes perdidos: 31  ->  PER medido = 5.91e-04
+Huecos en la numeración:
+  a los   21.744 s: 10 paquetes (34.9 ms), entre el 7677 y el 7688
+  a los   81.743 s: 10 paquetes (34.9 ms), entre el 7257 y el 7268, 59.999 s después del anterior
+  a los  141.714 s:  1 paquetes (3.5 ms), entre el 6829 y el 6831, 59.971 s después del anterior
+  a los  141.745 s: 10 paquetes (34.9 ms), entre el 6838 y el 6849, 0.031 s después del anterior
+Paquetes de datos comparados con el original: 52448 (83916800 bits); con contenido distinto: 0; bits distintos: 0
+Paquetes del archivo que no llegaron en ninguna pasada: 0
+Huella SHA-256 del archivo armado: 6122486beb190811bc15839b644b03b46c5ed494a5fe79b5dfc4622bf60ffe76
+Huella SHA-256 que mandó el transmisor: 6122486beb190811bc15839b644b03b46c5ed494a5fe79b5dfc4622bf60ffe76
+Coinciden: True

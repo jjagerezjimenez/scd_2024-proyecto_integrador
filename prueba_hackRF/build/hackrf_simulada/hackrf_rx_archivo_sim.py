@@ -109,7 +109,7 @@ class hackrf_rx_archivo_sim(gr.top_block, Qt.QWidget):
         self.lbl_ber = lbl_ber = ber_est
         self.fll_bw = fll_bw = 0.005
         self.excess_bw = excess_bw = 0.35
-        self.dispositivo = dispositivo = ""
+        self.dispositivo = dispositivo = "0000000000000000176c63c82a893d23"
         self.costas_bw = costas_bw = 0.01
         self.ajustes_hackrf = ajustes_hackrf = ("equipo=rx frecuencia=%r muestreo=%r lna=%r vga=%r amp=%d" % (float(freq_mhz * 1e6 - f_offset), float(samp_rate), float(lna), float(vga_rx), bool(amp_rx))).encode()
 
